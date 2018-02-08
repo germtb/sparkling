@@ -1,10 +1,12 @@
 {
 	"body atom-workspace": {
-		"cmd-b": "sparkling:gitBranches"
+		"cmd-b": "sparkling:gitBranches",
+		"cmd-p": "sparkling:files"
 	},
-	".sparkling": {
-		"enter": "sparkling:accept",
-		"cmd-j": "sparkling:next",
-		"cmd-k": "sparkling:previous"
+	"body atom-workspace .sparkling": {
+		"alt-j": "sparkling:next",
+		"alt-k": "sparkling:previous",
+		"escape": "sparkling:hide",
+		"enter": "sparkling:accept"
 	}
 }
