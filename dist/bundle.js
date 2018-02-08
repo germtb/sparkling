@@ -12874,7 +12874,10 @@ var gitBranches = function gitBranches() {
 var files = function files() {
 	var cmd = ['rg', ['--files']];
 	var accept = function accept(value) {
-		console.log(value);
+		atom.workspace.open(value);
+		store.dispatch({
+			type: 'HIDE'
+		});
 	};
 
 	sparkling(cmd, accept);
