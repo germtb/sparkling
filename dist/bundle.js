@@ -12653,7 +12653,7 @@ function verifyPlainObject(value, displayName, methodName) {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getSparklingData = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getAccept = exports.getCMD = exports.isVisible = undefined;
+exports.getSparklingData = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getPreview = exports.getAccept = exports.getCMD = exports.isVisible = undefined;
 
 var _reselect = __webpack_require__(237);
 
@@ -12672,6 +12672,9 @@ var getCMD = exports.getCMD = function getCMD(state) {
 var getAccept = exports.getAccept = function getAccept(state) {
 	return state.accept;
 };
+var getPreview = exports.getPreview = function getPreview(state) {
+	return state.preview;
+};
 var getData = exports.getData = function getData(state) {
 	return state.data;
 };
@@ -12686,6 +12689,7 @@ var getSelectedValue = exports.getSelectedValue = function getSelectedValue(stat
 };
 
 var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(getData, getPattern, function (data, pattern) {
+	console.log('SPARKLING');
 	if (pattern.length < 2) {
 		return data.slice(0, 10);
 	}
@@ -12700,6 +12704,8 @@ var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _reactDom = __webpack_require__(99);
@@ -12711,6 +12717,14 @@ var _react = __webpack_require__(31);
 var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(86);
+
+var _path = __webpack_require__(241);
+
+var _path2 = _interopRequireDefault(_path);
+
+var _fs = __webpack_require__(240);
+
+var _fs2 = _interopRequireDefault(_fs);
 
 var _xstream = __webpack_require__(53);
 
@@ -12745,6 +12759,12 @@ var _reducers2 = _interopRequireDefault(_reducers);
 var _selectors = __webpack_require__(97);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -12829,11 +12849,16 @@ var hide = function hide() {
 var accept = function accept() {
 	var state = store.getState();
 	var value = (0, _selectors.getSelectedValue)(state);
+
+	if (value === null || value === undefined) {
+		return;
+	}
+
 	var accept = (0, _selectors.getAccept)(state);
 	accept(value);
 };
 
-var sparkling = function sparkling(cmd, accept) {
+var sparkling = function sparkling(cmd, accept, preview) {
 	if ((0, _selectors.isVisible)(store.getState())) {
 		store.dispatch({
 			type: 'HIDE'
@@ -12843,7 +12868,8 @@ var sparkling = function sparkling(cmd, accept) {
 			type: 'SHOW',
 			payload: {
 				cmd: cmd,
-				accept: accept
+				accept: accept,
+				preview: preview
 			}
 		});
 	}
@@ -12871,16 +12897,85 @@ var gitBranches = function gitBranches() {
 	sparkling(cmd, accept);
 };
 
+var PreviewFile = function (_PureComponent) {
+	_inherits(PreviewFile, _PureComponent);
+
+	function PreviewFile(props) {
+		_classCallCheck(this, PreviewFile);
+
+		var _this = _possibleConstructorReturn(this, (PreviewFile.__proto__ || Object.getPrototypeOf(PreviewFile)).call(this, props));
+
+		_this.state = {};
+		_this.readFile = _this.readFile.bind(_this);
+		return _this;
+	}
+
+	_createClass(PreviewFile, [{
+		key: 'readFile',
+		value: function readFile() {
+			var _this2 = this;
+
+			var cwd = atom.project.getPaths()[0];
+			var file = this.props.file;
+
+
+			_fs2.default.readFile(_path2.default.join(cwd, file), function (err, data) {
+				if (err) {
+					console.error(err);
+				} else {
+					_this2.setState({ data: data.toString('utf-8') });
+				}
+			});
+		}
+	}, {
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.readFile();
+		}
+	}, {
+		key: 'componentDidUpdate',
+		value: function componentDidUpdate(prevProps) {
+			if (prevProps.file === this.props.file) {
+				return;
+			}
+
+			this.readFile();
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			if (!this.state.data) {
+				return _react2.default.createElement(
+					'div',
+					null,
+					'Loading...'
+				);
+			}
+
+			return _react2.default.createElement(
+				'div',
+				null,
+				this.state.data
+			);
+		}
+	}]);
+
+	return PreviewFile;
+}(_react.PureComponent);
+
 var files = function files() {
 	var cmd = ['rg', ['--files']];
-	var accept = function accept(value) {
-		atom.workspace.open(value);
+	var accept = function accept(file) {
+		atom.workspace.open(file);
 		store.dispatch({
 			type: 'HIDE'
 		});
 	};
+	var preview = function preview(file) {
+		return _react2.default.createElement(PreviewFile, { file: file });
+	};
 
-	sparkling(cmd, accept);
+	sparkling(cmd, accept, preview);
 };
 
 module.exports = {
@@ -26533,6 +26628,16 @@ var accept = reducerCreator({
 	return x;
 });
 
+var preview = reducerCreator({
+	SHOW: function SHOW(state, payload) {
+		if (payload && payload.preview) {
+			return payload.preview;
+		}
+
+		return null;
+	}
+})(null);
+
 var data = reducerCreator({
 	SET_DATA: returnPayload('data')
 })([]);
@@ -26547,7 +26652,15 @@ var index = reducerCreator({
 	SET_DATA: 0
 })(0);
 
-exports.default = (0, _redux.combineReducers)({ visible: visible, cmd: cmd, accept: accept, data: data, index: index, pattern: pattern });
+exports.default = (0, _redux.combineReducers)({
+	visible: visible,
+	cmd: cmd,
+	accept: accept,
+	preview: preview,
+	data: data,
+	index: index,
+	pattern: pattern
+});
 
 /***/ }),
 /* 231 */
@@ -27650,7 +27763,9 @@ module.exports = (0, _reactRedux.connect)(function (state) {
 	return {
 		visible: (0, _selectors.isVisible)(state),
 		data: (0, _selectors.getSparklingData)(state),
-		index: (0, _selectors.getIndex)(state)
+		index: (0, _selectors.getIndex)(state),
+		preview: (0, _selectors.getPreview)(state),
+		selectedValue: (0, _selectors.getSelectedValue)(state)
 	};
 }, function (dispatch) {
 	return {
@@ -27709,20 +27824,31 @@ var Sparkling = function (_React$PureComponent) {
 		value: function render() {
 			var _this3 = this;
 
+			console.log('Rerendering');
+
 			return _react2.default.createElement(
 				'div',
 				{ className: 'sparkling' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'sparkling-results' },
-					this.props.data.map(function (s, i) {
-						var className = i === _this3.props.index ? 'row selected' : 'row';
-						return _react2.default.createElement(
-							'div',
-							{ className: className },
-							s
-						);
-					})
+					{ className: 'sparkling-results-block' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'sparkling-results' },
+						this.props.data.map(function (s, i) {
+							var className = i === _this3.props.index ? 'row selected' : 'row';
+							return _react2.default.createElement(
+								'div',
+								{ className: className },
+								s
+							);
+						})
+					),
+					this.props.preview && this.props.selectedValue && _react2.default.createElement(
+						'div',
+						{ className: 'sparkling-preview' },
+						this.props.preview(this.props.selectedValue)
+					)
 				),
 				_react2.default.createElement('atom-text-editor', {
 					className: 'editor mini',
@@ -27745,6 +27871,18 @@ var Sparkling = function (_React$PureComponent) {
 }(_react2.default.PureComponent);
 
 module.exports = Sparkling;
+
+/***/ }),
+/* 240 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 241 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
 
 /***/ })
 /******/ ]);
