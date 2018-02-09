@@ -12905,7 +12905,6 @@ var PreviewFile = function (_PureComponent) {
 
 		var _this = _possibleConstructorReturn(this, (PreviewFile.__proto__ || Object.getPrototypeOf(PreviewFile)).call(this, props));
 
-		_this.state = {};
 		_this.readFile = _this.readFile.bind(_this);
 		return _this;
 	}
@@ -12920,10 +12919,12 @@ var PreviewFile = function (_PureComponent) {
 
 
 			_fs2.default.readFile(_path2.default.join(cwd, file), function (err, data) {
-				if (err) {
+				if (err || !_this2.editor) {
 					console.error(err);
 				} else {
-					_this2.setState({ data: data.toString('utf-8') });
+					var model = _this2.editor.getModel();
+					var buffer = model.getBuffer();
+					buffer.setText(data.toString('utf-8'));
 				}
 			});
 		}
@@ -12944,19 +12945,15 @@ var PreviewFile = function (_PureComponent) {
 	}, {
 		key: 'render',
 		value: function render() {
-			if (!this.state.data) {
-				return _react2.default.createElement(
-					'div',
-					null,
-					'Loading...'
-				);
-			}
+			var _this3 = this;
 
-			return _react2.default.createElement(
-				'div',
-				null,
-				this.state.data
-			);
+			return _react2.default.createElement('atom-text-editor', {
+				'class': 'editor',
+				'data-encoding': 'utf-8',
+				ref: function ref(editor) {
+					return _this3.editor = editor;
+				}
+			});
 		}
 	}]);
 
@@ -27855,13 +27852,9 @@ var Sparkling = function (_React$PureComponent) {
 					mini: true,
 					'data-encoding': 'utf-8',
 					'data-grammar': 'text plain null-grammar',
-					onChange: function onChange(ev) {
-						_this3.props.setPattern(ev.target.value);
-					},
 					ref: function ref(input) {
 						_this3.input = input;
-					},
-					placeholder: 'Type here'
+					}
 				})
 			);
 		}
