@@ -14,15 +14,16 @@
 	overflow: scroll;
 }
 
-.sparkling .row {
+.sparkling-row {
 	padding: 0.75em 1em;
 	line-height: 2em;
 }
 
-.sparkling .row:not(:last-child) {
-	border-bottom: 1px solid #1b1c22;
+.sparkling-row .selected {
+	font-weight: bold;
+	/* background-color: #3f4252; */
 }
 
-.sparkling .selected {
-	background-color: #3f4252;
+.sparkling-input {
+	padding: 0.75em 0.75em;
 }

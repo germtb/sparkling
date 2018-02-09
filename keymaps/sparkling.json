@@ -4,6 +4,9 @@
 		"cmd-p": "sparkling:files",
 		"cmd-m": "sparkling:gitFiles"
 	},
+	"body atom-text-editor": {
+		"cmd-l": "sparkling:lines"
+	},
 	"body atom-workspace .sparkling": {
 		"alt-k": "sparkling:next",
 		"alt-j": "sparkling:previous",
