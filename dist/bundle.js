@@ -13277,6 +13277,10 @@ var _lines2 = _interopRequireDefault(_lines);
 
 var _utils = __webpack_require__(243);
 
+var _defaultRendererFactory = __webpack_require__(250);
+
+var _defaultRendererFactory2 = _interopRequireDefault(_defaultRendererFactory);
+
 var _reducers = __webpack_require__(240);
 
 var _reducers2 = _interopRequireDefault(_reducers);
@@ -13354,23 +13358,28 @@ var accept = function accept() {
 
 var sparkling = function sparkling(_ref5) {
 	var loadData = _ref5.loadData,
+	    _ref5$rendererFactory = _ref5.rendererFactory,
+	    rendererFactory = _ref5$rendererFactory === undefined ? _defaultRendererFactory2.default : _ref5$rendererFactory,
 	    accept = _ref5.accept,
-	    preview = _ref5.preview;
-
-	if ((0, _selectors.isVisible)(store.getState())) {
-		store.dispatch({
-			type: 'HIDE'
-		});
-	} else {
-		store.dispatch({
-			type: 'SHOW',
-			payload: {
-				loadData: loadData,
-				accept: accept,
-				preview: preview
-			}
-		});
-	}
+	    _ref5$preview = _ref5.preview,
+	    preview = _ref5$preview === undefined ? null : _ref5$preview;
+	return function () {
+		if ((0, _selectors.isVisible)(store.getState())) {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		} else {
+			store.dispatch({
+				type: 'SHOW',
+				payload: {
+					loadData: loadData,
+					accept: accept,
+					renderer: rendererFactory(_react2.default, store),
+					preview: preview
+				}
+			});
+		}
+	};
 };
 
 module.exports = {
@@ -13387,25 +13396,10 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		var files = function files() {
-			var options = (0, _files2.default)(_react2.default, store);
-			sparkling(options);
-		};
-
-		var gitFiles = function gitFiles() {
-			var options = (0, _gitFiles2.default)(_react2.default, store);
-			sparkling(options);
-		};
-
-		var gitBranches = function gitBranches() {
-			var options = (0, _gitBranches2.default)(_react2.default, store);
-			sparkling(options);
-		};
-
-		var lines = function lines() {
-			var options = (0, _lines2.default)(_react2.default, store);
-			sparkling(options);
-		};
+		var gitFiles = sparkling((0, _gitFiles2.default)(_react2.default, store));
+		var files = sparkling((0, _files2.default)(_react2.default, store));
+		var gitBranches = sparkling((0, _gitBranches2.default)(_react2.default, store));
+		var lines = sparkling((0, _lines2.default)(_react2.default, store));
 
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
@@ -27049,7 +27043,7 @@ module.exports = (0, _reactRedux.connect)(function (state) {
 	return {
 		visible: (0, _selectors.isVisible)(state),
 		data: (0, _selectors.getSparklingData)(state),
-		index: (0, _selectors.getIndex)(state),
+		selectedIndex: (0, _selectors.getIndex)(state),
 		options: (0, _selectors.getOptions)(state),
 		selectedValue: (0, _selectors.getSelectedValue)(state)
 	};
@@ -27638,8 +27632,11 @@ var Sparkling = function (_React$PureComponent) {
 			var _props = this.props,
 			    options = _props.options,
 			    selectedValue = _props.selectedValue,
-			    data = _props.data;
-			var preview = this.props.options.preview;
+			    data = _props.data,
+			    selectedIndex = _props.selectedIndex;
+			var _props$options = this.props.options,
+			    preview = _props$options.preview,
+			    renderer = _props$options.renderer;
 
 
 			return _react2.default.createElement(
@@ -27651,13 +27648,8 @@ var Sparkling = function (_React$PureComponent) {
 					_react2.default.createElement(
 						'div',
 						{ className: 'sparkling-results' },
-						data.map(function (s, i) {
-							var className = i === _this3.props.index ? 'sparkling-row selected' : 'sparkling-row';
-							return _react2.default.createElement(
-								'div',
-								{ className: className },
-								s
-							);
+						data.map(function (value, index) {
+							return renderer({ value: value, index: index, selectedIndex: selectedIndex });
 						})
 					),
 					preview && selectedValue && _react2.default.createElement(
@@ -28048,6 +28040,31 @@ var linesFactory = function linesFactory(React, store) {
 };
 
 module.exports = linesFactory;
+
+/***/ }),
+/* 249 */,
+/* 250 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var defaultRendererFactory = function defaultRendererFactory(React, store) {
+	return function (_ref) {
+		var value = _ref.value,
+		    index = _ref.index,
+		    selectedIndex = _ref.selectedIndex;
+
+		var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
+		return React.createElement(
+			'div',
+			{ className: className },
+			value
+		);
+	};
+};
+
+module.exports = defaultRendererFactory;
 
 /***/ })
 /******/ ]);

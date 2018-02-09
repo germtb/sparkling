@@ -19,9 +19,9 @@
 	line-height: 2em;
 }
 
-.sparkling-row .selected {
+.sparkling-row.selected {
 	font-weight: bold;
-	/* background-color: #3f4252; */
+	background-color: #3f4252;
 }
 
 .sparkling-input {
