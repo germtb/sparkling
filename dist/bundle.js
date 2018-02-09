@@ -12918,15 +12918,14 @@ var PreviewFile = function (_PureComponent) {
 			var cwd = atom.project.getPaths()[0];
 			var file = this.props.file;
 
+			var fileName = _path2.default.join(cwd, file);
 
-			_fs2.default.readFile(_path2.default.join(cwd, file), function (err, data) {
-				if (err || !_this2.editor) {
-					console.error(err);
-				} else {
-					var model = _this2.editor.getModel();
-					var buffer = model.getBuffer();
-					buffer.setText(data.toString('utf-8'));
-				}
+			var readStream = _fs2.default.createReadStream(fileName, { start: 0, end: 200 });
+
+			readStream.on('data', function (data) {
+				var model = _this2.editor.getModel();
+				var buffer = model.getBuffer();
+				buffer.setText(data.toString('utf-8'));
 			});
 		}
 	}, {

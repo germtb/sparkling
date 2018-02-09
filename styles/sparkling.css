@@ -15,9 +15,11 @@
 }
 
 .sparkling .row {
-	min-height: 40px;
 	padding: 0.75em 1em;
 	line-height: 2em;
+}
+
+.sparkling .row:not(:last-child) {
 	border-bottom: 1px solid #1b1c22;
 }
 
