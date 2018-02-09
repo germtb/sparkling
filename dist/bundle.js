@@ -12687,7 +12687,7 @@ var getSelectedValue = exports.getSelectedValue = function getSelectedValue(stat
 
 var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(getData, getPattern, function (data, pattern) {
 	if (pattern.length < 2) {
-		return data;
+		return data.slice(0, 10);
 	}
 
 	return _fuzzaldrinPlus2.default.filter(data, pattern).slice(0, 10);

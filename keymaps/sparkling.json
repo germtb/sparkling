@@ -4,8 +4,8 @@
 		"cmd-p": "sparkling:files"
 	},
 	"body atom-workspace .sparkling": {
-		"alt-j": "sparkling:next",
-		"alt-k": "sparkling:previous",
+		"alt-k": "sparkling:next",
+		"alt-j": "sparkling:previous",
 		"escape": "sparkling:hide",
 		"enter": "sparkling:accept"
 	}
