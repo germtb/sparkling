@@ -12653,7 +12653,7 @@ function verifyPlainObject(value, displayName, methodName) {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getSparklingData = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getPreview = exports.getAccept = exports.getCMD = exports.isVisible = undefined;
+exports.getSparklingData = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getPreview = exports.getAccept = exports.getLoadData = exports.isVisible = undefined;
 
 var _reselect = __webpack_require__(237);
 
@@ -12666,8 +12666,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var isVisible = exports.isVisible = function isVisible(state) {
 	return state.visible;
 };
-var getCMD = exports.getCMD = function getCMD(state) {
-	return state.cmd;
+var getLoadData = exports.getLoadData = function getLoadData(state) {
+	return state.loadData;
 };
 var getAccept = exports.getAccept = function getAccept(state) {
 	return state.accept;
@@ -12766,8 +12766,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 var store = (0, _redux.createStore)(_reducers2.default);
 
 store.subscribe(function () {
@@ -12793,31 +12791,24 @@ var fromSelector = function fromSelector(selector) {
 	return _xstream2.default.create(producer);
 };
 
-fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose((0, _sampleCombine2.default)(fromSelector(_selectors.getCMD))).filter(function (_ref) {
+fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose((0, _sampleCombine2.default)(fromSelector(_selectors.getLoadData))).filter(function (_ref) {
 	var _ref2 = _slicedToArray(_ref, 2),
 	    visible = _ref2[0],
-	    cmd = _ref2[1];
+	    loadData = _ref2[1];
 
 	return visible;
 }).subscribe({
 	next: function next(_ref3) {
 		var _ref4 = _slicedToArray(_ref3, 2),
 		    visible = _ref4[0],
-		    cmd = _ref4[1];
+		    loadData = _ref4[1];
 
-		var cmdName = cmd[0];
-		var cmdArgs = cmd[1];
-
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = _child_process.spawn.apply(undefined, _toConsumableArray(cmd).concat([{ cwd: cwd }]));
-
-		cmdProcess.stdout.on('data', function (data) {
+		console.log('loadData: ', loadData);
+		loadData(function (data) {
 			store.dispatch({
 				type: 'SET_DATA',
 				payload: {
-					data: data.toString('utf-8').split('\n').filter(function (s) {
-						return s.length > 1;
-					})
+					data: data
 				}
 			});
 		});
@@ -12858,7 +12849,8 @@ var accept = function accept() {
 	accept(value);
 };
 
-var sparkling = function sparkling(cmd, accept, preview) {
+var sparkling = function sparkling(loadData, accept, preview) {
+	console.log('loadData: ', loadData);
 	if ((0, _selectors.isVisible)(store.getState())) {
 		store.dispatch({
 			type: 'HIDE'
@@ -12867,7 +12859,7 @@ var sparkling = function sparkling(cmd, accept, preview) {
 		store.dispatch({
 			type: 'SHOW',
 			payload: {
-				cmd: cmd,
+				loadData: loadData,
 				accept: accept,
 				preview: preview
 			}
@@ -12876,7 +12868,16 @@ var sparkling = function sparkling(cmd, accept, preview) {
 };
 
 var gitBranches = function gitBranches() {
-	var cmd = ['git', ['branch']];
+	var loadData = function loadData(onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = (0, _child_process.spawn)('git', ['branch'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length > 1;
+			}));
+		});
+	};
+
 	var accept = function accept(value) {
 		var cwd = atom.project.getPaths()[0];
 		value = value.trim(0);
@@ -12894,7 +12895,7 @@ var gitBranches = function gitBranches() {
 		});
 	};
 
-	sparkling(cmd, accept);
+	sparkling(loadData, accept);
 };
 
 var PreviewFile = function (_PureComponent) {
@@ -12961,7 +12962,16 @@ var PreviewFile = function (_PureComponent) {
 }(_react.PureComponent);
 
 var files = function files() {
-	var cmd = ['rg', ['--files']];
+	var loadData = function loadData(onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = (0, _child_process.spawn)('rg', ['--files'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length > 1;
+			}));
+		});
+	};
+
 	var accept = function accept(file) {
 		atom.workspace.open(file);
 		store.dispatch({
@@ -12972,7 +12982,35 @@ var files = function files() {
 		return _react2.default.createElement(PreviewFile, { file: file });
 	};
 
-	sparkling(cmd, accept, preview);
+	sparkling(loadData, accept, preview);
+};
+
+var gitFiles = function gitFiles() {
+	var loadData = function loadData(onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = (0, _child_process.spawn)('git', ['status'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return (/modified/.test(s)
+				);
+			}).filter(function (s) {
+				return s.length > 1;
+			}));
+		});
+	};
+
+	var accept = function accept(file) {
+		atom.workspace.open(file);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	var preview = function preview(file) {
+		return _react2.default.createElement(PreviewFile, { file: file });
+	};
+
+	sparkling(loadData, accept, preview);
 };
 
 module.exports = {
@@ -12996,6 +13034,7 @@ module.exports = {
 			'sparkling:accept': accept,
 			'sparkling:gitBranches': gitBranches,
 			'sparkling:files': files,
+			'sparkling:gitFiles': gitFiles,
 			'sparkling:hide': hide
 		}));
 	},
@@ -26615,9 +26654,11 @@ var visible = reducerCreator({
 	HIDE: false
 })(false);
 
-var cmd = reducerCreator({
-	SHOW: returnPayload('cmd')
-})('');
+var loadData = reducerCreator({
+	SHOW: returnPayload('loadData')
+})(function (cb) {
+	return cb([]);
+});
 
 var accept = reducerCreator({
 	SHOW: returnPayload('accept')
@@ -26651,7 +26692,7 @@ var index = reducerCreator({
 
 exports.default = (0, _redux.combineReducers)({
 	visible: visible,
-	cmd: cmd,
+	loadData: loadData,
 	accept: accept,
 	preview: preview,
 	data: data,
@@ -27820,8 +27861,6 @@ var Sparkling = function (_React$PureComponent) {
 		key: 'render',
 		value: function render() {
 			var _this3 = this;
-
-			console.log('Rerendering');
 
 			return _react2.default.createElement(
 				'div',
