@@ -13148,7 +13148,7 @@ var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(
 		return data.slice(0, 10);
 	}
 
-	return _fuzzaldrinPlus2.default.filter(data, pattern).slice(0, 10);
+	return _fuzzaldrinPlus2.default.filter(data, pattern, { key: 'value' }).slice(0, 10);
 });
 
 /***/ }),
@@ -13277,9 +13277,9 @@ var _lines2 = _interopRequireDefault(_lines);
 
 var _utils = __webpack_require__(243);
 
-var _defaultRendererFactory = __webpack_require__(250);
+var _Result = __webpack_require__(251);
 
-var _defaultRendererFactory2 = _interopRequireDefault(_defaultRendererFactory);
+var _Result2 = _interopRequireDefault(_Result);
 
 var _reducers = __webpack_require__(240);
 
@@ -13356,13 +13356,17 @@ var accept = function accept() {
 	accept(value);
 };
 
-var sparkling = function sparkling(_ref5) {
-	var loadData = _ref5.loadData,
-	    _ref5$rendererFactory = _ref5.rendererFactory,
-	    rendererFactory = _ref5$rendererFactory === undefined ? _defaultRendererFactory2.default : _ref5$rendererFactory,
-	    accept = _ref5.accept,
-	    _ref5$preview = _ref5.preview,
-	    preview = _ref5$preview === undefined ? null : _ref5$preview;
+var sparkling = function sparkling(optionsFactory) {
+	var _optionsFactory = optionsFactory(_react2.default, store),
+	    loadData = _optionsFactory.loadData,
+	    accept = _optionsFactory.accept,
+	    _optionsFactory$rende = _optionsFactory.renderer,
+	    renderer = _optionsFactory$rende === undefined ? function (props) {
+		return _react2.default.createElement(_Result2.default, props);
+	} : _optionsFactory$rende,
+	    _optionsFactory$previ = _optionsFactory.preview,
+	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ;
+
 	return function () {
 		if ((0, _selectors.isVisible)(store.getState())) {
 			store.dispatch({
@@ -13374,7 +13378,7 @@ var sparkling = function sparkling(_ref5) {
 				payload: {
 					loadData: loadData,
 					accept: accept,
-					renderer: rendererFactory(_react2.default, store),
+					renderer: renderer,
 					preview: preview
 				}
 			});
@@ -13396,10 +13400,10 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		var gitFiles = sparkling((0, _gitFiles2.default)(_react2.default, store));
-		var files = sparkling((0, _files2.default)(_react2.default, store));
-		var gitBranches = sparkling((0, _gitBranches2.default)(_react2.default, store));
-		var lines = sparkling((0, _lines2.default)(_react2.default, store));
+		var gitFiles = sparkling(_gitFiles2.default);
+		var files = sparkling(_files2.default);
+		var gitBranches = sparkling(_gitBranches2.default);
+		var lines = sparkling(_lines2.default);
 
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
@@ -27648,8 +27652,8 @@ var Sparkling = function (_React$PureComponent) {
 					_react2.default.createElement(
 						'div',
 						{ className: 'sparkling-results' },
-						data.map(function (value, index) {
-							return renderer({ value: value, index: index, selectedIndex: selectedIndex });
+						data.map(function (item, index) {
+							return renderer({ item: item, index: index, selectedIndex: selectedIndex });
 						})
 					),
 					preview && selectedValue && _react2.default.createElement(
@@ -27823,7 +27827,8 @@ var options = reducerCreator({
 })({});
 
 var data = reducerCreator({
-	SET_DATA: returnPayload('data')
+	SET_DATA: returnPayload('data'),
+	SHOW: []
 })([]);
 
 var pattern = reducerCreator({
@@ -27906,19 +27911,21 @@ var filesFactory = function filesFactory(React, store) {
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').filter(function (s) {
 				return s.length > 1;
+			}).map(function (value) {
+				return { value: value };
 			}));
 		});
 	};
 
 	var accept = function accept(file) {
-		atom.workspace.open(file);
+		atom.workspace.open(file.value);
 		store.dispatch({
 			type: 'HIDE'
 		});
 	};
 
 	var preview = function preview(file) {
-		return React.createElement(_FilePreview2.default, { file: file });
+		return React.createElement(_FilePreview2.default, { file: file.value });
 	};
 
 	return {
@@ -27947,27 +27954,28 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var gitFilesFactory = function gitFilesFactory(React, store) {
 	var loadData = function loadData(onData) {
+		var repo = atom.project.getRepositories()[0];
+
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = (0, _child_process.spawn)('git', ['status'], { cwd: cwd });
+		var cmdProcess = (0, _child_process.spawn)('git', ['status', '-s'], { cwd: cwd });
 		cmdProcess.stdout.on('data', function (data) {
-			onData(data.toString('utf-8').split('\n').filter(function (s) {
-				return (/modified/.test(s)
-				);
-			}).filter(function (s) {
-				return s.length > 1;
+			onData(data.toString('utf-8').split('\n').map(function (value) {
+				return { value: value };
 			}));
 		});
 	};
 
 	var accept = function accept(file) {
-		atom.workspace.open(file);
+		var filePath = file.value.slice(2).trim();
+		atom.workspace.open(filePath);
 		store.dispatch({
 			type: 'HIDE'
 		});
 	};
 
 	var preview = function preview(file) {
-		return React.createElement(_FilePreview2.default, { file: file });
+		var filePath = file.value.slice(2).trim();
+		return React.createElement(_FilePreview2.default, { file: filePath });
 	};
 
 	return { loadData: loadData, accept: accept, preview: preview };
@@ -27991,13 +27999,15 @@ var gitBranchesFactory = function gitBranchesFactory(React, store) {
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').filter(function (s) {
 				return s.length > 1;
+			}).map(function (value) {
+				return { value: value };
 			}));
 		});
 	};
 
-	var accept = function accept(value) {
+	var accept = function accept(branch) {
 		var cwd = atom.project.getPaths()[0];
-		value = value.trim(0);
+		var value = branch.value.trim(0);
 
 		if (/^\*/.test(value)) {
 			console.log('Already on ' + value.substring(2));
@@ -28028,12 +28038,26 @@ var linesFactory = function linesFactory(React, store) {
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
 		var buffer = editor.getBuffer();
-		var lines = buffer.getLines();
+		var lines = buffer.getLines().map(function (value, lineNumber) {
+			return {
+				value: value,
+				lineNumber: lineNumber
+			};
+		}).filter(function (s) {
+			return (/\S/.test(s)
+			);
+		});
 		onData(lines);
 	};
 
 	var accept = function accept(line) {
-		console.log('line: ', line);
+		store.dispatch({ type: 'HIDE' });
+		var editor = atom.workspace.getActiveTextEditor();
+		var view = atom.views.getView(editor);
+		view.focus();
+		editor.setCursorBufferPosition([line.lineNumber, 0]);
+		var cursor = editor.cursors[0];
+		cursor.moveToFirstCharacterOfLine();
 	};
 
 	return { loadData: loadData, accept: accept };
@@ -28043,28 +28067,34 @@ module.exports = linesFactory;
 
 /***/ }),
 /* 249 */,
-/* 250 */
+/* 250 */,
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var defaultRendererFactory = function defaultRendererFactory(React, store) {
-	return function (_ref) {
-		var value = _ref.value,
-		    index = _ref.index,
-		    selectedIndex = _ref.selectedIndex;
+var _react = __webpack_require__(19);
 
-		var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
-		return React.createElement(
-			'div',
-			{ className: className },
-			value
-		);
-	};
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Result = function Result(_ref) {
+	var item = _ref.item,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex;
+	var value = item.value;
+
+	var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
+	return _react2.default.createElement(
+		'div',
+		{ className: className },
+		value
+	);
 };
 
-module.exports = defaultRendererFactory;
+module.exports = Result;
 
 /***/ })
 /******/ ]);

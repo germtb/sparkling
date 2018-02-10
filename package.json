@@ -10,15 +10,12 @@
 	],
 	"description": "Sparkling search like an olive in a gin and tonic",
 	"scripts": {
-		"test": "mocha --reporter progress --compilers js:babel-core/register --recursive 'lib/**/*.test.js'",
+		"test":
+			"mocha --reporter progress --compilers js:babel-core/register --recursive 'lib/**/*.test.js'",
 		"build": "webpack",
 		"watch": "webpack --watch"
 	},
-	"keywords": [
-		"fuzzy",
-		"search",
-		"bubbles"
-	],
+	"keywords": ["fuzzy", "search", "bubbles"],
 	"repository": "https://github.com/germtb/sparkling",
 	"license": "MIT",
 	"engines": {

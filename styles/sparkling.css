@@ -15,12 +15,14 @@
 }
 
 .sparkling-row {
-	padding: 0.75em 1em;
-	line-height: 2em;
+	padding: 0.5em 0.5em;
+	line-height: 1.5em;
+	font-size: 14px;
+	font-family: Fira Code;
+	line-height: 1.5;
 }
 
 .sparkling-row.selected {
-	font-weight: bold;
 	background-color: #3f4252;
 }
 
