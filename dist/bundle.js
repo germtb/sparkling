@@ -13356,7 +13356,7 @@ var accept = function accept() {
 	accept(value);
 };
 
-var sparkling = function sparkling(optionsFactory) {
+sparklingSearch: (function (optionsFactory) {
 	var _optionsFactory = optionsFactory(_react2.default, store),
 	    loadData = _optionsFactory.loadData,
 	    accept = _optionsFactory.accept,
@@ -13384,7 +13384,11 @@ var sparkling = function sparkling(optionsFactory) {
 			});
 		}
 	};
-};
+});
+
+window.sparklingFactory = new Promise(function (resolve) {
+	resolve(sparklingSearch);
+});
 
 module.exports = {
 	subscriptions: null,
@@ -13400,10 +13404,10 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		var gitFiles = sparkling(_gitFiles2.default);
-		var files = sparkling(_files2.default);
-		var gitBranches = sparkling(_gitBranches2.default);
-		var lines = sparkling(_lines2.default);
+		var gitFiles = sparklingSearch(_gitFiles2.default);
+		var files = sparklingSearch(_files2.default);
+		var gitBranches = sparklingSearch(_gitBranches2.default);
+		var lines = sparklingSearch(_lines2.default);
 
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {

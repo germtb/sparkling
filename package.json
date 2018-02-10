@@ -21,6 +21,14 @@
 	"engines": {
 		"atom": ">=1.0.0 <2.0.0"
 	},
+	"providedServices": {
+		"sparkling-search": {
+			"description": "Fuzzy searches anything",
+			"versions": {
+				"0.0.0": "sparklingSearch"
+			}
+		}
+	},
 	"dependencies": {
 		"classnames": "^2.2.5",
 		"fuzzaldrin-plus": "^0.6.0",
