@@ -13145,10 +13145,10 @@ var getSelectedValue = exports.getSelectedValue = function getSelectedValue(stat
 
 var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(getData, getPattern, function (data, pattern) {
 	if (pattern.length < 2) {
-		return data.slice(0, 10);
+		return data;
 	}
 
-	return _fuzzaldrinPlus2.default.filter(data, pattern, { key: 'value' }).slice(0, 10);
+	return _fuzzaldrinPlus2.default.filter(data, pattern, { key: 'value' });
 });
 
 /***/ }),
@@ -27612,6 +27612,10 @@ var _react = __webpack_require__(19);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _classnames = __webpack_require__(264);
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27679,7 +27683,17 @@ var Sparkling = function (_React$PureComponent) {
 				),
 				_react2.default.createElement(
 					'div',
-					{ className: 'sparkling-input' },
+					{
+						className: (0, _classnames2.default)('sparkling-input', {
+							'sparkling-input--has-results': this.props.data.length > 0,
+							'sparkling-input--no-results': this.props.data.length === 0
+						})
+					},
+					_react2.default.createElement(
+						'div',
+						null,
+						this.props.data.length ? selectedIndex + 1 + ' / ' + this.props.data.length : 'No results'
+					),
 					_react2.default.createElement('atom-text-editor', {
 						id: 'sparkling-editor',
 						className: 'editor mini',
@@ -28199,6 +28213,61 @@ module.exports = require("stream");
 /***/ (function(module, exports) {
 
 module.exports = require("readline");
+
+/***/ }),
+/* 264 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				classes.push(classNames.apply(null, arg));
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {
+		window.classNames = classNames;
+	}
+}());
+
 
 /***/ })
 /******/ ]);

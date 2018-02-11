@@ -28,4 +28,10 @@
 
 .sparkling-input {
 	padding: 0.75em 0.75em;
+	position: relative;
+}
+
+.sparkling-input--no-results atom-text-editor[mini].is-focused {
+	border-color: #ff6347;
+	box-shadow: 0 0 0 1px #ff6347;
 }
