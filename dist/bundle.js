@@ -13295,6 +13295,7 @@ store.subscribe(function () {
 	console.log(JSON.stringify(store.getState(), null, 2));
 });
 
+var fromAction = (0, _utils.fromActionFactory)(store);
 var fromSelector = (0, _utils.fromSelectorFactory)(store);
 
 fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose((0, _sampleCombine2.default)(fromSelector(_selectors.getOptions))).filter(function (_ref) {
@@ -13317,6 +13318,14 @@ fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose
 				}
 			});
 		});
+	}
+});
+
+fromAction('HIDE').subscribe({
+	next: function next() {
+		var editor = atom.workspace.getActiveTextEditor();
+		var view = atom.views.getView(editor);
+		view.focus();
 	}
 });
 
@@ -13356,7 +13365,7 @@ var accept = function accept() {
 	accept(value);
 };
 
-sparklingSearch: (function (optionsFactory) {
+var sparklingSearch = function sparklingSearch(optionsFactory) {
 	var _optionsFactory = optionsFactory(_react2.default, store),
 	    loadData = _optionsFactory.loadData,
 	    accept = _optionsFactory.accept,
@@ -13384,11 +13393,7 @@ sparklingSearch: (function (optionsFactory) {
 			});
 		}
 	};
-});
-
-window.sparklingFactory = new Promise(function (resolve) {
-	resolve(sparklingSearch);
-});
+};
 
 module.exports = {
 	subscriptions: null,
@@ -27701,6 +27706,8 @@ var _react = __webpack_require__(19);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _atom = __webpack_require__(231);
+
 var _path = __webpack_require__(99);
 
 var _path2 = _interopRequireDefault(_path);
@@ -27708,6 +27715,14 @@ var _path2 = _interopRequireDefault(_path);
 var _fs = __webpack_require__(100);
 
 var _fs2 = _interopRequireDefault(_fs);
+
+var _readline = __webpack_require__(263);
+
+var _readline2 = _interopRequireDefault(_readline);
+
+var _stream = __webpack_require__(252);
+
+var _stream2 = _interopRequireDefault(_stream);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27733,22 +27748,14 @@ module.exports = function (_PureComponent) {
 	_createClass(FilePreview, [{
 		key: 'readFile',
 		value: function readFile() {
-			var _this2 = this;
-
 			var cwd = atom.project.getPaths()[0];
 			var file = this.props.file;
 
 			var fileName = _path2.default.join(cwd, file);
 
-			var readStream = _fs2.default.createReadStream(fileName, {
-				start: this.state.start,
-				end: this.state.end
-			});
-
-			readStream.on('data', function (data) {
-				var model = _this2.editor.getModel();
-				var buffer = model.getBuffer();
-				buffer.setText(data.toString('utf-8'));
+			var model = this.editor.getModel();
+			_atom.TextBuffer.load(fileName).then(function (buffer) {
+				model.buffer = buffer;
 			});
 		}
 	}, {
@@ -27768,13 +27775,13 @@ module.exports = function (_PureComponent) {
 	}, {
 		key: 'render',
 		value: function render() {
-			var _this3 = this;
+			var _this2 = this;
 
 			return _react2.default.createElement('atom-text-editor', {
 				'class': 'editor',
 				'data-encoding': 'utf-8',
 				ref: function ref(editor) {
-					return _this3.editor = editor;
+					return _this2.editor = editor;
 				}
 			});
 		}
@@ -27890,7 +27897,73 @@ var fromSelectorFactory = function fromSelectorFactory(store) {
 	};
 };
 
-module.exports = { fromSelectorFactory: fromSelectorFactory };
+var fromActionFactory = function fromActionFactory(store) {
+	var oldDispatch = store.dispatch;
+
+	var subscriptions = new Set();
+
+	var subscribe = function subscribe(event) {
+		subscriptions.add(event);
+
+		return function () {
+			subscriptions.delete(event);
+		};
+	};
+
+	var newDispatch = function newDispatch(action) {
+		console.log('action: ', action);
+		oldDispatch(action);
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = subscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var subscription = _step.value;
+				var actionType = subscription.actionType,
+				    listener = subscription.listener;
+
+
+				if (actionType === action.type) {
+					listener.next(actionType);
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+	};
+
+	store.dispatch = newDispatch;
+
+	return function (actionType) {
+		var unsubscribe = void 0;
+
+		var producer = {
+			start: function start(listener) {
+				unsubscribe = subscribe({ actionType: actionType, listener: listener });
+			},
+			stop: function stop() {
+				unsubscribe && unsubscribe();
+			}
+		};
+
+		return _xstream2.default.create(producer);
+	};
+};
+
+module.exports = { fromSelectorFactory: fromSelectorFactory, fromActionFactory: fromActionFactory };
 
 /***/ }),
 /* 244 */,
@@ -28057,8 +28130,6 @@ var linesFactory = function linesFactory(React, store) {
 	var accept = function accept(line) {
 		store.dispatch({ type: 'HIDE' });
 		var editor = atom.workspace.getActiveTextEditor();
-		var view = atom.views.getView(editor);
-		view.focus();
 		editor.setCursorBufferPosition([line.lineNumber, 0]);
 		var cursor = editor.cursors[0];
 		cursor.moveToFirstCharacterOfLine();
@@ -28099,6 +28170,28 @@ var Result = function Result(_ref) {
 };
 
 module.exports = Result;
+
+/***/ }),
+/* 252 */
+/***/ (function(module, exports) {
+
+module.exports = require("stream");
+
+/***/ }),
+/* 253 */,
+/* 254 */,
+/* 255 */,
+/* 256 */,
+/* 257 */,
+/* 258 */,
+/* 259 */,
+/* 260 */,
+/* 261 */,
+/* 262 */,
+/* 263 */
+/***/ (function(module, exports) {
+
+module.exports = require("readline");
 
 /***/ })
 /******/ ]);
