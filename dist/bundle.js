@@ -13318,8 +13318,7 @@ fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose
 			store.dispatch({
 				type: 'APPEND_DATA',
 				payload: {
-					data: data,
-					cacheBuster: new Date()
+					data: data
 				}
 			});
 		});
@@ -13338,7 +13337,14 @@ var next = function next() {
 	var state = store.getState();
 	var index = (0, _selectors.getIndex)(state);
 	var sparklingData = (0, _selectors.getSparklingData)(state);
-	var value = Math.min(index + 1, sparklingData.length - 1);
+	var value = Math.min(index + 1, sparklingData.length - 1, 9);
+
+	// const selected = document.querySelector('.sparkling-row.selected')
+	// selected.scrollIntoView({
+	// 	behaviour: 'smooth',
+	// 	block: 'start',
+	// 	inline: 'start'
+	// })
 
 	store.dispatch({ type: 'SET_INDEX', payload: { value: value } });
 };
@@ -13346,8 +13352,13 @@ var next = function next() {
 var previous = function previous() {
 	var state = store.getState();
 	var index = (0, _selectors.getIndex)(state);
-	var sparklingData = (0, _selectors.getSparklingData)(state);
 	var value = Math.max(index - 1, 0);
+
+	// const selected = document.querySelector('.sparkling-row.selected')
+	// selected.scrollIntoView({
+	// 	behaviour: 'smooth',
+	// 	block: 'center'
+	// })
 
 	store.dispatch({ type: 'SET_INDEX', payload: { value: value } });
 };
@@ -27679,8 +27690,8 @@ var Sparkling = function (_React$PureComponent) {
 					{ className: 'sparkling-results-block' },
 					_react2.default.createElement(
 						'div',
-						{ className: 'sparkling-results' },
-						data.map(function (item, index) {
+						{ className: 'sparkling-results', id: 'sparkling-results' },
+						data.slice(0, 10).map(function (item, index) {
 							return renderer({ item: item, index: index, selectedIndex: selectedIndex, accept: accept });
 						})
 					),
@@ -28071,7 +28082,9 @@ var gitFilesFactory = function gitFilesFactory(React, store) {
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = (0, _child_process.spawn)('git', ['status', '-s'], { cwd: cwd });
 		cmdProcess.stdout.on('data', function (data) {
-			onData(data.toString('utf-8').split('\n').map(function (value) {
+			onData(data.toString('utf-8').split('\n').filter(function (value) {
+				return value.trim() !== '';
+			}).map(function (value) {
 				return { value: value };
 			}));
 		});
