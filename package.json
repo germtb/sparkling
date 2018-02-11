@@ -1,12 +1,12 @@
 {
 	"name": "sparkling",
 	"main": "./dist/bundle",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"activationEvents": [
-		"sparkling:accept",
-		"sparkling:next",
-		"sparkling:previous",
-		"sparkling:files"
+		"sparkling:gitBranches",
+		"sparkling:files",
+		"sparkling:gitFiles",
+		"sparkling:lines"
 	],
 	"description": "Sparkling search like an olive in a gin and tonic",
 	"scripts": {
@@ -22,10 +22,10 @@
 		"atom": ">=1.0.0 <2.0.0"
 	},
 	"providedServices": {
-		"sparkling-search": {
-			"description": "Fuzzy searches anything",
+		"sparkling": {
+			"description": "",
 			"versions": {
-				"0.0.0": "sparklingSearch"
+				"0.1.0": "provideSparkling"
 			}
 		}
 	},
