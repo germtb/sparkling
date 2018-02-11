@@ -13114,7 +13114,7 @@ module.exports = require("fs");
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getSparklingData = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getOptions = exports.isVisible = undefined;
+exports.getSparklingData = exports.getRawDataLength = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getOptions = exports.isVisible = undefined;
 
 var _reselect = __webpack_require__(234);
 
@@ -13141,6 +13141,10 @@ var getPattern = exports.getPattern = function getPattern(state) {
 };
 var getSelectedValue = exports.getSelectedValue = function getSelectedValue(state) {
 	return getSparklingData(state)[getIndex(state)];
+};
+
+var getRawDataLength = exports.getRawDataLength = function getRawDataLength(state) {
+	return state.data.length;
 };
 
 var getSparklingData = exports.getSparklingData = (0, _reselect.createSelector)(getData, getPattern, function (data, pattern) {
@@ -27065,7 +27069,8 @@ module.exports = (0, _reactRedux.connect)(function (state) {
 		data: (0, _selectors.getSparklingData)(state),
 		selectedIndex: (0, _selectors.getIndex)(state),
 		options: (0, _selectors.getOptions)(state),
-		selectedValue: (0, _selectors.getSelectedValue)(state)
+		selectedValue: (0, _selectors.getSelectedValue)(state),
+		rawDataLength: (0, _selectors.getRawDataLength)(state)
 	};
 }, function (dispatch) {
 	return {
@@ -27657,12 +27662,14 @@ var Sparkling = function (_React$PureComponent) {
 			    options = _props.options,
 			    selectedValue = _props.selectedValue,
 			    data = _props.data,
-			    selectedIndex = _props.selectedIndex;
+			    selectedIndex = _props.selectedIndex,
+			    rawDataLength = _props.rawDataLength;
 			var _props$options = this.props.options,
 			    preview = _props$options.preview,
 			    renderer = _props$options.renderer,
 			    accept = _props$options.accept;
 
+			var filteredDataLength = data.length;
 
 			return _react2.default.createElement(
 				'div',
@@ -27687,14 +27694,14 @@ var Sparkling = function (_React$PureComponent) {
 					'div',
 					{
 						className: (0, _classnames2.default)('sparkling-input', {
-							'sparkling-input--has-results': this.props.data.length > 0,
-							'sparkling-input--no-results': this.props.data.length === 0
+							'sparkling-input--has-results': filteredDataLength > 0,
+							'sparkling-input--no-results': filteredDataLength === 0
 						})
 					},
 					_react2.default.createElement(
 						'div',
-						null,
-						this.props.data.length ? selectedIndex + 1 + ' / ' + this.props.data.length : 'No results'
+						{ className: 'sparkling-search-meta-data' },
+						filteredDataLength + ' / ' + rawDataLength
 					),
 					_react2.default.createElement('atom-text-editor', {
 						id: 'sparkling-editor',

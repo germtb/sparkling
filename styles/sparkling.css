@@ -1,9 +1,3 @@
-button {
-	padding: 0;
-	margin: 0;
-	border: none;
-}
-
 .sparkling-results-block {
 	display: flex;
 	max-height: 400px;
@@ -42,4 +36,8 @@ button {
 .sparkling-input--no-results atom-text-editor[mini].is-focused {
 	border-color: #ff6347;
 	box-shadow: 0 0 0 1px #ff6347;
+}
+
+.sparkling-search-meta-data {
+	padding-bottom: 0.75em;
 }
