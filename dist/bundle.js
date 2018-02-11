@@ -27659,7 +27659,8 @@ var Sparkling = function (_React$PureComponent) {
 			    selectedIndex = _props.selectedIndex;
 			var _props$options = this.props.options,
 			    preview = _props$options.preview,
-			    renderer = _props$options.renderer;
+			    renderer = _props$options.renderer,
+			    accept = _props$options.accept;
 
 
 			return _react2.default.createElement(
@@ -27672,7 +27673,7 @@ var Sparkling = function (_React$PureComponent) {
 						'div',
 						{ className: 'sparkling-results' },
 						data.map(function (item, index) {
-							return renderer({ item: item, index: index, selectedIndex: selectedIndex });
+							return renderer({ item: item, index: index, selectedIndex: selectedIndex, accept: accept });
 						})
 					),
 					preview && selectedValue && _react2.default.createElement(
@@ -28136,15 +28137,14 @@ var linesFactory = function linesFactory(React, store) {
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
 		var buffer = editor.getBuffer();
-		var lines = buffer.getLines().map(function (value, lineNumber) {
+		var lines = buffer.getLines().filter(function (line) {
+			return line.trim().length > 1;
+		}).map(function (value, lineNumber) {
 			return {
 				value: value,
 				lineNumber: lineNumber
 			};
-		}).filter(function (s) {
-			return (/\S/.test(s)
-			);
-		});
+		}).reverse();
 		onData(lines);
 	};
 
@@ -28179,13 +28179,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Result = function Result(_ref) {
 	var item = _ref.item,
 	    index = _ref.index,
-	    selectedIndex = _ref.selectedIndex;
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
 	var value = item.value;
 
 	var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
 	return _react2.default.createElement(
 		'div',
-		{ className: className },
+		{ className: className, 'aria-role': 'button', onClick: function onClick() {
+				return accept(item);
+			} },
 		value
 	);
 };

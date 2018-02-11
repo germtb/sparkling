@@ -1,12 +1,19 @@
+button {
+	padding: 0;
+	margin: 0;
+	border: none;
+}
+
 .sparkling-results-block {
 	display: flex;
-	max-height: 50%;
+	max-height: 400px;
 }
 
 .sparkling-results {
 	flex: 1;
 	display: flex;
 	flex-direction: column-reverse;
+	overflow: auto;
 }
 
 .sparkling-preview {
@@ -19,7 +26,8 @@
 	line-height: 1.5em;
 	font-size: 14px;
 	font-family: Fira Code;
-	line-height: 1.5;
+	line-height: 1.5em;
+	cursor: pointer;
 }
 
 .sparkling-row.selected {
