@@ -13378,9 +13378,15 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 
 	return function () {
 		if ((0, _selectors.isVisible)(store.getState())) {
-			store.dispatch({
-				type: 'HIDE'
-			});
+			var sparklingEditor = document.getElementById('sparkling-editor');
+
+			if (sparklingEditor.hasFocus()) {
+				store.dispatch({
+					type: 'HIDE'
+				});
+			} else {
+				sparklingEditor.focus();
+			}
 		} else {
 			store.dispatch({
 				type: 'SHOW',
@@ -27675,6 +27681,7 @@ var Sparkling = function (_React$PureComponent) {
 					'div',
 					{ className: 'sparkling-input' },
 					_react2.default.createElement('atom-text-editor', {
+						id: 'sparkling-editor',
 						className: 'editor mini',
 						mini: true,
 						'data-encoding': 'utf-8',
