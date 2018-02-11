@@ -13312,9 +13312,10 @@ fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose
 
 		loadData(function (data) {
 			store.dispatch({
-				type: 'SET_DATA',
+				type: 'APPEND_DATA',
 				payload: {
-					data: data
+					data: data,
+					cacheBuster: new Date()
 				}
 			});
 		});
@@ -13324,8 +13325,8 @@ fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose
 fromAction('HIDE').subscribe({
 	next: function next() {
 		var editor = atom.workspace.getActiveTextEditor();
-		var view = atom.views.getView(editor);
-		view.focus();
+		var view = editor && atom.views.getView(editor);
+		view && view.focus();
 	}
 });
 
@@ -27825,6 +27826,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _redux = __webpack_require__(52);
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var reducerCreator = function reducerCreator(actions) {
 	return function (initialState) {
 		return function () {
@@ -27860,7 +27863,10 @@ var options = reducerCreator({
 })({});
 
 var data = reducerCreator({
-	SET_DATA: returnPayload('data'),
+	APPEND_DATA: function APPEND_DATA(state, _ref2) {
+		var data = _ref2.data;
+		return [].concat(_toConsumableArray(state), _toConsumableArray(data));
+	},
 	SHOW: []
 })([]);
 
@@ -28137,13 +28143,14 @@ var linesFactory = function linesFactory(React, store) {
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
 		var buffer = editor.getBuffer();
-		var lines = buffer.getLines().filter(function (line) {
-			return line.trim().length > 1;
-		}).map(function (value, lineNumber) {
+		var lines = buffer.getLines().map(function (value, lineNumber) {
 			return {
 				value: value,
 				lineNumber: lineNumber
 			};
+		}).filter(function (_ref) {
+			var value = _ref.value;
+			return value.trim().length > 1;
 		}).reverse();
 		onData(lines);
 	};
