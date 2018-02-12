@@ -13292,6 +13292,15 @@ module.exports = function (_PureComponent) {
 
 			var fileName = _path2.default.join(cwd, file);
 
+			atom.workspace.createItemForURI(fileName).then(function (textEditor) {
+				console.log('textEditor: ', textEditor);
+				var textEditorElement = new TextEditorElement();
+				console.log('textEditorElement: ', textEditorElement);
+				textEditorElement.initialize(textEditor);
+				console.log('this.container: ', _this2.container);
+				_this2.container.appendChild(textEditorElement);
+			});
+
 			var readStream = _fs2.default.createReadStream(fileName, {
 				start: this.state.start,
 				end: this.state.end
@@ -13322,13 +13331,14 @@ module.exports = function (_PureComponent) {
 		value: function render() {
 			var _this3 = this;
 
-			return _react2.default.createElement('atom-text-editor', {
-				'class': 'editor',
-				'data-encoding': 'utf-8',
-				ref: function ref(editor) {
-					return _this3.editor = editor;
-				}
-			});
+			// <atom-text-editor
+			// 	class="editor"
+			// 	data-encoding="utf-8"
+			// 	ref={editor => (this.editor = editor)}
+			// />
+			return _react2.default.createElement('div', { ref: function ref(container) {
+					return _this3.container = container;
+				} });
 		}
 	}]);
 
@@ -13395,6 +13405,10 @@ var _gitFiles2 = _interopRequireDefault(_gitFiles);
 var _lines = __webpack_require__(246);
 
 var _lines2 = _interopRequireDefault(_lines);
+
+var _ls = __webpack_require__(251);
+
+var _ls2 = _interopRequireDefault(_ls);
 
 var _utils = __webpack_require__(247);
 
@@ -13538,6 +13552,7 @@ module.exports = {
 		var files = sparklingSearch(_files2.default);
 		var gitBranches = sparklingSearch(_gitBranches2.default);
 		var lines = sparklingSearch(_lines2.default);
+		var ls = sparklingSearch(_ls2.default);
 
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
@@ -13547,6 +13562,7 @@ module.exports = {
 			'sparkling:gitBranches': gitBranches,
 			'sparkling:files': files,
 			'sparkling:gitFiles': gitFiles,
+			'sparkling:ls': ls,
 			'sparkling:lines': lines,
 			'sparkling:hide': hide
 		}));
@@ -28276,6 +28292,54 @@ exports.default = (0, _redux.combineReducers)({
 	index: index,
 	pattern: pattern
 });
+
+/***/ }),
+/* 250 */,
+/* 251 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _child_process = __webpack_require__(32);
+
+var _fs = __webpack_require__(101);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var lsFactory = function lsFactory(React, store) {
+	var loadData = function loadData(onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = (0, _child_process.spawn)('ls', [], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length > 1;
+			}).map(function (value) {
+				return { value: value };
+			}));
+		});
+	};
+
+	var accept = function accept(path) {
+		var cwd = atom.project.getPaths()[0];
+		var fileName = path.resolve(cwd, path);
+		console.log('fileName: ', fileName);
+		console.log('path: ', path);
+		// atom.workspace.open(path.value)
+		// store.dispatch({
+		// 	type: 'HIDE'
+		// })
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept
+	};
+};
+
+module.exports = lsFactory;
 
 /***/ })
 /******/ ]);
