@@ -12930,14 +12930,15 @@ var _storeFactory = (0, _store2.default)(_reducers2.default),
     store = _storeFactory.store;
 
 var fuzzysortPromise = null;
+var cancelLoadData = null;
 
-_xstream2.default.combine(fromSelector(_selectors.getData).compose((0, _dropRepeats2.default)()), fromSelector(_selectors.getPattern).compose((0, _dropRepeats2.default)())).subscribe({
+_xstream2.default.combine(fromSelector(_selectors.getData).compose((0, _dropRepeats2.default)()), fromSelector(_selectors.getPattern).compose((0, _dropRepeats2.default)()).compose((0, _throttle2.default)(100))).subscribe({
 	next: function next(_ref) {
 		var _ref2 = _slicedToArray(_ref, 2),
 		    data = _ref2[0],
 		    pattern = _ref2[1];
 
-		if (pattern.length < 3) {
+		if (!pattern.length) {
 			store.dispatch({
 				type: 'SET_FILTERED_DATA',
 				payload: { data: data }
@@ -12962,14 +12963,6 @@ _xstream2.default.combine(fromSelector(_selectors.getData).compose((0, _dropRepe
 					payload: { data: filteredData }
 				});
 			});
-
-			// new Promise(resolve => {
-			// 	const filteredData = fz.filter(data, pattern, { key: 'value' })
-			// 	store.dispatch({
-			// 		type: 'SET_FILTERED_DATA',
-			// 		payload: { data: filteredData }
-			// 	})
-			// })
 		}
 	}
 });
@@ -12986,7 +12979,11 @@ fromSelector(_selectors.isVisible).compose((0, _dropRepeats2.default)()).compose
 		    visible = _ref6[0],
 		    loadData = _ref6[1].loadData;
 
-		loadData(function (data) {
+		if (cancelLoadData && typeof cancelLoadData === 'function') {
+			cancelLoadData();
+		}
+
+		cancelLoadData = loadData(function (data) {
 			store.dispatch({
 				type: 'APPEND_DATA',
 				payload: {
@@ -13002,6 +12999,15 @@ fromAction('HIDE').subscribe({
 		var editor = atom.workspace.getActiveTextEditor();
 		var view = editor && atom.views.getView(editor);
 		view && view.focus();
+
+		if (fuzzysortPromise) {
+			fuzzysortPromise.cancel();
+		}
+
+		if (cancelLoadData && typeof cancelLoadData === 'function') {
+			cancelLoadData();
+			cancelLoadData = null;
+		}
 	}
 });
 
@@ -27343,6 +27349,11 @@ var filesFactory = function filesFactory(React, store) {
 				return { value: value };
 			}));
 		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
 	};
 
 	var accept = function accept(file) {
@@ -27492,6 +27503,11 @@ var allLinesFactory = function allLinesFactory(React, store) {
 				return acc;
 			}, []));
 		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
 	};
 
 	var accept = function accept(line) {
