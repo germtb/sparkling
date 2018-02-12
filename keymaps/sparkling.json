@@ -1,7 +1,9 @@
 {
 	"body atom-workspace": {
 		"cmd-p": "sparkling:files",
-		"cmd-m": "sparkling:gitFiles"
+		"cmd-m": "sparkling:gitFiles",
+		"cmd-b": "sparkling-extras:gitBranches",
+		"cmd-g": "sparkling:ls"
 	},
 	"body atom-text-editor": {
 		"cmd-l": "sparkling:lines"

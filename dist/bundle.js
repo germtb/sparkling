@@ -13285,22 +13285,22 @@ module.exports = function (_PureComponent) {
 	_createClass(FilePreview, [{
 		key: 'readFile',
 		value: function readFile() {
+			var _this2 = this;
+
 			var cwd = atom.project.getPaths()[0];
 			var file = this.props.file;
 
 			var fileName = _path2.default.join(cwd, file);
 
-			// atom.views.addViewProvider(TextEditor, textEditor => {
-			// 	textEditorElement = new TextEditorElement()
-			// 	textEditorElement.initialize(textEditor)
-			// 	textEditorElement
-			// })
-			//
+			var readStream = _fs2.default.createReadStream(fileName, {
+				start: this.state.start,
+				end: this.state.end
+			});
 
-			var model = this.editor.getModel();
-
-			_atom.TextBuffer.load(fileName).then(function (buffer) {
-				model.buffer = buffer;
+			readStream.on('data', function (data) {
+				var model = _this2.editor.getModel();
+				var buffer = model.getBuffer();
+				buffer.setText(data.toString('utf-8'));
 			});
 		}
 	}, {
@@ -13320,13 +13320,13 @@ module.exports = function (_PureComponent) {
 	}, {
 		key: 'render',
 		value: function render() {
-			var _this2 = this;
+			var _this3 = this;
 
 			return _react2.default.createElement('atom-text-editor', {
 				'class': 'editor',
 				'data-encoding': 'utf-8',
 				ref: function ref(editor) {
-					return _this2.editor = editor;
+					return _this3.editor = editor;
 				}
 			});
 		}
