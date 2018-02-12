@@ -13126,7 +13126,7 @@ module.exports = require("atom");
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.getSparklingData = exports.getRawDataLength = exports.getSelectedValue = exports.getPattern = exports.getIndex = exports.getData = exports.getOptions = exports.isVisible = undefined;
+exports.getSparklingData = exports.getRawDataLength = exports.getSelectedValue = exports.getPattern = exports.getOffset = exports.getIndex = exports.getData = exports.getOptions = exports.isVisible = undefined;
 
 var _reselect = __webpack_require__(235);
 
@@ -13148,11 +13148,14 @@ var getData = exports.getData = function getData(state) {
 var getIndex = exports.getIndex = function getIndex(state) {
 	return state.index;
 };
+var getOffset = exports.getOffset = function getOffset(state) {
+	return state.offset;
+};
 var getPattern = exports.getPattern = function getPattern(state) {
 	return state.pattern;
 };
 var getSelectedValue = exports.getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getIndex(state)];
+	return getSparklingData(state)[getOffset(state) + getIndex(state)];
 };
 
 var getRawDataLength = exports.getRawDataLength = function getRawDataLength(state) {
@@ -13416,6 +13419,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var store = (0, _redux.createStore)(_reducers2.default);
 
+// store.subscribe(() => {
+// 	console.log(JSON.stringify(store.getState(), null, 2))
+// })
+
 var fromAction = (0, _utils.fromActionFactory)(store);
 var fromSelector = (0, _utils.fromSelectorFactory)(store);
 
@@ -13454,17 +13461,29 @@ var next = function next() {
 	var state = store.getState();
 	var index = (0, _selectors.getIndex)(state);
 	var sparklingData = (0, _selectors.getSparklingData)(state);
-	var value = Math.min(index + 1, sparklingData.length - 1, 9);
 
-	store.dispatch({ type: 'SET_INDEX', payload: { value: value } });
+	if (index === 9) {
+		var offset = (0, _selectors.getOffset)(state);
+		var value = Math.min(offset + 1, sparklingData.length - 10);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value = Math.min(index + 1, sparklingData.length - 1, 9);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
+	}
 };
 
 var previous = function previous() {
 	var state = store.getState();
 	var index = (0, _selectors.getIndex)(state);
-	var value = Math.max(index - 1, 0);
 
-	store.dispatch({ type: 'SET_INDEX', payload: { value: value } });
+	if (index === 0) {
+		var offset = (0, _selectors.getOffset)(state);
+		var value = Math.max(offset - 1, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value2 = Math.max(index - 1, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+	}
 };
 
 var hide = function hide() {
@@ -27178,7 +27197,8 @@ module.exports = (0, _reactRedux.connect)(function (state) {
 		selectedIndex: (0, _selectors.getIndex)(state),
 		options: (0, _selectors.getOptions)(state),
 		selectedValue: (0, _selectors.getSelectedValue)(state),
-		rawDataLength: (0, _selectors.getRawDataLength)(state)
+		rawDataLength: (0, _selectors.getRawDataLength)(state),
+		offset: (0, _selectors.getOffset)(state)
 	};
 }, function (dispatch) {
 	return {
@@ -27771,7 +27791,8 @@ var Sparkling = function (_React$PureComponent) {
 			    selectedValue = _props.selectedValue,
 			    data = _props.data,
 			    selectedIndex = _props.selectedIndex,
-			    rawDataLength = _props.rawDataLength;
+			    rawDataLength = _props.rawDataLength,
+			    offset = _props.offset;
 			var _props$options = this.props.options,
 			    preview = _props$options.preview,
 			    renderer = _props$options.renderer,
@@ -27788,7 +27809,7 @@ var Sparkling = function (_React$PureComponent) {
 					_react2.default.createElement(
 						'div',
 						{ className: 'sparkling-results', id: 'sparkling-results' },
-						data.slice(0, 10).map(function (item, index) {
+						data.slice(offset, offset + 10).map(function (item, index) {
 							return renderer({ item: item, index: index, selectedIndex: selectedIndex, accept: accept });
 						})
 					),
