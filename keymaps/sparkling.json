@@ -5,8 +5,9 @@
 		"cmd-b": "sparkling-extras:gitBranches",
 		"cmd-g": "sparkling:ls"
 	},
-	"body atom-text-editor": {
-		"cmd-l": "sparkling:lines"
+	"body atom-workspace atom-text-editor:not([mini])": {
+		"cmd-l": "sparkling:lines",
+		"cmd-shift-l": "sparkling:allLines"
 	},
 	"body atom-workspace .sparkling": {
 		"alt-k": "sparkling:next",

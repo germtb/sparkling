@@ -13396,6 +13396,10 @@ var _lines = __webpack_require__(246);
 
 var _lines2 = _interopRequireDefault(_lines);
 
+var _allLines = __webpack_require__(252);
+
+var _allLines2 = _interopRequireDefault(_allLines);
+
 var _utils = __webpack_require__(247);
 
 var _Result = __webpack_require__(248);
@@ -13538,6 +13542,7 @@ module.exports = {
 		var files = sparklingSearch(_files2.default);
 		var gitBranches = sparklingSearch(_gitBranches2.default);
 		var lines = sparklingSearch(_lines2.default);
+		var allLines = sparklingSearch(_allLines2.default);
 
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
@@ -13548,6 +13553,7 @@ module.exports = {
 			'sparkling:files': files,
 			'sparkling:gitFiles': gitFiles,
 			'sparkling:lines': lines,
+			'sparkling:allLines': allLines,
 			'sparkling:hide': hide
 		}));
 	},
@@ -28266,7 +28272,15 @@ var pattern = reducerCreator({
 var index = reducerCreator({
 	SET_INDEX: returnPayload('value'),
 	SET_DATA: 0,
-	SET_PATTERN: 0
+	SET_PATTERN: 0,
+	SHOW: 0
+})(0);
+
+var offset = reducerCreator({
+	SET_OFFSET: returnPayload('value'),
+	SET_DATA: 0,
+	SET_PATTERN: 0,
+	SHOW: 0
 })(0);
 
 exports.default = (0, _redux.combineReducers)({
@@ -28274,8 +28288,54 @@ exports.default = (0, _redux.combineReducers)({
 	options: options,
 	data: data,
 	index: index,
+	offset: offset,
 	pattern: pattern
 });
+
+/***/ }),
+/* 250 */,
+/* 251 */,
+/* 252 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _child_process = __webpack_require__(32);
+
+var allLinesFactory = function allLinesFactory(React, store) {
+	var loadData = function loadData(onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = (0, _child_process.spawn)('rg', ['^.*$', '-n'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
+				var _value$split = value.split(':', 3),
+				    _value$split2 = _slicedToArray(_value$split, 3),
+				    path = _value$split2[0],
+				    lineNumber = _value$split2[1],
+				    line = _value$split2[2];
+
+				if (line && line.length > 1 && line.length < 100) {
+					acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
+				}
+				return acc;
+			}, []));
+		});
+	};
+
+	var accept = function accept(line) {
+		store.dispatch({ type: 'HIDE' });
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return { loadData: loadData, accept: accept };
+};
+
+module.exports = allLinesFactory;
 
 /***/ })
 /******/ ]);
