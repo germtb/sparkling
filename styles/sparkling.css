@@ -22,6 +22,15 @@
 	font-family: Fira Code;
 	line-height: 1.5em;
 	cursor: pointer;
+	font-weight: normal;
+}
+
+.sparkling-row .highlight {
+	font-weight: normal;
+	background-color: inherit;
+	color: #73c990;
+	border-radius: none;
+	padding: 0;
 }
 
 .sparkling-row.selected {

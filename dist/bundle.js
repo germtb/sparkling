@@ -25842,22 +25842,29 @@ var _react = __webpack_require__(29);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _fuzzaldrinPlus = __webpack_require__(683);
+
+var _fuzzaldrinPlus2 = _interopRequireDefault(_fuzzaldrinPlus);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var defaultRenderer = function defaultRenderer(_ref) {
 	var value = _ref.value,
+	    pattern = _ref.pattern,
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
 
 	var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
-	return _react2.default.createElement(
-		'div',
-		{ className: className, 'aria-role': 'button', onClick: function onClick() {
-				return accept(item);
-			} },
-		value
-	);
+	var wrappedValue = pattern && pattern.length ? _fuzzaldrinPlus2.default.wrap(value, pattern) : value;
+	return _react2.default.createElement('div', {
+		className: className,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
 };
 
 module.exports = defaultRenderer;
@@ -26092,6 +26099,7 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 					type: 'SHOW',
 					payload: options
 				});
+				sparklingEditor.focus();
 			}
 		} else {
 			store.dispatch({
@@ -50585,7 +50593,8 @@ module.exports = (0, _reactRedux.connect)(function (state) {
 		options: (0, _selectors.getOptions)(state),
 		selectedValue: (0, _selectors.getSelectedValue)(state),
 		rawDataLength: (0, _selectors.getRawDataLength)(state),
-		offset: (0, _selectors.getOffset)(state)
+		offset: (0, _selectors.getOffset)(state),
+		pattern: (0, _selectors.getPattern)(state)
 	};
 }, function (dispatch) {
 	return {
@@ -50767,6 +50776,8 @@ var Sparkling = function (_React$PureComponent) {
 		value: function componentDidMount() {
 			var _this2 = this;
 
+			var pattern = this.props.pattern;
+
 			var model = this.input.getModel();
 			model.setPlaceholderText('Sparkling find');
 
@@ -50787,7 +50798,8 @@ var Sparkling = function (_React$PureComponent) {
 			    data = _props.data,
 			    selectedIndex = _props.selectedIndex,
 			    rawDataLength = _props.rawDataLength,
-			    offset = _props.offset;
+			    offset = _props.offset,
+			    pattern = _props.pattern;
 			var _props$options = this.props.options,
 			    preview = _props$options.preview,
 			    renderer = _props$options.renderer,
@@ -50805,7 +50817,7 @@ var Sparkling = function (_React$PureComponent) {
 						'div',
 						{ className: 'sparkling-results', id: 'sparkling-results' },
 						data.slice(offset, offset + 10).map(function (item, index) {
-							return renderer(_extends({}, item, { index: index, selectedIndex: selectedIndex, accept: accept }));
+							return renderer(_extends({}, item, { index: index, selectedIndex: selectedIndex, accept: accept, pattern: pattern }));
 						})
 					),
 					preview && selectedValue && _react2.default.createElement(
@@ -51324,7 +51336,8 @@ var sparklingData = reducerCreator({
 
 var pattern = reducerCreator({
 	SET_PATTERN: returnPayload('pattern'),
-	SHOW: ''
+	SHOW: '',
+	HIDE: ''
 })('');
 
 var index = reducerCreator({
