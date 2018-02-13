@@ -3,19 +3,20 @@
 	"main": "./dist/bundle",
 	"version": "0.1.0",
 	"activationEvents": [
-		"sparkling:gitBranches",
 		"sparkling:files",
 		"sparkling:gitFiles",
-		"sparkling:lines"
+		"sparkling:gitBranches",
+		"sparkling:lines",
+		"sparkling:allLines",
+		"sparkling:autocompleteLines"
 	],
-	"description": "Sparkling search like an olive in a gin and tonic",
+	"description":
+		"Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
 	"scripts": {
-		"test":
-			"mocha --reporter progress --compilers js:babel-core/register --recursive 'lib/**/*.test.js'",
 		"build": "webpack",
 		"watch": "webpack --watch"
 	},
-	"keywords": ["fuzzy", "search", "bubbles"],
+	"keywords": ["fuzzy", "search"],
 	"repository": "https://github.com/germtb/sparkling",
 	"license": "MIT",
 	"engines": {
