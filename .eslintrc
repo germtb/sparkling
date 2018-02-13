@@ -16,6 +16,7 @@
     "comma-dangle": [2, "never"],
     "semi": ["error", "never"],
     "no-confusing-arrow": 0,
+    "no-unused-vars": 0,
     "no-cond-assign": 0,
     "no-shadow": 0,
     "react/jsx-filename-extension": 0,

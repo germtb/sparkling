@@ -25967,13 +25967,13 @@ _rxjs2.default.Observable.combineLatest(fromSelector(_selectors.getData), fromSe
 	}
 });
 
-_rxjs2.default.Observable.combineLatest(fromSelector(_selectors.isVisible), fromSelector(_selectors.getOptions)).filter(function (_ref3) {
+_rxjs2.default.Observable.combineLatest(fromSelector(_selectors.isVisible), fromSelector(_selectors.getOptions)).distinctUntilChanged(function (a, b) {
+	return a[0] === b[0] && a[1] === b[1];
+}).filter(function (_ref3) {
 	var _ref4 = _slicedToArray(_ref3, 1),
 	    visible = _ref4[0];
 
 	return visible;
-}).distinctUntilChanged(function (a, b) {
-	return a[0] === b[0] && a[1] === b[1];
 }).subscribe(function (_ref5) {
 	var _ref6 = _slicedToArray(_ref5, 2),
 	    visible = _ref6[0],
@@ -26066,26 +26066,37 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 	    _optionsFactory$previ = _optionsFactory.preview,
 	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ;
 
+	var options = {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		preview: preview
+	};
+
 	return function () {
-		if ((0, _selectors.isVisible)(store.getState())) {
+		var state = store.getState();
+		if ((0, _selectors.isVisible)(state)) {
+			var storeOptions = (0, _selectors.getOptions)(state);
 			var sparklingEditor = document.getElementById('sparkling-editor');
 
-			if (sparklingEditor.hasFocus()) {
-				store.dispatch({
-					type: 'HIDE'
-				});
+			if (storeOptions === options) {
+				if (sparklingEditor.hasFocus()) {
+					store.dispatch({
+						type: 'HIDE'
+					});
+				} else {
+					sparklingEditor.focus();
+				}
 			} else {
-				sparklingEditor.focus();
+				store.dispatch({
+					type: 'SHOW',
+					payload: options
+				});
 			}
 		} else {
 			store.dispatch({
 				type: 'SHOW',
-				payload: {
-					loadData: loadData,
-					accept: accept,
-					renderer: renderer,
-					preview: preview
-				}
+				payload: options
 			});
 		}
 	};
@@ -50930,7 +50941,7 @@ var gitBranchesFactory = function gitBranchesFactory(React, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, type: 'gitBranches' };
+	return { loadData: loadData, accept: accept };
 };
 
 module.exports = gitBranchesFactory;
@@ -50977,8 +50988,7 @@ var filesFactory = function filesFactory(React, store) {
 
 	return {
 		loadData: loadData,
-		accept: accept,
-		type: 'files'
+		accept: accept
 	};
 };
 
@@ -51034,7 +51044,7 @@ var gitFilesFactory = function gitFilesFactory(React, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, type: 'gitFiles' };
+	return { loadData: loadData, accept: accept };
 };
 
 module.exports = gitFilesFactory;
@@ -51070,7 +51080,7 @@ var linesFactory = function linesFactory(React, store) {
 		cursor.moveToFirstCharacterOfLine();
 	};
 
-	return { loadData: loadData, accept: accept, type: 'bufferLines' };
+	return { loadData: loadData, accept: accept };
 };
 
 module.exports = linesFactory;
@@ -51130,7 +51140,7 @@ var allLinesFactory = function allLinesFactory(React, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, type: 'allLines' };
+	return { loadData: loadData, accept: accept };
 };
 
 var autocompleteLinesFactory = function autocompleteLinesFactory(React, store) {
@@ -51149,7 +51159,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(React, store) {
 		}));
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer, type: 'autocompleteLines' };
+	return { loadData: loadData, accept: accept, renderer: renderer };
 };
 
 module.exports = { allLinesFactory: allLinesFactory, autocompleteLinesFactory: autocompleteLinesFactory };
