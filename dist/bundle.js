@@ -4,8 +4,6 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var child_process = require('child_process');
 var child_process__default = _interopDefault(child_process);
-var path = _interopDefault(require('path'));
-var fs = _interopDefault(require('fs'));
 var atom$1 = require('atom');
 
 /** Virtual DOM Node */
@@ -5657,20 +5655,20 @@ var pathScorer = createCommonjsModule(function (module, exports) {
     return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
   };
 
-  exports.countDir = countDir = function(path$$1, end, pathSeparator) {
+  exports.countDir = countDir = function(path, end, pathSeparator) {
     var count, i;
     if (end < 1) {
       return 0;
     }
     count = 0;
     i = -1;
-    while (++i < end && path$$1[i] === pathSeparator) {
+    while (++i < end && path[i] === pathSeparator) {
       continue;
     }
     while (++i < end) {
-      if (path$$1[i] === pathSeparator) {
+      if (path[i] === pathSeparator) {
         count++;
-        while (++i < end && path$$1[i] === pathSeparator) {
+        while (++i < end && path[i] === pathSeparator) {
           continue;
         }
       }
@@ -6202,6 +6200,12 @@ var getRawDataLength = function getRawDataLength(state) {
 var getSparklingData = function getSparklingData(state) {
 	return state.sparklingData;
 };
+var getSearch = function getSearch(state) {
+	return state.search;
+};
+var isSearchVisible = function isSearchVisible(state) {
+	return state.searchVisible;
+};
 
 var classnames = createCommonjsModule(function (module) {
 /*!
@@ -6408,15 +6412,6 @@ var Sparkling = function (_Component) {
 	createClass(Sparkling, [{
 		key: 'componentDidMount',
 		value: function componentDidMount() {
-			var pattern = this.props.pattern;
-			// const model = this.input.getModel()
-			// model.setPlaceholderText('Sparkling find')
-			//
-			// const buffer = model.getBuffer()
-			// this.bufferDisposable = buffer.onDidChange(() => {
-			// 	this.props.setPattern(buffer.getText())
-			// })
-
 			this.input.focus();
 		}
 	}, {
@@ -6536,6 +6531,85 @@ var SparklingContainer$1 = connect(function (state) {
 	};
 })(SparklingContainer);
 
+var Search = function (_Component) {
+	inherits$1(Search, _Component);
+
+	function Search() {
+		classCallCheck$1(this, Search);
+		return possibleConstructorReturn$1(this, (Search.__proto__ || Object.getPrototypeOf(Search)).apply(this, arguments));
+	}
+
+	createClass(Search, [{
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.input.focus();
+		}
+	}, {
+		key: 'render',
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    visible = _props.visible,
+			    search = _props.search,
+			    setSearch = _props.setSearch;
+
+
+			return h(
+				'div',
+				{ className: 'sparking-search sparkling-input-container' },
+				h('input', {
+					id: 'sparkling-input',
+					className: 'sparkling-input native-key-bindings',
+					placeholder: 'Sparkling find',
+					ref: function ref(input) {
+						_this2.input = input;
+					},
+					onInput: function onInput(event) {
+						setSearch(event.target.value);
+					},
+					value: search
+				})
+			);
+		}
+	}]);
+	return Search;
+}(Component);
+
+var SearchContainer = function (_Component) {
+	inherits$1(SearchContainer, _Component);
+
+	function SearchContainer() {
+		classCallCheck$1(this, SearchContainer);
+		return possibleConstructorReturn$1(this, (SearchContainer.__proto__ || Object.getPrototypeOf(SearchContainer)).apply(this, arguments));
+	}
+
+	createClass(SearchContainer, [{
+		key: 'render',
+		value: function render$$1() {
+			if (!this.props.visible) {
+				return null;
+			}
+
+			return h(Search, this.props);
+		}
+	}]);
+	return SearchContainer;
+}(Component);
+
+var SearchContainer$1 = connect(function (state) {
+	return {
+		visible: isSearchVisible(state),
+		search: getSearch(state)
+	};
+}, function (dispatch) {
+	return {
+		setSearch: function setSearch(search) {
+			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
+		}
+	};
+})(SearchContainer);
+
 var gitBranchesFactory = function gitBranchesFactory(h, store) {
 	var loadData = function loadData(onData) {
 		var cwd = atom.project.getPaths()[0];
@@ -6568,70 +6642,6 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 
 	return { loadData: loadData, accept: accept };
 };
-
-var FilePreview = function (_Component) {
-	inherits$1(FilePreview, _Component);
-
-	function FilePreview(props) {
-		classCallCheck$1(this, FilePreview);
-
-		var _this = possibleConstructorReturn$1(this, (FilePreview.__proto__ || Object.getPrototypeOf(FilePreview)).call(this, props));
-
-		_this.state = { start: 0, end: 100 };
-		_this.readFile = _this.readFile.bind(_this);
-		return _this;
-	}
-
-	createClass(FilePreview, [{
-		key: 'readFile',
-		value: function readFile() {
-			var cwd = atom.project.getPaths()[0];
-			var file = this.props.file;
-
-			var fileName = path.join(cwd, file);
-
-			var readStream = fs.createReadStream(fileName, {
-				start: this.state.start,
-				end: this.state.end
-			});
-
-			var model = this.editor.getModel();
-			var buffer = model.getBuffer();
-
-			readStream.on('data', function (data) {
-				buffer.setText(data.toString('utf-8'));
-			});
-		}
-	}, {
-		key: 'componentDidMount',
-		value: function componentDidMount() {
-			this.readFile();
-		}
-	}, {
-		key: 'componentDidUpdate',
-		value: function componentDidUpdate(prevProps) {
-			if (prevProps.file === this.props.file) {
-				return;
-			}
-
-			this.readFile();
-		}
-	}, {
-		key: 'render',
-		value: function render$$1() {
-			var _this2 = this;
-
-			return h('atom-text-editor', {
-				'class': 'editor',
-				'data-encoding': 'utf-8',
-				ref: function ref(editor) {
-					return _this2.editor = editor;
-				}
-			});
-		}
-	}]);
-	return FilePreview;
-}(Component);
 
 var filesFactory = function filesFactory(h, store) {
 	var loadData = function loadData(onData) {
@@ -6717,6 +6727,43 @@ var linesFactory = function linesFactory(h, store) {
 	return { loadData: loadData, accept: accept };
 };
 
+var searchFactory = function searchFactory(h, store) {
+	var loadData = function loadData(onData) {
+		var search = getSearch(store.getState());
+
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('rg', [search, '-n'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
+				var _value$split = value.split(':', 3),
+				    _value$split2 = slicedToArray(_value$split, 3),
+				    path = _value$split2[0],
+				    lineNumber = _value$split2[1],
+				    line = _value$split2[2];
+
+				if (line && line.length > 1) {
+					acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
+				}
+				return acc;
+			}, []));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+
+	var accept = function accept(line) {
+		store.dispatch({ type: 'HIDE' });
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return { loadData: loadData, accept: accept };
+};
+
 var defaultRenderer = function defaultRenderer(_ref) {
 	var value = _ref.value,
 	    pattern = _ref.pattern,
@@ -6745,12 +6792,12 @@ var loadData = function loadData(onData) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 			var _value$split = value.split(':', 3),
 			    _value$split2 = slicedToArray(_value$split, 3),
-			    path$$1 = _value$split2[0],
+			    path = _value$split2[0],
 			    lineNumber = _value$split2[1],
 			    line = _value$split2[2];
 
 			if (line && line.length > 1) {
-				acc.push({ value: value, path: path$$1, line: line, lineNumber: lineNumber });
+				acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
 			}
 			return acc;
 		}, []));
@@ -6817,6 +6864,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
+		console.log('action: ', action);
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -6861,6 +6909,9 @@ var fromActionFactory = function fromActionFactory(store) {
 
 function storeFactory(reducers) {
 	var store = createStore(reducers);
+	store.subscribe(function () {
+		console.log(store.getState());
+	});
 	var fromAction = fromActionFactory(store);
 	var fromSelector = fromSelectorFactory(store);
 
@@ -6933,8 +6984,22 @@ var returnPayload = function returnPayload(field) {
 
 var visible = reducerCreator({
 	SHOW: true,
+	HIDE: false,
+	SHOW_SEARCH: false,
+	HIDE_SEARCH: false
+})(false);
+
+var searchVisible = reducerCreator({
+	SHOW_SEARCH: true,
+	HIDE_SEARCH: false,
+	SHOW: false,
 	HIDE: false
 })(false);
+
+var search = reducerCreator({
+	SHOW_SEARCH: '',
+	SET_SEARCH: returnPayload('search')
+})('');
 
 var options$1 = reducerCreator({
 	SHOW: returnPayload()
@@ -6945,12 +7010,14 @@ var data = reducerCreator({
 		var data = _ref2.data;
 		return state.concat(data);
 	},
-	SHOW: []
+	SHOW: [],
+	SHOW_SEARCH: []
 })([]);
 
 var sparklingData = reducerCreator({
 	SET_FILTERED_DATA: returnPayload('data'),
-	SHOW: []
+	SHOW: [],
+	SHOW_SEARCH: []
 })([]);
 
 var pattern = reducerCreator({
@@ -6980,7 +7047,9 @@ var reducers = combineReducers({
 	sparklingData: sparklingData,
 	index: index$2,
 	offset: offset,
-	pattern: pattern
+	pattern: pattern,
+	searchVisible: searchVisible,
+	search: search
 });
 
 var _storeFactory = storeFactory(reducers);
@@ -6995,6 +7064,10 @@ Observable_2.combineLatest(fromSelector(getData), fromSelector(getPattern)).audi
 	var _ref2 = slicedToArray(_ref, 2),
 	    data = _ref2[0],
 	    pattern = _ref2[1];
+
+	if (!pattern.length && (!data || !data.length)) {
+		return;
+	}
 
 	if (!pattern.length) {
 		store.dispatch({
@@ -7024,7 +7097,8 @@ Observable_2.combineLatest(fromSelector(isVisible), fromSelector(getOptions)).di
 		return;
 	}
 
-	var loadData = options$$1.loadData;
+	var _getOptions = getOptions(store.getState()),
+	    loadData = _getOptions.loadData;
 
 	if (cancelLoadData && typeof cancelLoadData === 'function') {
 		cancelLoadData();
@@ -7096,8 +7170,8 @@ var accept = function accept() {
 		return;
 	}
 
-	var _getOptions = getOptions(state),
-	    accept = _getOptions.accept;
+	var _getOptions2 = getOptions(state),
+	    accept = _getOptions2.accept;
 
 	accept(value);
 };
@@ -7146,6 +7220,14 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 	};
 };
 
+var searchToggle = function searchToggle() {
+	if (isSearchVisible(store.getState())) {
+		store.dispatch({ type: 'HIDE_SEARCH' });
+	} else {
+		store.dispatch({ type: 'SHOW_SEARCH' });
+	}
+};
+
 module.exports = {
 	subscriptions: null,
 
@@ -7162,7 +7244,12 @@ module.exports = {
 		render(h(
 			Provider,
 			{ store: store },
-			h(SparklingContainer$1, null)
+			h(
+				'div',
+				null,
+				h(SparklingContainer$1, null),
+				h(SearchContainer$1, null)
+			)
 		), reactRoot);
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
@@ -7175,6 +7262,16 @@ module.exports = {
 		}));
 
 		var workspaceView = atom.views.getView(atom.workspace);
+
+		var searchCommand = sparklingSearch(searchFactory);
+
+		atom.commands.add('atom-workspace', {
+			'sparkling:acceptSearch': searchCommand
+		});
+
+		atom.commands.add('atom-workspace', {
+			'sparkling:search': searchToggle
+		});
 
 		this.commands.forEach(function (commandConfig) {
 			atom.config.observe('sparkling.' + commandConfig.id, function (value) {
