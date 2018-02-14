@@ -1,7 +1,7 @@
 {
   "name": "sparkling",
   "main": "./dist/bundle",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "activationEvents": [
     "sparkling:files",
     "sparkling:gitFiles",
