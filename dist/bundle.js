@@ -6872,7 +6872,7 @@ var config = {
 		title: 'Find files with ripgrep',
 		description: 'Enable find files with ripgrep (requires ripgrep installed in path)',
 		type: 'boolean',
-		default: true
+		default: false
 	},
 	gitFiles: {
 		title: 'Find files with git',
