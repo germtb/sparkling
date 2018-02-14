@@ -6196,11 +6196,9 @@ var getPattern = function getPattern(state) {
 var getSelectedValue = function getSelectedValue(state) {
 	return getSparklingData(state)[getOffset(state) + getIndex(state)];
 };
-
 var getRawDataLength = function getRawDataLength(state) {
 	return state.data.length;
 };
-
 var getSparklingData = function getSparklingData(state) {
 	return state.sparklingData;
 };
@@ -7158,7 +7156,7 @@ module.exports = {
 	provideSparkling: function provideSparkling() {
 		return sparklingSearch;
 	},
-	activate: function activate() {
+	setup: function setup() {
 		var reactRoot = document.createElement('div');
 
 		render(h(
@@ -7169,7 +7167,6 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		this.subscriptions = new atom$1.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:next': next,
 			'sparkling:previous': previous,
@@ -7193,6 +7190,19 @@ module.exports = {
 				}
 			});
 		});
+	},
+	activate: function activate() {
+		var _this = this;
+
+		this.subscriptions = new atom$1.CompositeDisposable();
+
+		if (atom.packages.hasActivatedInitialPackages()) {
+			this.setup();
+		} else {
+			this.subscriptions.add(atom.packages.onDidActivateInitialPackages(function () {
+				return _this.setup();
+			}));
+		}
 	},
 	deactivate: function deactivate() {
 		this.subscriptions.dispose();
