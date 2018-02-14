@@ -25936,6 +25936,10 @@ var _defaultRenderer = __webpack_require__(262);
 
 var _defaultRenderer2 = _interopRequireDefault(_defaultRenderer);
 
+var _config = __webpack_require__(699);
+
+var _config2 = _interopRequireDefault(_config);
+
 var _reducers = __webpack_require__(698);
 
 var _reducers2 = _interopRequireDefault(_reducers);
@@ -25943,6 +25947,8 @@ var _reducers2 = _interopRequireDefault(_reducers);
 var _selectors = __webpack_require__(260);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _storeFactory = (0, _store2.default)(_reducers2.default),
     fromSelector = _storeFactory.fromSelector,
@@ -26088,9 +26094,7 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 
 			if (storeOptions === options) {
 				if (sparklingEditor.hasFocus()) {
-					store.dispatch({
-						type: 'HIDE'
-					});
+					hide();
 				} else {
 					sparklingEditor.focus();
 				}
@@ -26113,6 +26117,10 @@ var sparklingSearch = function sparklingSearch(optionsFactory) {
 module.exports = {
 	subscriptions: null,
 
+	config: _config2.default,
+
+	commands: [{ id: 'files', factory: _files2.default }, { id: 'gitFiles', factory: _gitFiles2.default }, { id: 'gitBranches', factory: _gitBranches2.default }, { id: 'lines', factory: _lines2.default }, { id: 'allLines', factory: _allLines.allLinesFactory }, { id: 'autocompleteLines', factory: _allLines.autocompleteLinesFactory }],
+
 	provideSparkling: function provideSparkling() {
 		return sparklingSearch;
 	},
@@ -26127,33 +26135,38 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		var gitFiles = sparklingSearch(_gitFiles2.default);
-		var files = sparklingSearch(_files2.default);
-		var gitBranches = sparklingSearch(_gitBranches2.default);
-		var lines = sparklingSearch(_lines2.default);
-		var allLines = sparklingSearch(_allLines.allLinesFactory);
-		var autocompleteLines = sparklingSearch(_allLines.autocompleteLinesFactory);
-
 		this.subscriptions = new _atom.CompositeDisposable();
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:next': next,
 			'sparkling:previous': previous,
 			'sparkling:accept': accept,
-			'sparkling:gitBranches': gitBranches,
-			'sparkling:files': files,
-			'sparkling:gitFiles': gitFiles,
-			'sparkling:lines': lines,
-			'sparkling:allLines': allLines,
-			'sparkling:autocompleteLines': autocompleteLines,
 			'sparkling:hide': hide
 		}));
+
+		var workspaceView = atom.views.getView(atom.workspace);
+
+		this.commands.forEach(function (commandConfig) {
+			atom.config.observe('sparkling.' + commandConfig.id, function (value) {
+				if (value) {
+					var command = sparklingSearch(commandConfig.factory);
+					commandConfig.subscription = atom.commands.add('atom-workspace', _defineProperty({}, 'sparkling:' + commandConfig.id, command));
+					workspaceView.classList.add('sparkling-' + commandConfig.id);
+				} else {
+					var subscription = commandConfig.subscription;
+
+					subscription && subscription.dispose();
+					workspaceView.classList.remove('sparkling-' + commandConfig.id);
+				}
+			});
+		});
 	},
 	deactivate: function deactivate() {
-		this.disposables = [];
 		this.subscriptions.dispose();
+		this.commands.forEach(function (commandConfig) {
+			var subscription = commandConfig.subscription;
 
-		this.renameView && this.renameView.destroy();
-		this.renameView = null;
+			subscription && subscription.dispose();
+		});
 	},
 	serialize: function serialize() {
 		return {};
@@ -51363,6 +51376,55 @@ exports.default = (0, _redux.combineReducers)({
 	offset: offset,
 	pattern: pattern
 });
+
+/***/ }),
+/* 699 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
+	files: {
+		title: 'Find files with ripgrep',
+		description: 'Enable find files with ripgrep (requires ripgrep installed in path)',
+		type: 'boolean',
+		default: true
+	},
+	gitFiles: {
+		title: 'Find files with git',
+		description: 'Enable find files that have been modified according to git',
+		type: 'boolean',
+		default: true
+	},
+	gitBranches: {
+		title: 'Checkout git branches',
+		description: 'Enable checkout git branches',
+		type: 'boolean',
+		default: true
+	},
+	lines: {
+		title: 'Find buffer lines',
+		description: 'Enable find buffer lines',
+		type: 'boolean',
+		default: true
+	},
+	allLines: {
+		title: 'Find project lines',
+		description: 'Enable find project lines',
+		type: 'boolean',
+		default: true
+	},
+	autocompleteLines: {
+		title: 'Autocomplete project lines',
+		description: 'Enable autocomplete project lines',
+		type: 'boolean',
+		default: true
+	}
+};
 
 /***/ })
 /******/ ]);

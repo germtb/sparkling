@@ -1,12 +1,20 @@
 {
-	"body atom-workspace": {
-		"cmd-p": "sparkling:files",
-		"cmd-m": "sparkling:gitFiles",
+	"body atom-workspace.sparkling-files": {
+		"cmd-p": "sparkling:files"
+	},
+	"body atom-workspace.sparkling-gitFiles": {
+		"cmd-m": "sparkling:gitFiles"
+	},
+	"body atom-workspace.sparkling-gitBranches": {
 		"cmd-b": "sparkling:gitBranches"
 	},
-	"body atom-workspace atom-text-editor": {
-		"cmd-l cmd-l": "sparkling:lines",
-		"cmd-l cmd-L": "sparkling:allLines",
+	"body atom-workspace.sparkling-lines atom-text-editor": {
+		"cmd-l cmd-l": "sparkling:lines"
+	},
+	"body atom-workspace.sparkling-allLines atom-text-editor": {
+		"cmd-l cmd-L": "sparkling:allLines"
+	},
+	"body atom-workspace.sparkling-autocompleteLines atom-text-editor": {
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
 	".sparkling atom-text-editor": {
