@@ -37,12 +37,32 @@
 	background-color: #3f4252;
 }
 
-.sparkling-input {
+.sparkling-input-container {
 	padding: 0.75em 0.75em;
 	position: relative;
+	color: #d7d8e0;
 }
 
-.sparkling-input--no-results atom-text-editor[mini].is-focused {
+.sparkling-input {
+	width: 100%;
+	padding: 0.25em 0.75em;
+	font-family: Fira Code;
+	font-size: 1.15em;
+	line-height: 2em;
+	max-height: 10em;
+	padding-left: 0.5em;
+	border-radius: 3px;
+	color: white;
+	border: 1px solid #1b1c22;
+	background-color: #3f4252;
+}
+
+.sparkling-input:focus {
+	border-color: #4f65d1;
+	box-shadow: 0 0 0 1px #4f65d1;
+}
+
+.sparkling-input--no-results:focus {
 	border-color: #ff6347;
 	box-shadow: 0 0 0 1px #ff6347;
 }

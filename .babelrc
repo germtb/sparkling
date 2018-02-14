@@ -1,4 +1,7 @@
 {
-	"presets": ["es2015-rollup", "react"],
-	"plugins": ["transform-object-rest-spread"]
+	"presets": ["es2015-rollup"],
+	"plugins": [
+		"transform-object-rest-spread",
+		["transform-react-jsx", { "pragma": "h" }]
+	]
 }

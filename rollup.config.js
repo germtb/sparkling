@@ -1,7 +1,8 @@
-import Babel from 'rollup-plugin-babel'
-import Resolve from 'rollup-plugin-node-resolve'
-import CommonJs from 'rollup-plugin-commonjs'
-import Builtins from 'rollup-plugin-node-builtins'
+import babel from 'rollup-plugin-babel'
+import resolve from 'rollup-plugin-node-resolve'
+import commonJS from 'rollup-plugin-commonjs'
+import builtins from 'rollup-plugin-node-builtins'
+import sizes from 'rollup-plugin-sizes'
 
 module.exports = {
 	input: './lib/sparkling.js',
@@ -11,23 +12,27 @@ module.exports = {
 	},
 	external: ['fs', 'path', 'child_process', 'atom'],
 	plugins: [
-		Babel({
+		babel({
 			exclude: ['node_modules/**', '**/*.json']
 		}),
-		Resolve({
+		resolve({
 			jsnext: true
 		}),
-		CommonJs({
+		commonJS({
 			include: 'node_modules/**',
 			namedExports: {
-				'./node_modules/react/react.js': [
+				'./node_modules/preact/dist/preact.js': [
+					'h:',
 					'createElement',
-					'Children',
+					'cloneElement',
 					'Component',
-					'PureComponent'
+					'render',
+					'rerender',
+					'options'
 				]
 			}
 		}),
-		Builtins()
+		builtins(),
+		sizes()
 	]
 }
