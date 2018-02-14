@@ -6427,10 +6427,9 @@ var Sparkling = function (_Component) {
 			    rawDataLength = _props.rawDataLength,
 			    offset = _props.offset,
 			    pattern = _props.pattern;
-			var _props$options = this.props.options,
-			    preview = _props$options.preview,
-			    renderer = _props$options.renderer,
-			    accept = _props$options.accept;
+			var preview = options$$1.preview,
+			    renderer = options$$1.renderer,
+			    accept = options$$1.accept;
 
 			var filteredDataLength = data.length;
 
@@ -6444,7 +6443,14 @@ var Sparkling = function (_Component) {
 						'div',
 						{ className: 'sparkling-results', id: 'sparkling-results' },
 						data.slice(offset, offset + 10).map(function (item, index) {
-							return renderer(_extends$2({}, item, { index: index, selectedIndex: selectedIndex, accept: accept, pattern: pattern }));
+							return renderer({
+								item: item,
+								value: item.value,
+								index: index,
+								selectedIndex: selectedIndex,
+								accept: accept,
+								pattern: pattern
+							});
 						})
 					),
 					preview && selectedValue && h(
@@ -6540,28 +6546,27 @@ var Search = function (_Component) {
 	}
 
 	createClass(Search, [{
-		key: 'componentDidMount',
+		key: "componentDidMount",
 		value: function componentDidMount() {
 			this.input.focus();
 		}
 	}, {
-		key: 'render',
+		key: "render",
 		value: function render$$1() {
 			var _this2 = this;
 
 			var _props = this.props,
-			    visible = _props.visible,
 			    search = _props.search,
 			    setSearch = _props.setSearch;
 
 
 			return h(
-				'div',
-				{ className: 'sparking-search sparkling-input-container' },
-				h('input', {
-					id: 'sparkling-input',
-					className: 'sparkling-input native-key-bindings',
-					placeholder: 'Sparkling find',
+				"div",
+				{ className: "sparking-search sparkling-input-container" },
+				h("input", {
+					id: "sparkling-input",
+					className: "sparkling-input native-key-bindings",
+					placeholder: "Sparkling find",
 					ref: function ref(input) {
 						_this2.input = input;
 					},
@@ -6628,11 +6633,10 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 		var value = branch.value.trim(0);
 
 		if (/^\*/.test(value)) {
-			console.log('Already on ' + value.substring(2));
 			return;
 		}
 
-		var cmdProcess = spawn('git', ['checkout', value], { cwd: cwd });
+		var cmdProcess = child_process__default.spawn('git', ['checkout', value], { cwd: cwd });
 		cmdProcess.stdout.on('data', function () {
 			store.dispatch({
 				type: 'HIDE'
@@ -6676,8 +6680,6 @@ var filesFactory = function filesFactory(h, store) {
 
 var gitFilesFactory = function gitFilesFactory(h, store) {
 	var loadData = function loadData(onData) {
-		var repo = atom.project.getRepositories()[0];
-
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
 		cmdProcess.stdout.on('data', function (data) {
@@ -6765,7 +6767,8 @@ var searchFactory = function searchFactory(h, store) {
 };
 
 var defaultRenderer = function defaultRenderer(_ref) {
-	var value = _ref.value,
+	var item = _ref.item,
+	    value = _ref.value,
 	    pattern = _ref.pattern,
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
@@ -6864,7 +6867,6 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		console.log('action: ', action);
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -6909,9 +6911,6 @@ var fromActionFactory = function fromActionFactory(store) {
 
 function storeFactory(reducers) {
 	var store = createStore(reducers);
-	store.subscribe(function () {
-		console.log(store.getState());
-	});
 	var fromAction = fromActionFactory(store);
 	var fromSelector = fromSelectorFactory(store);
 
@@ -7056,8 +7055,9 @@ var _storeFactory = storeFactory(reducers);
 var fromSelector = _storeFactory.fromSelector;
 var fromAction = _storeFactory.fromAction;
 var store = _storeFactory.store;
+// let fuzzysortPromise = null
 
-var fuzzysortPromise = null;
+
 var cancelLoadData = null;
 
 Observable_2.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref) {
@@ -7119,9 +7119,9 @@ fromAction('HIDE').subscribe(function () {
 	var view = editor && atom.views.getView(editor);
 	view && view.focus();
 
-	if (fuzzysortPromise) {
-		fuzzysortPromise.cancel();
-	}
+	// if (fuzzysortPromise) {
+	// 	fuzzysortPromise.cancel()
+	// }
 
 	if (cancelLoadData && typeof cancelLoadData === 'function') {
 		cancelLoadData();

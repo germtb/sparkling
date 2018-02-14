@@ -1,4 +1,5 @@
 {
+  "extends": "eslint:recommended",
   "parser": "babel-eslint",
   "plugins": [
     "react"
@@ -7,22 +8,50 @@
     "jsx": true,
     "modules": true
   },
+  "settings": {
+    "react": {
+      "pragma": "h"
+    }
+  },
   "rules": {
-    "indent": [2, "tab"],
-    "no-tabs": 0,
-    "import/no-extraneous-dependencies": 0,
-    "import/prefer-default-export": 0,
-    "no-console": 0,
-    "comma-dangle": [2, "never"],
-    "semi": ["error", "never"],
-    "no-confusing-arrow": 0,
-    "no-unused-vars": 0,
-    "no-cond-assign": 0,
-    "no-shadow": 0,
-    "react/jsx-filename-extension": 0,
-    "react/prop-types": 0,
-    "no-param-reassign": 0,
-    "no-return-assign": 0
+      // Possible Errors
+      "no-dupe-args": 2,
+      "no-dupe-keys": 2,
+      "no-empty": 2,
+      "no-func-assign": 2,
+      "no-inner-declarations": 2,
+      "no-unreachable": 2,
+      "no-unexpected-multiline": 0,
+      "no-sequences": 2,
+      // Best practices
+      "consistent-return": 0,
+      "curly": [2, "all"],
+      "eqeqeq": 2,
+      "no-else-return": 2,
+      "no-multi-spaces": 0,
+      "no-console": 0,
+      // Strict mode
+      "strict": 0,
+      // Variables
+      "no-var": 2,
+      "no-shadow": 0,
+      "no-unused-vars": [2, {"vars": "all", "args": "none"}],
+      "no-undef": 2,
+      "no-use-before-define": 0,
+      "prefer-const": 2,
+      "no-const-assign": 2,
+      // Style
+      "semi": ["warn", "never"],
+      "no-new-object": 2,
+      "no-useless-concat": 2,
+      "no-implicit-coercion": 2,
+      "no-extra-semi": 0,
+      // ES6
+      "no-this-before-super": 2,
+      "object-shorthand": 2,
+      // React
+      "react/jsx-uses-react": 2,
+      "react/jsx-uses-vars": 2,
   },
   "globals": {
     "atom": true,
