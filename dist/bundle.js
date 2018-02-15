@@ -6713,6 +6713,18 @@ var iconClassForPath = function iconClassForPath(path) {
 	return fileIconsService.iconClassForPath(path);
 };
 
+var interspere = function interspere(array, value) {
+	return array.reduce(function (acc, s, index, array) {
+		acc.push(s);
+
+		if (index < array.length - 1) {
+			acc.push(value);
+		}
+
+		return acc;
+	}, []);
+};
+
 var renderer = (function (props) {
 	return defaultRenderer(_extends$2({}, props, {
 		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
@@ -6785,12 +6797,16 @@ var linesFactory = function linesFactory(h, store) {
 	return { loadData: loadData, accept: accept };
 };
 
+var RG_RESULT = 'RG_RESULT';
+
 var loadDataFactory = (function (store) {
 	return function (onData) {
 		var search = getSearch(store.getState());
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('rg', [search, '-n'], { cwd: cwd });
+		var cmdProcess = child_process.spawn('rg', [search, '-n', '--replace', RG_RESULT], {
+			cwd: cwd
+		});
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':', 3),
@@ -6800,7 +6816,7 @@ var loadDataFactory = (function (store) {
 				    line = _value$split2[2];
 
 				if (line && line.length > 1) {
-					acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
+					acc.push({ value: value, search: search, line: line, path: path, lineNumber: lineNumber });
 				}
 				return acc;
 			}, []));
@@ -6813,6 +6829,33 @@ var loadDataFactory = (function (store) {
 	};
 });
 
+var renderer$1 = (function (_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+	var search = item.search,
+	    value = item.value,
+	    path = item.path;
+
+
+	var fuzzyWrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value.replace(RG_RESULT, search), pattern).replace(search, RG_RESULT) : value;
+
+	var wrappedValue = interspere(fuzzyWrappedValue.split(RG_RESULT), '<span class="search-highlight">' + search + '</span>').join();
+
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+});
+
 var searchFactory = function searchFactory(h, store) {
 	var loadData = loadDataFactory(store);
 
@@ -6823,7 +6866,7 @@ var searchFactory = function searchFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept };
+	return { loadData: loadData, accept: accept, renderer: renderer$1 };
 };
 
 var loadData$3 = (function (onData) {
@@ -6852,7 +6895,7 @@ var loadData$3 = (function (onData) {
 	};
 });
 
-var renderer$1 = (function (_ref) {
+var renderer$2 = (function (_ref) {
 	var item = _ref.item,
 	    props = objectWithoutProperties$1(_ref, ['item']);
 	return defaultRenderer(_extends$2({}, props, {
@@ -6880,7 +6923,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 		editor.insertText(item.line);
 	};
 
-	return { loadData: loadData$3, accept: accept, renderer: renderer$1 };
+	return { loadData: loadData$3, accept: accept, renderer: renderer$2 };
 };
 
 var fromSelectorFactory = function fromSelectorFactory(store) {

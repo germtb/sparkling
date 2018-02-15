@@ -33,6 +33,10 @@
 	padding: 0;
 }
 
+.search-highlight {
+	color: #4f65d1;
+}
+
 .sparkling-row.selected {
 	background-color: #3f4252;
 }
