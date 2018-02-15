@@ -6,7 +6,10 @@
 		"cmd-p": "sparkling:files"
 	},
 	".sparkling-search": {
-		"cmd-shift-a": "sparkling:search"
+		"cmd-shift-a": "sparkling:searchToggle"
+	},
+	".sparkling-replace": {
+		"cmd-shift-e": "sparkling:replaceToggle"
 	},
 	".sparkling-gitFiles": {
 		"cmd-m": "sparkling:gitFiles"
@@ -24,7 +27,11 @@
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
 	".sparking-search .sparkling-input": {
-		"enter": "sparkling:acceptSearch",
+		"enter": "sparkling:search",
+		"escape": "sparkling:hide"
+	},
+	".sparking-replace .sparkling-input": {
+		"enter": "sparkling:replace",
 		"escape": "sparkling:hide"
 	},
 	".sparkling .sparkling-input": {

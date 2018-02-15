@@ -19,10 +19,10 @@
 	padding: 0.5em 0.5em;
 	line-height: 1.5em;
 	font-size: 14px;
-	font-family: Fira Code;
 	line-height: 1.5em;
 	cursor: pointer;
 	font-weight: normal;
+	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
 }
 
 .sparkling-row .highlight {
@@ -50,7 +50,7 @@
 .sparkling-input {
 	width: 100%;
 	padding: 0.25em 0.75em;
-	font-family: Fira Code;
+	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
 	font-size: 1.15em;
 	line-height: 2em;
 	max-height: 10em;
@@ -73,4 +73,8 @@
 
 .sparkling-search-meta-data {
 	padding-bottom: 0.75em;
+}
+
+.sparking-replace .sparkling-input + .sparkling-input {
+	margin-top: 0.75em;
 }

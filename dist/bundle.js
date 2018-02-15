@@ -2933,6 +2933,12 @@ var getSearch = function getSearch(state) {
 var isSearchVisible = function isSearchVisible(state) {
 	return state.searchVisible;
 };
+var getReplace = function getReplace(state) {
+	return state.replace;
+};
+var isReplaceVisible = function isReplaceVisible(state) {
+	return state.replaceVisible;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3324,7 +3330,7 @@ var Search = function (_Component) {
 				h("input", {
 					id: "sparkling-input",
 					className: "sparkling-input native-key-bindings",
-					placeholder: "Sparkling find",
+					placeholder: "Find in project",
 					ref: function ref(input) {
 						_this2.input = input;
 					},
@@ -3372,6 +3378,99 @@ var SearchContainer$1 = connect(function (state) {
 		}
 	};
 })(SearchContainer);
+
+var Replace = function (_Component) {
+	inherits$1(Replace, _Component);
+
+	function Replace() {
+		classCallCheck$1(this, Replace);
+		return possibleConstructorReturn$1(this, (Replace.__proto__ || Object.getPrototypeOf(Replace)).apply(this, arguments));
+	}
+
+	createClass(Replace, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			this.input.focus();
+		}
+	}, {
+		key: "render",
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    search = _props.search,
+			    replace = _props.replace,
+			    setReplace = _props.setReplace,
+			    setSearch = _props.setSearch;
+
+
+			return h(
+				"div",
+				{ className: "sparking-replace sparkling-input-container" },
+				h("input", {
+					tabIndex: 0,
+					className: "sparkling-input native-key-bindings",
+					placeholder: "Find in project",
+					ref: function ref(input) {
+						_this2.input = input;
+					},
+					onInput: function onInput(event) {
+						setSearch(event.target.value);
+					},
+					value: search
+				}),
+				h("input", {
+					tabIndex: 1,
+					className: "sparkling-input native-key-bindings",
+					placeholder: "Replace",
+					onInput: function onInput(event) {
+						setReplace(event.target.value);
+					},
+					value: replace
+				})
+			);
+		}
+	}]);
+	return Replace;
+}(Component);
+
+var ReplaceContainer = function (_Component) {
+	inherits$1(ReplaceContainer, _Component);
+
+	function ReplaceContainer() {
+		classCallCheck$1(this, ReplaceContainer);
+		return possibleConstructorReturn$1(this, (ReplaceContainer.__proto__ || Object.getPrototypeOf(ReplaceContainer)).apply(this, arguments));
+	}
+
+	createClass(ReplaceContainer, [{
+		key: 'render',
+		value: function render$$1() {
+			if (!this.props.visible) {
+				return null;
+			}
+
+			return h(Replace, this.props);
+		}
+	}]);
+	return ReplaceContainer;
+}(Component);
+
+var ReplaceContainer$1 = connect(function (state) {
+	return {
+		visible: isReplaceVisible(state),
+		search: getSearch(state),
+		replace: getReplace(state)
+	};
+}, function (dispatch) {
+	return {
+		setSearch: function setSearch(search) {
+			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
+		},
+		setReplace: function setReplace(replace) {
+			return dispatch({ type: 'SET_REPLACE', payload: { replace: replace } });
+		}
+	};
+})(ReplaceContainer);
 
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
@@ -4368,11 +4467,24 @@ var visible = reducerCreator({
 	SHOW: true,
 	HIDE: false,
 	SHOW_SEARCH: false,
-	HIDE_SEARCH: false
+	HIDE_SEARCH: false,
+	SHOW_REPLACE: false,
+	HIDE_REPLACE: false
 })(false);
 
 var searchVisible = reducerCreator({
 	SHOW_SEARCH: true,
+	HIDE_SEARCH: false,
+	SHOW_REPLACE: false,
+	HIDE_REPLACE: false,
+	SHOW: false,
+	HIDE: false
+})(false);
+
+var replaceVisible = reducerCreator({
+	SHOW_REPLACE: true,
+	HIDE_REPLACE: false,
+	SHOW_SEARCH: false,
 	HIDE_SEARCH: false,
 	SHOW: false,
 	HIDE: false
@@ -4380,7 +4492,13 @@ var searchVisible = reducerCreator({
 
 var search = reducerCreator({
 	SHOW_SEARCH: '',
+	SHOW_REPLACE: '',
 	SET_SEARCH: returnPayload('search')
+})('');
+
+var replace = reducerCreator({
+	SHOW_REPLACE: '',
+	SET_REPLACE: returnPayload('replace')
 })('');
 
 var options$1 = reducerCreator({
@@ -4393,12 +4511,14 @@ var data = reducerCreator({
 		return state.concat(data);
 	},
 	SHOW: [],
+	HIDE: [],
 	SHOW_SEARCH: []
 })([]);
 
 var sparklingData = reducerCreator({
 	SET_FILTERED_DATA: returnPayload('data'),
 	SHOW: [],
+	HIDE: [],
 	SHOW_SEARCH: []
 })([]);
 
@@ -4431,7 +4551,9 @@ var reducers = combineReducers({
 	offset: offset,
 	pattern: pattern,
 	searchVisible: searchVisible,
-	search: search
+	search: search,
+	replaceVisible: replaceVisible,
+	replace: replace
 });
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -4460,6 +4582,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
+		// console.log('action: ', action)
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -4508,6 +4631,9 @@ function storeFactory(reducers$$1) {
 	var fromSelector = fromSelectorFactory(store);
 	store.fromSelector = fromSelector;
 	store.fromAction = fromAction;
+	// store.subscribe(() => {
+	// 	console.log(store.getState())
+	// })
 
 	return store;
 }
@@ -5764,6 +5890,20 @@ var searchFactory = function searchFactory(h, store) {
 
 var search$1 = commandFactory(searchFactory);
 
+var replaceFactory = function replaceFactory(h, store) {
+	var loadData = loadDataFactory(store);
+
+	var accept = function accept(line) {
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+};
+
+var replace$1 = commandFactory(replaceFactory);
+
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
@@ -5771,7 +5911,7 @@ var loadDataFactory$1 = (function (store) {
 
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', [path$$1], {
+		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
 			cwd: cwd
 		});
 
@@ -5927,6 +6067,12 @@ var config = {
 	search: {
 		title: 'Find pattern with ripgrep',
 		description: 'Enable autocomplete search with ripgrep',
+		type: 'boolean',
+		default: true
+	},
+	replace: {
+		title: 'Find pattern with ripgrep',
+		description: 'Enable autocomplete replace with ripgrep',
 		type: 'boolean',
 		default: true
 	}
@@ -7200,6 +7346,113 @@ var __extends$13 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, 
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
+/**
+ * Applies a given `project` function to each value emitted by the source
+ * Observable, and emits the resulting values as an Observable.
+ *
+ * <span class="informal">Like [Array.prototype.map()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map),
+ * it passes each source value through a transformation function to get
+ * corresponding output values.</span>
+ *
+ * <img src="./img/map.png" width="100%">
+ *
+ * Similar to the well known `Array.prototype.map` function, this operator
+ * applies a projection to each value and emits that projection in the output
+ * Observable.
+ *
+ * @example <caption>Map every click to the clientX position of that click</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var positions = clicks.map(ev => ev.clientX);
+ * positions.subscribe(x => console.log(x));
+ *
+ * @see {@link mapTo}
+ * @see {@link pluck}
+ *
+ * @param {function(value: T, index: number): R} project The function to apply
+ * to each `value` emitted by the source Observable. The `index` parameter is
+ * the number `i` for the i-th emission that has happened since the
+ * subscription, starting from the number `0`.
+ * @param {any} [thisArg] An optional argument to define what `this` is in the
+ * `project` function.
+ * @return {Observable<R>} An Observable that emits the values from the source
+ * Observable transformed by the given `project` function.
+ * @method map
+ * @owner Observable
+ */
+function map(project, thisArg) {
+    return function mapOperation(source) {
+        if (typeof project !== 'function') {
+            throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
+        }
+        return source.lift(new MapOperator(project, thisArg));
+    };
+}
+var map_2 = map;
+var MapOperator = (function () {
+    function MapOperator(project, thisArg) {
+        this.project = project;
+        this.thisArg = thisArg;
+    }
+    MapOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new MapSubscriber(subscriber, this.project, this.thisArg));
+    };
+    return MapOperator;
+}());
+var MapOperator_1 = MapOperator;
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var MapSubscriber = (function (_super) {
+    __extends$13(MapSubscriber, _super);
+    function MapSubscriber(destination, project, thisArg) {
+        _super.call(this, destination);
+        this.project = project;
+        this.count = 0;
+        this.thisArg = thisArg || this;
+    }
+    // NOTE: This looks unoptimized, but it's actually purposefully NOT
+    // using try/catch optimizations.
+    MapSubscriber.prototype._next = function (value) {
+        var result;
+        try {
+            result = this.project.call(this.thisArg, value, this.count++);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        this.destination.next(result);
+    };
+    return MapSubscriber;
+}(Subscriber_1.Subscriber));
+//# sourceMappingURL=map.js.map
+
+var map_1 = {
+	map: map_2,
+	MapOperator: MapOperator_1
+};
+
+function map$1(project, thisArg) {
+    return map_1.map(project, thisArg)(this);
+}
+var map_3 = map$1;
+//# sourceMappingURL=map.js.map
+
+var map_2$1 = {
+	map: map_3
+};
+
+Observable_1.Observable.prototype.map = map_2$1.map;
+//# sourceMappingURL=map.js.map
+
+var __extends$14 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
 
 
 /* tslint:enable:max-line-length */
@@ -7262,7 +7515,7 @@ var DistinctUntilChangedOperator = (function () {
  * @extends {Ignored}
  */
 var DistinctUntilChangedSubscriber = (function (_super) {
-    __extends$13(DistinctUntilChangedSubscriber, _super);
+    __extends$14(DistinctUntilChangedSubscriber, _super);
     function DistinctUntilChangedSubscriber(destination, compare, keySelector) {
         _super.call(this, destination);
         this.keySelector = keySelector;
@@ -7353,8 +7606,8 @@ var setupObservables = (function () {
 		}
 	});
 
-	Observable_2.combineLatest(fromSelector(isVisible), fromSelector(getOptions)).distinctUntilChanged(function (a, b) {
-		return a[0] === b[0] && a[1] === b[1];
+	fromAction('SHOW').map(function () {
+		return [isVisible(store.getState()), getOptions(store.getState())];
 	}).subscribe(function (_ref3) {
 		var _ref4 = slicedToArray(_ref3, 2),
 		    visible = _ref4[0],
@@ -7364,8 +7617,8 @@ var setupObservables = (function () {
 			return;
 		}
 
-		var _getOptions = getOptions(store.getState()),
-		    loadData = _getOptions.loadData;
+		var loadData = options.loadData;
+
 
 		if (cancelLoadData && typeof cancelLoadData === 'function') {
 			cancelLoadData();
@@ -7379,6 +7632,18 @@ var setupObservables = (function () {
 				}
 			});
 		});
+	});
+
+	fromAction('HIDE_SEARCH').subscribe(function () {
+		var editor = atom.workspace.getActiveTextEditor();
+		var view = editor && atom.views.getView(editor);
+		view && view.focus();
+	});
+
+	fromAction('HIDE_REPLACE').subscribe(function () {
+		var editor = atom.workspace.getActiveTextEditor();
+		var view = editor && atom.views.getView(editor);
+		view && view.focus();
 	});
 
 	fromAction('HIDE').subscribe(function () {
@@ -7405,6 +7670,14 @@ var searchToggle = function searchToggle() {
 	}
 };
 
+var replaceToggle = function replaceToggle() {
+	if (isReplaceVisible(store.getState())) {
+		store.dispatch({ type: 'HIDE_REPLACE' });
+	} else {
+		store.dispatch({ type: 'SHOW_REPLACE' });
+	}
+};
+
 var lsShow = function lsShow() {
 	var activeTextEditor = atom.workspace.getActiveTextEditor();
 	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
@@ -7424,7 +7697,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
@@ -7439,7 +7712,8 @@ module.exports = {
 				'div',
 				null,
 				h(SparklingContainer$1, null),
-				h(SearchContainer$1, null)
+				h(SearchContainer$1, null),
+				h(ReplaceContainer$1, null)
 			)
 		), reactRoot);
 
@@ -7457,7 +7731,11 @@ module.exports = {
 		var workspaceView = atom.views.getView(atom.workspace);
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
-			'sparkling:search': searchToggle
+			'sparkling:searchToggle': searchToggle
+		}));
+
+		this.subscriptions.add(atom.commands.add('atom-workspace', {
+			'sparkling:replaceToggle': replaceToggle
 		}));
 
 		atom.commands.add('atom-workspace', {
