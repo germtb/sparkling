@@ -1,6 +1,10 @@
 'use strict';
 
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
 var child_process = require('child_process');
+var path = _interopDefault(require('path'));
+var fs = _interopDefault(require('fs'));
 var atom$1 = require('atom');
 
 /** Virtual DOM Node */
@@ -2896,6 +2900,40 @@ var connect = createConnect();
 
 //# sourceMappingURL=preact-redux.esm.js.map
 
+var isVisible = function isVisible(state) {
+	return state.visible;
+};
+var getOptions = function getOptions(state) {
+	return state.options;
+};
+var getData = function getData(state) {
+	return state.data;
+};
+var getIndex = function getIndex(state) {
+	return state.index;
+};
+var getOffset = function getOffset(state) {
+	return state.offset;
+};
+var getPattern = function getPattern(state) {
+	return state.pattern;
+};
+var getSelectedValue = function getSelectedValue(state) {
+	return getSparklingData(state)[getOffset(state) + getIndex(state)];
+};
+var getRawDataLength = function getRawDataLength(state) {
+	return state.data.length;
+};
+var getSparklingData = function getSparklingData(state) {
+	return state.sparklingData;
+};
+var getSearch = function getSearch(state) {
+	return state.search;
+};
+var isSearchVisible = function isSearchVisible(state) {
+	return state.searchVisible;
+};
+
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 
@@ -2905,6 +2943,435 @@ var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
+
+var classnames = createCommonjsModule(function (module) {
+/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				classes.push(classNames.apply(null, arg));
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if ('object' !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
+		// register as 'classnames', consistent with npm package name
+		undefined('classnames', [], function () {
+			return classNames;
+		});
+	} else {
+		window.classNames = classNames;
+	}
+}());
+});
+
+var classCallCheck$1 = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
+var _extends$2 = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+
+
+var inherits$1 = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+var objectWithoutProperties$1 = function (obj, keys) {
+  var target = {};
+
+  for (var i in obj) {
+    if (keys.indexOf(i) >= 0) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+    target[i] = obj[i];
+  }
+
+  return target;
+};
+
+var possibleConstructorReturn$1 = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+
+
+
+
+
+
+
+
+
+
+
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+var Sparkling = function (_Component) {
+	inherits$1(Sparkling, _Component);
+
+	function Sparkling() {
+		classCallCheck$1(this, Sparkling);
+		return possibleConstructorReturn$1(this, (Sparkling.__proto__ || Object.getPrototypeOf(Sparkling)).apply(this, arguments));
+	}
+
+	createClass(Sparkling, [{
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.input.focus();
+		}
+	}, {
+		key: 'render',
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    options$$1 = _props.options,
+			    selectedValue = _props.selectedValue,
+			    data = _props.data,
+			    selectedIndex = _props.selectedIndex,
+			    rawDataLength = _props.rawDataLength,
+			    offset = _props.offset,
+			    pattern = _props.pattern;
+			var preview = options$$1.preview,
+			    renderer = options$$1.renderer,
+			    accept = options$$1.accept;
+
+			var filteredDataLength = data.length;
+
+			return h(
+				'div',
+				{ className: 'sparkling' },
+				h(
+					'div',
+					{ className: 'sparkling-results-block' },
+					h(
+						'div',
+						{ className: 'sparkling-results', id: 'sparkling-results' },
+						data.slice(offset, offset + 10).map(function (item, index) {
+							return renderer({
+								item: item,
+								index: index,
+								selectedIndex: selectedIndex,
+								accept: accept,
+								pattern: pattern
+							});
+						})
+					),
+					preview && selectedValue && h(
+						'div',
+						{ className: 'sparkling-preview' },
+						preview(selectedValue)
+					)
+				),
+				h(
+					'div',
+					{ className: 'sparkling-input-container' },
+					h(
+						'div',
+						{ className: 'sparkling-search-meta-data' },
+						filteredDataLength + ' / ' + rawDataLength
+					),
+					h('input', {
+						id: 'sparkling-input',
+						className: classnames('sparkling-input native-key-bindings', {
+							'sparkling-input--has-results': filteredDataLength > 0,
+							'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
+						}),
+						placeholder: 'Sparkling find',
+						ref: function ref(input) {
+							_this2.input = input;
+						},
+						onInput: function onInput(event) {
+							_this2.props.setPattern(event.target.value);
+						},
+						value: this.props.pattern
+					})
+				)
+			);
+		}
+	}]);
+	return Sparkling;
+}(Component);
+
+var SparklingContainer = function (_Component) {
+	inherits$1(SparklingContainer, _Component);
+
+	function SparklingContainer() {
+		classCallCheck$1(this, SparklingContainer);
+		return possibleConstructorReturn$1(this, (SparklingContainer.__proto__ || Object.getPrototypeOf(SparklingContainer)).apply(this, arguments));
+	}
+
+	createClass(SparklingContainer, [{
+		key: 'render',
+		value: function render$$1() {
+			if (!this.props.visible) {
+				return null;
+			}
+
+			if (!this.props.data) {
+				return h(
+					'div',
+					null,
+					'Loading...'
+				);
+			}
+
+			return h(Sparkling, this.props);
+		}
+	}]);
+	return SparklingContainer;
+}(Component);
+
+var SparklingContainer$1 = connect(function (state) {
+	return {
+		visible: isVisible(state),
+		data: getSparklingData(state),
+		selectedIndex: getIndex(state),
+		options: getOptions(state),
+		selectedValue: getSelectedValue(state),
+		rawDataLength: getRawDataLength(state),
+		offset: getOffset(state),
+		pattern: getPattern(state)
+	};
+}, function (dispatch) {
+	return {
+		setPattern: function setPattern(pattern) {
+			return dispatch({ type: 'SET_PATTERN', payload: { pattern: pattern } });
+		}
+	};
+})(SparklingContainer);
+
+var Search = function (_Component) {
+	inherits$1(Search, _Component);
+
+	function Search() {
+		classCallCheck$1(this, Search);
+		return possibleConstructorReturn$1(this, (Search.__proto__ || Object.getPrototypeOf(Search)).apply(this, arguments));
+	}
+
+	createClass(Search, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			this.input.focus();
+		}
+	}, {
+		key: "render",
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    search = _props.search,
+			    setSearch = _props.setSearch;
+
+
+			return h(
+				"div",
+				{ className: "sparking-search sparkling-input-container" },
+				h("input", {
+					id: "sparkling-input",
+					className: "sparkling-input native-key-bindings",
+					placeholder: "Sparkling find",
+					ref: function ref(input) {
+						_this2.input = input;
+					},
+					onInput: function onInput(event) {
+						setSearch(event.target.value);
+					},
+					value: search
+				})
+			);
+		}
+	}]);
+	return Search;
+}(Component);
+
+var SearchContainer = function (_Component) {
+	inherits$1(SearchContainer, _Component);
+
+	function SearchContainer() {
+		classCallCheck$1(this, SearchContainer);
+		return possibleConstructorReturn$1(this, (SearchContainer.__proto__ || Object.getPrototypeOf(SearchContainer)).apply(this, arguments));
+	}
+
+	createClass(SearchContainer, [{
+		key: 'render',
+		value: function render$$1() {
+			if (!this.props.visible) {
+				return null;
+			}
+
+			return h(Search, this.props);
+		}
+	}]);
+	return SearchContainer;
+}(Component);
+
+var SearchContainer$1 = connect(function (state) {
+	return {
+		visible: isSearchVisible(state),
+		search: getSearch(state)
+	};
+}, function (dispatch) {
+	return {
+		setSearch: function setSearch(search) {
+			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
+		}
+	};
+})(SearchContainer);
 
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
@@ -3870,6 +4337,1579 @@ var Observable_2 = Observable;
 
 var Observable_1 = {
 	Observable: Observable_2
+};
+
+var reducerCreator = function reducerCreator(actions) {
+	return function (initialState) {
+		return function () {
+			var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
+			var _ref = arguments[1];
+			var type = _ref.type,
+			    payload = _ref.payload;
+
+			var action = actions[type];
+
+			if (action !== null && action !== undefined) {
+				return typeof action === 'function' ? action(state, payload) : action;
+			}
+
+			return state;
+		};
+	};
+};
+
+var returnPayload = function returnPayload(field) {
+	return function (state, payload) {
+		return field ? payload[field] : payload;
+	};
+};
+
+var visible = reducerCreator({
+	SHOW: true,
+	HIDE: false,
+	SHOW_SEARCH: false,
+	HIDE_SEARCH: false
+})(false);
+
+var searchVisible = reducerCreator({
+	SHOW_SEARCH: true,
+	HIDE_SEARCH: false,
+	SHOW: false,
+	HIDE: false
+})(false);
+
+var search = reducerCreator({
+	SHOW_SEARCH: '',
+	SET_SEARCH: returnPayload('search')
+})('');
+
+var options$1 = reducerCreator({
+	SHOW: returnPayload()
+})({});
+
+var data = reducerCreator({
+	APPEND_DATA: function APPEND_DATA(state, _ref2) {
+		var data = _ref2.data;
+		return state.concat(data);
+	},
+	SHOW: [],
+	SHOW_SEARCH: []
+})([]);
+
+var sparklingData = reducerCreator({
+	SET_FILTERED_DATA: returnPayload('data'),
+	SHOW: [],
+	SHOW_SEARCH: []
+})([]);
+
+var pattern = reducerCreator({
+	SET_PATTERN: returnPayload('pattern'),
+	SHOW: '',
+	HIDE: ''
+})('');
+
+var index$2 = reducerCreator({
+	SET_INDEX: returnPayload('value'),
+	SET_DATA: 0,
+	SET_PATTERN: 0,
+	SHOW: 0
+})(0);
+
+var offset = reducerCreator({
+	SET_OFFSET: returnPayload('value'),
+	SET_DATA: 0,
+	SET_PATTERN: 0,
+	SHOW: 0
+})(0);
+
+var reducers = combineReducers({
+	visible: visible,
+	options: options$1,
+	data: data,
+	sparklingData: sparklingData,
+	index: index$2,
+	offset: offset,
+	pattern: pattern,
+	searchVisible: searchVisible,
+	search: search
+});
+
+var fromSelectorFactory = function fromSelectorFactory(store) {
+	return function (selector) {
+		return Observable_2.create(function (observer) {
+			store.subscribe(function () {
+				var state = store.getState();
+				var selectedState = selector(state);
+				observer.next(selectedState);
+			});
+		}).distinctUntilChanged();
+	};
+};
+
+var fromActionFactory = function fromActionFactory(store) {
+	var oldDispatch = store.dispatch;
+
+	var subscriptions = new Set();
+
+	var subscribe = function subscribe(event) {
+		subscriptions.add(event);
+
+		return function () {
+			subscriptions.delete(event);
+		};
+	};
+
+	var newDispatch = function newDispatch(action) {
+		oldDispatch(action);
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = subscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var subscription = _step.value;
+				var actionType = subscription.actionType,
+				    observer = subscription.observer;
+
+
+				if (actionType === action.type) {
+					observer.next(actionType);
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+	};
+
+	store.dispatch = newDispatch;
+
+	return function (actionType) {
+		return Observable_2.create(function (observer) {
+			subscribe({ actionType: actionType, observer: observer });
+		});
+	};
+};
+
+function storeFactory(reducers$$1) {
+	var store = createStore(reducers$$1);
+	var fromAction = fromActionFactory(store);
+	var fromSelector = fromSelectorFactory(store);
+	store.fromSelector = fromSelector;
+	store.fromAction = fromAction;
+
+	return store;
+}
+
+var store = storeFactory(reducers);
+
+var next = function next() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var sparklingData = getSparklingData(state);
+
+	if (index === 9) {
+		var offset = getOffset(state);
+		var value = Math.min(offset + 1, sparklingData.length - 10);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value = Math.min(index + 1, sparklingData.length - 1, 9);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
+	}
+};
+
+var previous = function previous() {
+	var state = store.getState();
+	var index = getIndex(state);
+
+	if (index === 0) {
+		var offset = getOffset(state);
+		var value = Math.max(offset - 1, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value2 = Math.max(index - 1, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+	}
+};
+
+var hide = function hide() {
+	store.dispatch({ type: 'HIDE' });
+};
+
+var accept = function accept() {
+	var state = store.getState();
+	var value = getSelectedValue(state);
+
+	if (value === null || value === undefined) {
+		return;
+	}
+
+	var _getOptions = getOptions(state),
+	    accept = _getOptions.accept;
+
+	accept(value);
+};
+
+var scorer = createCommonjsModule(function (module, exports) {
+(function() {
+  var AcronymResult, computeScore, emptyAcronymResult, isAcronymFullWord, isMatch, isSeparator, isWordEnd, isWordStart, miss_coeff, pos_bonus, scoreAcronyms, scoreCharacter, scoreConsecutives, scoreExact, scoreExactMatch, scorePattern, scorePosition, scoreSize, tau_size, wm;
+
+  wm = 150;
+
+  pos_bonus = 20;
+
+  tau_size = 150;
+
+  miss_coeff = 0.75;
+
+  exports.score = function(string, query, options) {
+    var allowErrors, preparedQuery, score, string_lw;
+    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
+    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
+      return 0;
+    }
+    string_lw = string.toLowerCase();
+    score = computeScore(string, string_lw, preparedQuery);
+    return Math.ceil(score);
+  };
+
+  exports.isMatch = isMatch = function(subject, query_lw, query_up) {
+    var i, j, m, n, qj_lw, qj_up, si;
+    m = subject.length;
+    n = query_lw.length;
+    if (!m || n > m) {
+      return false;
+    }
+    i = -1;
+    j = -1;
+    while (++j < n) {
+      qj_lw = query_lw.charCodeAt(j);
+      qj_up = query_up.charCodeAt(j);
+      while (++i < m) {
+        si = subject.charCodeAt(i);
+        if (si === qj_lw || si === qj_up) {
+          break;
+        }
+      }
+      if (i === m) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  exports.computeScore = computeScore = function(subject, subject_lw, preparedQuery) {
+    var acro, acro_score, align, csc_diag, csc_row, csc_score, csc_should_rebuild, i, j, m, miss_budget, miss_left, n, pos, query, query_lw, record_miss, score, score_diag, score_row, score_up, si_lw, start, sz;
+    query = preparedQuery.query;
+    query_lw = preparedQuery.query_lw;
+    m = subject.length;
+    n = query.length;
+    acro = scoreAcronyms(subject, subject_lw, query, query_lw);
+    acro_score = acro.score;
+    if (acro.count === n) {
+      return scoreExact(n, m, acro_score, acro.pos);
+    }
+    pos = subject_lw.indexOf(query_lw);
+    if (pos > -1) {
+      return scoreExactMatch(subject, subject_lw, query, query_lw, pos, n, m);
+    }
+    score_row = new Array(n);
+    csc_row = new Array(n);
+    sz = scoreSize(n, m);
+    miss_budget = Math.ceil(miss_coeff * n) + 5;
+    miss_left = miss_budget;
+    csc_should_rebuild = true;
+    j = -1;
+    while (++j < n) {
+      score_row[j] = 0;
+      csc_row[j] = 0;
+    }
+    i = -1;
+    while (++i < m) {
+      si_lw = subject_lw[i];
+      if (!si_lw.charCodeAt(0) in preparedQuery.charCodes) {
+        if (csc_should_rebuild) {
+          j = -1;
+          while (++j < n) {
+            csc_row[j] = 0;
+          }
+          csc_should_rebuild = false;
+        }
+        continue;
+      }
+      score = 0;
+      score_diag = 0;
+      csc_diag = 0;
+      record_miss = true;
+      csc_should_rebuild = true;
+      j = -1;
+      while (++j < n) {
+        score_up = score_row[j];
+        if (score_up > score) {
+          score = score_up;
+        }
+        csc_score = 0;
+        if (query_lw[j] === si_lw) {
+          start = isWordStart(i, subject, subject_lw);
+          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
+          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
+          if (align > score) {
+            score = align;
+            miss_left = miss_budget;
+          } else {
+            if (record_miss && --miss_left <= 0) {
+              return Math.max(score, score_row[n - 1]) * sz;
+            }
+            record_miss = false;
+          }
+        }
+        score_diag = score_up;
+        csc_diag = csc_row[j];
+        csc_row[j] = csc_score;
+        score_row[j] = score;
+      }
+    }
+    score = score_row[n - 1];
+    return score * sz;
+  };
+
+  exports.isWordStart = isWordStart = function(pos, subject, subject_lw) {
+    var curr_s, prev_s;
+    if (pos === 0) {
+      return true;
+    }
+    curr_s = subject[pos];
+    prev_s = subject[pos - 1];
+    return isSeparator(prev_s) || (curr_s !== subject_lw[pos] && prev_s === subject_lw[pos - 1]);
+  };
+
+  exports.isWordEnd = isWordEnd = function(pos, subject, subject_lw, len) {
+    var curr_s, next_s;
+    if (pos === len - 1) {
+      return true;
+    }
+    curr_s = subject[pos];
+    next_s = subject[pos + 1];
+    return isSeparator(next_s) || (curr_s === subject_lw[pos] && next_s !== subject_lw[pos + 1]);
+  };
+
+  isSeparator = function(c) {
+    return c === ' ' || c === '.' || c === '-' || c === '_' || c === '/' || c === '\\';
+  };
+
+  scorePosition = function(pos) {
+    var sc;
+    if (pos < pos_bonus) {
+      sc = pos_bonus - pos;
+      return 100 + sc * sc;
+    } else {
+      return Math.max(100 + pos_bonus - pos, 0);
+    }
+  };
+
+  exports.scoreSize = scoreSize = function(n, m) {
+    return tau_size / (tau_size + Math.abs(m - n));
+  };
+
+  scoreExact = function(n, m, quality, pos) {
+    return 2 * n * (wm * quality + scorePosition(pos)) * scoreSize(n, m);
+  };
+
+  exports.scorePattern = scorePattern = function(count, len, sameCase, start, end) {
+    var bonus, sz;
+    sz = count;
+    bonus = 6;
+    if (sameCase === count) {
+      bonus += 2;
+    }
+    if (start) {
+      bonus += 3;
+    }
+    if (end) {
+      bonus += 1;
+    }
+    if (count === len) {
+      if (start) {
+        if (sameCase === len) {
+          sz += 2;
+        } else {
+          sz += 1;
+        }
+      }
+      if (end) {
+        bonus += 1;
+      }
+    }
+    return sameCase + sz * (sz + bonus);
+  };
+
+  exports.scoreCharacter = scoreCharacter = function(i, j, start, acro_score, csc_score) {
+    var posBonus;
+    posBonus = scorePosition(i);
+    if (start) {
+      return posBonus + wm * ((acro_score > csc_score ? acro_score : csc_score) + 10);
+    }
+    return posBonus + wm * csc_score;
+  };
+
+  exports.scoreConsecutives = scoreConsecutives = function(subject, subject_lw, query, query_lw, i, j, startOfWord) {
+    var k, m, mi, n, nj, sameCase, sz;
+    m = subject.length;
+    n = query.length;
+    mi = m - i;
+    nj = n - j;
+    k = mi < nj ? mi : nj;
+    sameCase = 0;
+    sz = 0;
+    if (query[j] === subject[i]) {
+      sameCase++;
+    }
+    while (++sz < k && query_lw[++j] === subject_lw[++i]) {
+      if (query[j] === subject[i]) {
+        sameCase++;
+      }
+    }
+    if (sz < k) {
+      i--;
+    }
+    if (sz === 1) {
+      return 1 + 2 * sameCase;
+    }
+    return scorePattern(sz, n, sameCase, startOfWord, isWordEnd(i, subject, subject_lw, m));
+  };
+
+  exports.scoreExactMatch = scoreExactMatch = function(subject, subject_lw, query, query_lw, pos, n, m) {
+    var end, i, pos2, sameCase, start;
+    start = isWordStart(pos, subject, subject_lw);
+    if (!start) {
+      pos2 = subject_lw.indexOf(query_lw, pos + 1);
+      if (pos2 > -1) {
+        start = isWordStart(pos2, subject, subject_lw);
+        if (start) {
+          pos = pos2;
+        }
+      }
+    }
+    i = -1;
+    sameCase = 0;
+    while (++i < n) {
+      if (query[pos + i] === subject[i]) {
+        sameCase++;
+      }
+    }
+    end = isWordEnd(pos + n - 1, subject, subject_lw, m);
+    return scoreExact(n, m, scorePattern(n, n, sameCase, start, end), pos);
+  };
+
+  AcronymResult = (function() {
+    function AcronymResult(score, pos, count) {
+      this.score = score;
+      this.pos = pos;
+      this.count = count;
+    }
+
+    return AcronymResult;
+
+  })();
+
+  emptyAcronymResult = new AcronymResult(0, 0.1, 0);
+
+  exports.scoreAcronyms = scoreAcronyms = function(subject, subject_lw, query, query_lw) {
+    var count, fullWord, i, j, m, n, qj_lw, sameCase, score, sepCount, sumPos;
+    m = subject.length;
+    n = query.length;
+    if (!(m > 1 && n > 1)) {
+      return emptyAcronymResult;
+    }
+    count = 0;
+    sepCount = 0;
+    sumPos = 0;
+    sameCase = 0;
+    i = -1;
+    j = -1;
+    while (++j < n) {
+      qj_lw = query_lw[j];
+      if (isSeparator(qj_lw)) {
+        i = subject_lw.indexOf(qj_lw, i + 1);
+        if (i > -1) {
+          sepCount++;
+          continue;
+        } else {
+          break;
+        }
+      }
+      while (++i < m) {
+        if (qj_lw === subject_lw[i] && isWordStart(i, subject, subject_lw)) {
+          if (query[j] === subject[i]) {
+            sameCase++;
+          }
+          sumPos += i;
+          count++;
+          break;
+        }
+      }
+      if (i === m) {
+        break;
+      }
+    }
+    if (count < 2) {
+      return emptyAcronymResult;
+    }
+    fullWord = count === n ? isAcronymFullWord(subject, subject_lw, query, count) : false;
+    score = scorePattern(count, n, sameCase, true, fullWord);
+    return new AcronymResult(score, sumPos / count, count + sepCount);
+  };
+
+  isAcronymFullWord = function(subject, subject_lw, query, nbAcronymInQuery) {
+    var count, i, m, n;
+    m = subject.length;
+    n = query.length;
+    count = 0;
+    if (m > 12 * n) {
+      return false;
+    }
+    i = -1;
+    while (++i < m) {
+      if (isWordStart(i, subject, subject_lw) && ++count > nbAcronymInQuery) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var scorer_1 = scorer.score;
+var scorer_2 = scorer.isMatch;
+var scorer_3 = scorer.computeScore;
+var scorer_4 = scorer.isWordStart;
+var scorer_5 = scorer.isWordEnd;
+var scorer_6 = scorer.scoreSize;
+var scorer_7 = scorer.scorePattern;
+var scorer_8 = scorer.scoreCharacter;
+var scorer_9 = scorer.scoreConsecutives;
+var scorer_10 = scorer.scoreExactMatch;
+var scorer_11 = scorer.scoreAcronyms;
+
+var pathScorer = createCommonjsModule(function (module, exports) {
+(function() {
+  var computeScore, countDir, file_coeff, getExtension, getExtensionScore, isMatch, scorePath, scoreSize, tau_depth, _ref;
+
+  _ref = scorer, isMatch = _ref.isMatch, computeScore = _ref.computeScore, scoreSize = _ref.scoreSize;
+
+  tau_depth = 20;
+
+  file_coeff = 2.5;
+
+  exports.score = function(string, query, options) {
+    var allowErrors, preparedQuery, score, string_lw;
+    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
+    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
+      return 0;
+    }
+    string_lw = string.toLowerCase();
+    score = computeScore(string, string_lw, preparedQuery);
+    score = scorePath(string, string_lw, score, options);
+    return Math.ceil(score);
+  };
+
+  scorePath = function(subject, subject_lw, fullPathScore, options) {
+    var alpha, basePathScore, basePos, depth, end, extAdjust, fileLength, pathSeparator, preparedQuery, useExtensionBonus;
+    if (fullPathScore === 0) {
+      return 0;
+    }
+    preparedQuery = options.preparedQuery, useExtensionBonus = options.useExtensionBonus, pathSeparator = options.pathSeparator;
+    end = subject.length - 1;
+    while (subject[end] === pathSeparator) {
+      end--;
+    }
+    basePos = subject.lastIndexOf(pathSeparator, end);
+    fileLength = end - basePos;
+    extAdjust = 1.0;
+    if (useExtensionBonus) {
+      extAdjust += getExtensionScore(subject_lw, preparedQuery.ext, basePos, end, 2);
+      fullPathScore *= extAdjust;
+    }
+    if (basePos === -1) {
+      return fullPathScore;
+    }
+    depth = preparedQuery.depth;
+    while (basePos > -1 && depth-- > 0) {
+      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
+    }
+    basePathScore = basePos === -1 ? fullPathScore : extAdjust * computeScore(subject.slice(basePos + 1, end + 1), subject_lw.slice(basePos + 1, end + 1), preparedQuery);
+    alpha = 0.5 * tau_depth / (tau_depth + countDir(subject, end + 1, pathSeparator));
+    return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
+  };
+
+  exports.countDir = countDir = function(path$$1, end, pathSeparator) {
+    var count, i;
+    if (end < 1) {
+      return 0;
+    }
+    count = 0;
+    i = -1;
+    while (++i < end && path$$1[i] === pathSeparator) {
+      continue;
+    }
+    while (++i < end) {
+      if (path$$1[i] === pathSeparator) {
+        count++;
+        while (++i < end && path$$1[i] === pathSeparator) {
+          continue;
+        }
+      }
+    }
+    return count;
+  };
+
+  exports.getExtension = getExtension = function(str) {
+    var pos;
+    pos = str.lastIndexOf(".");
+    if (pos < 0) {
+      return "";
+    } else {
+      return str.substr(pos + 1);
+    }
+  };
+
+  getExtensionScore = function(candidate, ext, startPos, endPos, maxDepth) {
+    var m, matched, n, pos;
+    if (!ext.length) {
+      return 0;
+    }
+    pos = candidate.lastIndexOf(".", endPos);
+    if (!(pos > startPos)) {
+      return 0;
+    }
+    n = ext.length;
+    m = endPos - pos;
+    if (m < n) {
+      n = m;
+      m = ext.length;
+    }
+    pos++;
+    matched = -1;
+    while (++matched < n) {
+      if (candidate[pos + matched] !== ext[matched]) {
+        break;
+      }
+    }
+    if (matched === 0 && maxDepth > 0) {
+      return 0.9 * getExtensionScore(candidate, ext, startPos, pos - 2, maxDepth - 1);
+    }
+    return matched / m;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var pathScorer_1 = pathScorer.score;
+var pathScorer_2 = pathScorer.countDir;
+var pathScorer_3 = pathScorer.getExtension;
+
+var query = createCommonjsModule(function (module) {
+(function() {
+  var Query, coreChars, countDir, getCharCodes, getExtension, opt_char_re, truncatedUpperCase, _ref;
+
+  _ref = pathScorer, countDir = _ref.countDir, getExtension = _ref.getExtension;
+
+  module.exports = Query = (function() {
+    function Query(query, _arg) {
+      var optCharRegEx, pathSeparator, _ref1;
+      _ref1 = _arg != null ? _arg : {}, optCharRegEx = _ref1.optCharRegEx, pathSeparator = _ref1.pathSeparator;
+      if (!(query && query.length)) {
+        return null;
+      }
+      this.query = query;
+      this.query_lw = query.toLowerCase();
+      this.core = coreChars(query, optCharRegEx);
+      this.core_lw = this.core.toLowerCase();
+      this.core_up = truncatedUpperCase(this.core);
+      this.depth = countDir(query, query.length, pathSeparator);
+      this.ext = getExtension(this.query_lw);
+      this.charCodes = getCharCodes(this.query_lw);
+    }
+
+    return Query;
+
+  })();
+
+  opt_char_re = /[ _\-:\/\\]/g;
+
+  coreChars = function(query, optCharRegEx) {
+    if (optCharRegEx == null) {
+      optCharRegEx = opt_char_re;
+    }
+    return query.replace(optCharRegEx, '');
+  };
+
+  truncatedUpperCase = function(str) {
+    var char, upper, _i, _len;
+    upper = "";
+    for (_i = 0, _len = str.length; _i < _len; _i++) {
+      char = str[_i];
+      upper += char.toUpperCase()[0];
+    }
+    return upper;
+  };
+
+  getCharCodes = function(str) {
+    var charCodes, i, len;
+    len = str.length;
+    i = -1;
+    charCodes = [];
+    while (++i < len) {
+      charCodes[str.charCodeAt(i)] = true;
+    }
+    return charCodes;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var filter = createCommonjsModule(function (module) {
+(function() {
+  var Query, pathScorer$$1, pluckCandidates, scorer$$1, sortCandidates;
+
+  scorer$$1 = scorer;
+
+  pathScorer$$1 = pathScorer;
+
+  pluckCandidates = function(a) {
+    return a.candidate;
+  };
+
+  sortCandidates = function(a, b) {
+    return b.score - a.score;
+  };
+
+  module.exports = function(candidates, query$$1, options) {
+    var bKey, candidate, key, maxInners, maxResults, score, scoreProvider, scoredCandidates, spotLeft, string, usePathScoring, _i, _len;
+    scoredCandidates = [];
+    key = options.key, maxResults = options.maxResults, maxInners = options.maxInners, usePathScoring = options.usePathScoring;
+    spotLeft = (maxInners != null) && maxInners > 0 ? maxInners : candidates.length + 1;
+    bKey = key != null;
+    scoreProvider = usePathScoring ? pathScorer$$1 : scorer$$1;
+    for (_i = 0, _len = candidates.length; _i < _len; _i++) {
+      candidate = candidates[_i];
+      string = bKey ? candidate[key] : candidate;
+      if (!string) {
+        continue;
+      }
+      score = scoreProvider.score(string, query$$1, options);
+      if (score > 0) {
+        scoredCandidates.push({
+          candidate: candidate,
+          score: score
+        });
+        if (!--spotLeft) {
+          break;
+        }
+      }
+    }
+    scoredCandidates.sort(sortCandidates);
+    candidates = scoredCandidates.map(pluckCandidates);
+    if (maxResults != null) {
+      candidates = candidates.slice(0, maxResults);
+    }
+    return candidates;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var matcher = createCommonjsModule(function (module, exports) {
+(function() {
+  var basenameMatch, computeMatch, isMatch, isWordStart, match, mergeMatches, scoreAcronyms, scoreCharacter, scoreConsecutives, _ref;
+
+  _ref = scorer, isMatch = _ref.isMatch, isWordStart = _ref.isWordStart, scoreConsecutives = _ref.scoreConsecutives, scoreCharacter = _ref.scoreCharacter, scoreAcronyms = _ref.scoreAcronyms;
+
+  exports.match = match = function(string, query, options) {
+    var allowErrors, baseMatches, matches, pathSeparator, preparedQuery, string_lw;
+    allowErrors = options.allowErrors, preparedQuery = options.preparedQuery, pathSeparator = options.pathSeparator;
+    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
+      return [];
+    }
+    string_lw = string.toLowerCase();
+    matches = computeMatch(string, string_lw, preparedQuery);
+    if (matches.length === 0) {
+      return matches;
+    }
+    if (string.indexOf(pathSeparator) > -1) {
+      baseMatches = basenameMatch(string, string_lw, preparedQuery, pathSeparator);
+      matches = mergeMatches(matches, baseMatches);
+    }
+    return matches;
+  };
+
+  exports.wrap = function(string, query, options) {
+    var matchIndex, matchPos, matchPositions, output, strPos, tagClass, tagClose, tagOpen, _ref1;
+    if ((options.wrap != null)) {
+      _ref1 = options.wrap, tagClass = _ref1.tagClass, tagOpen = _ref1.tagOpen, tagClose = _ref1.tagClose;
+    }
+    if (tagClass == null) {
+      tagClass = 'highlight';
+    }
+    if (tagOpen == null) {
+      tagOpen = '<strong class="' + tagClass + '">';
+    }
+    if (tagClose == null) {
+      tagClose = '</strong>';
+    }
+    if (string === query) {
+      return tagOpen + string + tagClose;
+    }
+    matchPositions = match(string, query, options);
+    if (matchPositions.length === 0) {
+      return string;
+    }
+    output = '';
+    matchIndex = -1;
+    strPos = 0;
+    while (++matchIndex < matchPositions.length) {
+      matchPos = matchPositions[matchIndex];
+      if (matchPos > strPos) {
+        output += string.substring(strPos, matchPos);
+        strPos = matchPos;
+      }
+      while (++matchIndex < matchPositions.length) {
+        if (matchPositions[matchIndex] === matchPos + 1) {
+          matchPos++;
+        } else {
+          matchIndex--;
+          break;
+        }
+      }
+      matchPos++;
+      if (matchPos > strPos) {
+        output += tagOpen;
+        output += string.substring(strPos, matchPos);
+        output += tagClose;
+        strPos = matchPos;
+      }
+    }
+    if (strPos <= string.length - 1) {
+      output += string.substring(strPos);
+    }
+    return output;
+  };
+
+  basenameMatch = function(subject, subject_lw, preparedQuery, pathSeparator) {
+    var basePos, depth, end;
+    end = subject.length - 1;
+    while (subject[end] === pathSeparator) {
+      end--;
+    }
+    basePos = subject.lastIndexOf(pathSeparator, end);
+    if (basePos === -1) {
+      return [];
+    }
+    depth = preparedQuery.depth;
+    while (depth-- > 0) {
+      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
+      if (basePos === -1) {
+        return [];
+      }
+    }
+    basePos++;
+    end++;
+    return computeMatch(subject.slice(basePos, end), subject_lw.slice(basePos, end), preparedQuery, basePos);
+  };
+
+  mergeMatches = function(a, b) {
+    var ai, bj, i, j, m, n, out;
+    m = a.length;
+    n = b.length;
+    if (n === 0) {
+      return a.slice();
+    }
+    if (m === 0) {
+      return b.slice();
+    }
+    i = -1;
+    j = 0;
+    bj = b[j];
+    out = [];
+    while (++i < m) {
+      ai = a[i];
+      while (bj <= ai && ++j < n) {
+        if (bj < ai) {
+          out.push(bj);
+        }
+        bj = b[j];
+      }
+      out.push(ai);
+    }
+    while (j < n) {
+      out.push(b[j++]);
+    }
+    return out;
+  };
+
+  computeMatch = function(subject, subject_lw, preparedQuery, offset) {
+    var DIAGONAL, LEFT, STOP, UP, acro_score, align, backtrack, csc_diag, csc_row, csc_score, i, j, m, matches, move, n, pos, query, query_lw, score, score_diag, score_row, score_up, si_lw, start, trace;
+    if (offset == null) {
+      offset = 0;
+    }
+    query = preparedQuery.query;
+    query_lw = preparedQuery.query_lw;
+    m = subject.length;
+    n = query.length;
+    acro_score = scoreAcronyms(subject, subject_lw, query, query_lw).score;
+    score_row = new Array(n);
+    csc_row = new Array(n);
+    STOP = 0;
+    UP = 1;
+    LEFT = 2;
+    DIAGONAL = 3;
+    trace = new Array(m * n);
+    pos = -1;
+    j = -1;
+    while (++j < n) {
+      score_row[j] = 0;
+      csc_row[j] = 0;
+    }
+    i = -1;
+    while (++i < m) {
+      score = 0;
+      score_up = 0;
+      csc_diag = 0;
+      si_lw = subject_lw[i];
+      j = -1;
+      while (++j < n) {
+        csc_score = 0;
+        align = 0;
+        score_diag = score_up;
+        if (query_lw[j] === si_lw) {
+          start = isWordStart(i, subject, subject_lw);
+          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
+          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
+        }
+        score_up = score_row[j];
+        csc_diag = csc_row[j];
+        if (score > score_up) {
+          move = LEFT;
+        } else {
+          score = score_up;
+          move = UP;
+        }
+        if (align > score) {
+          score = align;
+          move = DIAGONAL;
+        } else {
+          csc_score = 0;
+        }
+        score_row[j] = score;
+        csc_row[j] = csc_score;
+        trace[++pos] = score > 0 ? move : STOP;
+      }
+    }
+    i = m - 1;
+    j = n - 1;
+    pos = i * n + j;
+    backtrack = true;
+    matches = [];
+    while (backtrack && i >= 0 && j >= 0) {
+      switch (trace[pos]) {
+        case UP:
+          i--;
+          pos -= n;
+          break;
+        case LEFT:
+          j--;
+          pos--;
+          break;
+        case DIAGONAL:
+          matches.push(i + offset);
+          j--;
+          i--;
+          pos -= n + 1;
+          break;
+        default:
+          backtrack = false;
+      }
+    }
+    matches.reverse();
+    return matches;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var matcher_1 = matcher.match;
+var matcher_2 = matcher.wrap;
+
+var fuzzaldrin = createCommonjsModule(function (module) {
+(function() {
+  var Query, defaultPathSeparator, filter$$1, matcher$$1, parseOptions, pathScorer$$1, preparedQueryCache, scorer$$1;
+
+  filter$$1 = filter;
+
+  matcher$$1 = matcher;
+
+  scorer$$1 = scorer;
+
+  pathScorer$$1 = pathScorer;
+
+  Query = query;
+
+  preparedQueryCache = null;
+
+  defaultPathSeparator = (typeof process !== "undefined" && process !== null ? process.platform : void 0) === "win32" ? '\\' : '/';
+
+  module.exports = {
+    filter: function(candidates, query$$1, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (!((query$$1 != null ? query$$1.length : void 0) && (candidates != null ? candidates.length : void 0))) {
+        return [];
+      }
+      options = parseOptions(options, query$$1);
+      return filter$$1(candidates, query$$1, options);
+    },
+    score: function(string, query$$1, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (!((string != null ? string.length : void 0) && (query$$1 != null ? query$$1.length : void 0))) {
+        return 0;
+      }
+      options = parseOptions(options, query$$1);
+      if (options.usePathScoring) {
+        return pathScorer$$1.score(string, query$$1, options);
+      } else {
+        return scorer$$1.score(string, query$$1, options);
+      }
+    },
+    match: function(string, query$$1, options) {
+      var _i, _ref, _results;
+      if (options == null) {
+        options = {};
+      }
+      if (!string) {
+        return [];
+      }
+      if (!query$$1) {
+        return [];
+      }
+      if (string === query$$1) {
+        return (function() {
+          _results = [];
+          for (var _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
+          return _results;
+        }).apply(this);
+      }
+      options = parseOptions(options, query$$1);
+      return matcher$$1.match(string, query$$1, options);
+    },
+    wrap: function(string, query$$1, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (!string) {
+        return [];
+      }
+      if (!query$$1) {
+        return [];
+      }
+      options = parseOptions(options, query$$1);
+      return matcher$$1.wrap(string, query$$1, options);
+    },
+    prepareQuery: function(query$$1, options) {
+      if (options == null) {
+        options = {};
+      }
+      options = parseOptions(options, query$$1);
+      return options.preparedQuery;
+    }
+  };
+
+  parseOptions = function(options, query$$1) {
+    if (options.allowErrors == null) {
+      options.allowErrors = false;
+    }
+    if (options.usePathScoring == null) {
+      options.usePathScoring = true;
+    }
+    if (options.useExtensionBonus == null) {
+      options.useExtensionBonus = false;
+    }
+    if (options.pathSeparator == null) {
+      options.pathSeparator = defaultPathSeparator;
+    }
+    if (options.optCharRegEx == null) {
+      options.optCharRegEx = null;
+    }
+    if (options.wrap == null) {
+      options.wrap = null;
+    }
+    if (options.preparedQuery == null) {
+      options.preparedQuery = preparedQueryCache && preparedQueryCache.query === query$$1 ? preparedQueryCache : (preparedQueryCache = new Query(query$$1, options));
+    }
+    return options;
+  };
+
+}).call(commonjsGlobal);
+});
+
+var fuzzaldrin_1 = fuzzaldrin.filter;
+var fuzzaldrin_2 = fuzzaldrin.score;
+var fuzzaldrin_3 = fuzzaldrin.match;
+var fuzzaldrin_4 = fuzzaldrin.wrap;
+var fuzzaldrin_5 = fuzzaldrin.prepareQuery;
+
+var defaultRenderer = function defaultRenderer(_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    className = _ref.className,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+
+	var value = item.value;
+	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+};
+
+var commandFactory = (function (optionsFactory) {
+	var _optionsFactory = optionsFactory(h, store),
+	    loadData = _optionsFactory.loadData,
+	    accept$$1 = _optionsFactory.accept,
+	    _optionsFactory$rende = _optionsFactory.renderer,
+	    renderer = _optionsFactory$rende === undefined ? defaultRenderer : _optionsFactory$rende,
+	    _optionsFactory$previ = _optionsFactory.preview,
+	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ;
+
+	var options$$1 = {
+		loadData: loadData,
+		accept: accept$$1,
+		renderer: renderer,
+		preview: preview
+	};
+
+	return function (extras) {
+		options$$1 = extras ? _extends$2({}, options$$1, extras) : options$$1;
+
+		var state = store.getState();
+
+		if (isVisible(state)) {
+			var storeOptions = getOptions(state);
+			var sparklingInput = document.getElementById('sparkling-input');
+
+			if (storeOptions === options$$1) {
+				if (sparklingInput === document.activeElement) {
+					hide();
+				} else {
+					sparklingInput.focus();
+				}
+			} else {
+				store.dispatch({
+					type: 'SHOW',
+					payload: options$$1
+				});
+				sparklingInput.focus();
+			}
+		} else {
+			store.dispatch({
+				type: 'SHOW',
+				payload: options$$1
+			});
+		}
+	};
+});
+
+var loadData = (function (onData) {
+	var cwd = atom.project.getPaths()[0];
+	var cmdProcess = child_process.spawn('git', ['branch'], { cwd: cwd });
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
+var gitBranchesFactory = function gitBranchesFactory(h, store) {
+	var accept = function accept(branch) {
+		var cwd = atom.project.getPaths()[0];
+		var value = branch.value.trim(0);
+
+		if (/^\*/.test(value)) {
+			return;
+		}
+
+		var cmdProcess = child_process.spawn('git', ['checkout', value], { cwd: cwd });
+		cmdProcess.stdout.on('data', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return { loadData: loadData, accept: accept };
+};
+
+var loadData$1 = (function (onData) {
+	var cwd = atom.project.getPaths()[0];
+	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+
+	return function () {
+		cmdProcess.stdin.pause();
+		cmdProcess.kill();
+	};
+});
+
+var fileIconsService = null;
+
+var setFileIconsService = function setFileIconsService(service) {
+	fileIconsService = service;
+};
+
+var iconClassForPath = function iconClassForPath(path$$1) {
+	return fileIconsService.iconClassForPath(path$$1);
+};
+
+var interspere = function interspere(array, value) {
+	return array.reduce(function (acc, s, index, array) {
+		acc.push(s);
+
+		if (index < array.length - 1) {
+			acc.push(value);
+		}
+
+		return acc;
+	}, []);
+};
+
+var renderer = (function (props) {
+	return defaultRenderer(_extends$2({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
+	}));
+});
+
+var filesFactory = function filesFactory(h, store) {
+	var accept = function accept(file) {
+		atom.workspace.open(file.value);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		renderer: renderer
+	};
+};
+
+var loadData$2 = (function (onData) {
+	var cwd = atom.project.getPaths()[0];
+	var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (value) {
+			return value.trim() !== '';
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
+var gitFilesFactory = function gitFilesFactory(h, store) {
+	var accept = function accept(file) {
+		var filePath = file.value.slice(2).trim();
+		atom.workspace.open(filePath);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return { loadData: loadData$2, accept: accept };
+};
+
+var linesFactory = function linesFactory(h, store) {
+	var loadData = function loadData(onData) {
+		var editor = atom.workspace.getActiveTextEditor();
+		var buffer = editor.getBuffer();
+		var lines = buffer.getLines().map(function (value, lineNumber) {
+			return {
+				value: value,
+				lineNumber: lineNumber
+			};
+		}).filter(function (_ref) {
+			var value = _ref.value;
+			return value.trim().length > 1;
+		}).reverse();
+		onData(lines);
+	};
+
+	var accept = function accept(line) {
+		store.dispatch({ type: 'HIDE' });
+		var editor = atom.workspace.getActiveTextEditor();
+		editor.setCursorBufferPosition([line.lineNumber, 0]);
+		var cursor = editor.cursors[0];
+		cursor.moveToFirstCharacterOfLine();
+	};
+
+	return { loadData: loadData, accept: accept };
+};
+
+var RG_RESULT = 'RG_RESULT';
+
+var loadDataFactory = (function (store) {
+	return function (onData) {
+		var search = getSearch(store.getState());
+
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('rg', [search, '-n', '--replace', RG_RESULT], {
+			cwd: cwd
+		});
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
+				var _value$split = value.split(':', 3),
+				    _value$split2 = slicedToArray(_value$split, 3),
+				    path$$1 = _value$split2[0],
+				    lineNumber = _value$split2[1],
+				    line = _value$split2[2];
+
+				if (line && line.length > 1) {
+					acc.push({ value: value, search: search, line: line, path: path$$1, lineNumber: lineNumber });
+				}
+				return acc;
+			}, []));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var renderer$1 = (function (_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+	var search = item.search,
+	    value = item.value,
+	    path$$1 = item.path;
+
+
+	var fuzzyWrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value.replace(RG_RESULT, search), pattern).replace(search, RG_RESULT) : value;
+
+	var wrappedValue = interspere(fuzzyWrappedValue.split(RG_RESULT), '<span class="search-highlight">' + search + '</span>').join();
+
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+});
+
+var searchFactory = function searchFactory(h, store) {
+	var loadData = loadDataFactory(store);
+
+	var accept = function accept(line) {
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+};
+
+var loadDataFactory$1 = (function (store) {
+	return function (onData) {
+		var options = getOptions(store.getState());
+		var path$$1 = options.path;
+
+
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('ls', [path$$1], {
+			cwd: cwd
+		});
+
+		cmdProcess.stdout.on('data', function (data) {
+			var options = getOptions(store.getState());
+			var path$$1 = options.path;
+
+
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length > 1;
+			}).map(function (value) {
+				var absolutePath = path.resolve(path$$1, value);
+				var cwd = atom.project.getPaths()[0];
+				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
+
+				return { value: projectRelativePath, absolutePath: absolutePath };
+			}));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var renderer$2 = (function (props) {
+	var absolutePath = props.item.absolutePath;
+
+
+	return defaultRenderer(_extends$2({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+	}));
+});
+
+var lsFactory = function lsFactory(h, store) {
+	var loadData = loadDataFactory$1(store);
+
+	var accept = function accept(_ref) {
+		var absolutePath = _ref.absolutePath;
+
+		if (fs.lstatSync(absolutePath).isDirectory()) {
+			ls({ path: absolutePath });
+		} else {
+			store.dispatch({ type: 'HIDE' });
+			atom.workspace.open(absolutePath);
+		}
+	};
+
+	return { loadData: loadData, accept: accept, renderer: renderer$2 };
+};
+
+var ls = commandFactory(lsFactory);
+
+var loadData$3 = (function (onData) {
+	var cwd = atom.project.getPaths()[0];
+	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '500K'], {
+		cwd: cwd
+	});
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
+			var _value$split = value.split(':', 3),
+			    _value$split2 = slicedToArray(_value$split, 3),
+			    path$$1 = _value$split2[0],
+			    lineNumber = _value$split2[1],
+			    line = _value$split2[2];
+
+			if (line && line.length > 1) {
+				acc.push({ value: value, path: path$$1, line: line, lineNumber: lineNumber });
+			}
+			return acc;
+		}, []));
+	});
+
+	return function () {
+		cmdProcess.stdout.pause();
+		cmdProcess.kill();
+	};
+});
+
+var renderer$3 = (function (_ref) {
+	var item = _ref.item,
+	    props = objectWithoutProperties$1(_ref, ['item']);
+	return defaultRenderer(_extends$2({}, props, {
+		item: _extends$2({}, item, {
+			value: item.line
+		})
+	}));
+});
+
+var allLinesFactory = function allLinesFactory(h, store) {
+	var accept = function accept(line) {
+		store.dispatch({ type: 'HIDE' });
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return { loadData: loadData$3, accept: accept };
+};
+
+var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
+	var accept = function accept(item) {
+		store.dispatch({ type: 'HIDE' });
+		var editor = atom.workspace.getActiveTextEditor();
+		editor.insertText(item.line);
+	};
+
+	return { loadData: loadData$3, accept: accept, renderer: renderer$3 };
+};
+
+var config = {
+	files: {
+		title: 'Find files with ripgrep',
+		description: 'Enable find files with ripgrep (requires ripgrep installed in path)',
+		type: 'boolean',
+		default: false
+	},
+	gitFiles: {
+		title: 'Find files with git',
+		description: 'Enable find files that have been modified according to git',
+		type: 'boolean',
+		default: true
+	},
+	gitBranches: {
+		title: 'Checkout git branches',
+		description: 'Enable checkout git branches',
+		type: 'boolean',
+		default: true
+	},
+	lines: {
+		title: 'Find buffer lines',
+		description: 'Enable find buffer lines',
+		type: 'boolean',
+		default: true
+	},
+	allLines: {
+		title: 'Find project lines',
+		description: 'Enable find project lines',
+		type: 'boolean',
+		default: true
+	},
+	autocompleteLines: {
+		title: 'Autocomplete project lines',
+		description: 'Enable autocomplete project lines',
+		type: 'boolean',
+		default: true
+	}
 };
 
 function isScheduler(value) {
@@ -5259,2051 +7299,83 @@ var distinctUntilChanged_2$1 = {
 Observable_1.Observable.prototype.distinctUntilChanged = distinctUntilChanged_2$1.distinctUntilChanged;
 //# sourceMappingURL=distinctUntilChanged.js.map
 
-var scorer = createCommonjsModule(function (module, exports) {
-(function() {
-  var AcronymResult, computeScore, emptyAcronymResult, isAcronymFullWord, isMatch, isSeparator, isWordEnd, isWordStart, miss_coeff, pos_bonus, scoreAcronyms, scoreCharacter, scoreConsecutives, scoreExact, scoreExactMatch, scorePattern, scorePosition, scoreSize, tau_size, wm;
+var fromSelector = store.fromSelector;
+var fromAction = store.fromAction;
 
-  wm = 150;
 
-  pos_bonus = 20;
+var setupObservables = (function () {
+	// let fuzzysortPromise = null
+	var cancelLoadData = null;
 
-  tau_size = 150;
+	Observable_2.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref) {
+		var _ref2 = slicedToArray(_ref, 2),
+		    data = _ref2[0],
+		    pattern = _ref2[1];
 
-  miss_coeff = 0.75;
-
-  exports.score = function(string, query, options) {
-    var allowErrors, preparedQuery, score, string_lw;
-    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return 0;
-    }
-    string_lw = string.toLowerCase();
-    score = computeScore(string, string_lw, preparedQuery);
-    return Math.ceil(score);
-  };
-
-  exports.isMatch = isMatch = function(subject, query_lw, query_up) {
-    var i, j, m, n, qj_lw, qj_up, si;
-    m = subject.length;
-    n = query_lw.length;
-    if (!m || n > m) {
-      return false;
-    }
-    i = -1;
-    j = -1;
-    while (++j < n) {
-      qj_lw = query_lw.charCodeAt(j);
-      qj_up = query_up.charCodeAt(j);
-      while (++i < m) {
-        si = subject.charCodeAt(i);
-        if (si === qj_lw || si === qj_up) {
-          break;
-        }
-      }
-      if (i === m) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  exports.computeScore = computeScore = function(subject, subject_lw, preparedQuery) {
-    var acro, acro_score, align, csc_diag, csc_row, csc_score, csc_should_rebuild, i, j, m, miss_budget, miss_left, n, pos, query, query_lw, record_miss, score, score_diag, score_row, score_up, si_lw, start, sz;
-    query = preparedQuery.query;
-    query_lw = preparedQuery.query_lw;
-    m = subject.length;
-    n = query.length;
-    acro = scoreAcronyms(subject, subject_lw, query, query_lw);
-    acro_score = acro.score;
-    if (acro.count === n) {
-      return scoreExact(n, m, acro_score, acro.pos);
-    }
-    pos = subject_lw.indexOf(query_lw);
-    if (pos > -1) {
-      return scoreExactMatch(subject, subject_lw, query, query_lw, pos, n, m);
-    }
-    score_row = new Array(n);
-    csc_row = new Array(n);
-    sz = scoreSize(n, m);
-    miss_budget = Math.ceil(miss_coeff * n) + 5;
-    miss_left = miss_budget;
-    csc_should_rebuild = true;
-    j = -1;
-    while (++j < n) {
-      score_row[j] = 0;
-      csc_row[j] = 0;
-    }
-    i = -1;
-    while (++i < m) {
-      si_lw = subject_lw[i];
-      if (!si_lw.charCodeAt(0) in preparedQuery.charCodes) {
-        if (csc_should_rebuild) {
-          j = -1;
-          while (++j < n) {
-            csc_row[j] = 0;
-          }
-          csc_should_rebuild = false;
-        }
-        continue;
-      }
-      score = 0;
-      score_diag = 0;
-      csc_diag = 0;
-      record_miss = true;
-      csc_should_rebuild = true;
-      j = -1;
-      while (++j < n) {
-        score_up = score_row[j];
-        if (score_up > score) {
-          score = score_up;
-        }
-        csc_score = 0;
-        if (query_lw[j] === si_lw) {
-          start = isWordStart(i, subject, subject_lw);
-          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
-          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
-          if (align > score) {
-            score = align;
-            miss_left = miss_budget;
-          } else {
-            if (record_miss && --miss_left <= 0) {
-              return Math.max(score, score_row[n - 1]) * sz;
-            }
-            record_miss = false;
-          }
-        }
-        score_diag = score_up;
-        csc_diag = csc_row[j];
-        csc_row[j] = csc_score;
-        score_row[j] = score;
-      }
-    }
-    score = score_row[n - 1];
-    return score * sz;
-  };
-
-  exports.isWordStart = isWordStart = function(pos, subject, subject_lw) {
-    var curr_s, prev_s;
-    if (pos === 0) {
-      return true;
-    }
-    curr_s = subject[pos];
-    prev_s = subject[pos - 1];
-    return isSeparator(prev_s) || (curr_s !== subject_lw[pos] && prev_s === subject_lw[pos - 1]);
-  };
-
-  exports.isWordEnd = isWordEnd = function(pos, subject, subject_lw, len) {
-    var curr_s, next_s;
-    if (pos === len - 1) {
-      return true;
-    }
-    curr_s = subject[pos];
-    next_s = subject[pos + 1];
-    return isSeparator(next_s) || (curr_s === subject_lw[pos] && next_s !== subject_lw[pos + 1]);
-  };
-
-  isSeparator = function(c) {
-    return c === ' ' || c === '.' || c === '-' || c === '_' || c === '/' || c === '\\';
-  };
-
-  scorePosition = function(pos) {
-    var sc;
-    if (pos < pos_bonus) {
-      sc = pos_bonus - pos;
-      return 100 + sc * sc;
-    } else {
-      return Math.max(100 + pos_bonus - pos, 0);
-    }
-  };
-
-  exports.scoreSize = scoreSize = function(n, m) {
-    return tau_size / (tau_size + Math.abs(m - n));
-  };
-
-  scoreExact = function(n, m, quality, pos) {
-    return 2 * n * (wm * quality + scorePosition(pos)) * scoreSize(n, m);
-  };
-
-  exports.scorePattern = scorePattern = function(count, len, sameCase, start, end) {
-    var bonus, sz;
-    sz = count;
-    bonus = 6;
-    if (sameCase === count) {
-      bonus += 2;
-    }
-    if (start) {
-      bonus += 3;
-    }
-    if (end) {
-      bonus += 1;
-    }
-    if (count === len) {
-      if (start) {
-        if (sameCase === len) {
-          sz += 2;
-        } else {
-          sz += 1;
-        }
-      }
-      if (end) {
-        bonus += 1;
-      }
-    }
-    return sameCase + sz * (sz + bonus);
-  };
-
-  exports.scoreCharacter = scoreCharacter = function(i, j, start, acro_score, csc_score) {
-    var posBonus;
-    posBonus = scorePosition(i);
-    if (start) {
-      return posBonus + wm * ((acro_score > csc_score ? acro_score : csc_score) + 10);
-    }
-    return posBonus + wm * csc_score;
-  };
-
-  exports.scoreConsecutives = scoreConsecutives = function(subject, subject_lw, query, query_lw, i, j, startOfWord) {
-    var k, m, mi, n, nj, sameCase, sz;
-    m = subject.length;
-    n = query.length;
-    mi = m - i;
-    nj = n - j;
-    k = mi < nj ? mi : nj;
-    sameCase = 0;
-    sz = 0;
-    if (query[j] === subject[i]) {
-      sameCase++;
-    }
-    while (++sz < k && query_lw[++j] === subject_lw[++i]) {
-      if (query[j] === subject[i]) {
-        sameCase++;
-      }
-    }
-    if (sz < k) {
-      i--;
-    }
-    if (sz === 1) {
-      return 1 + 2 * sameCase;
-    }
-    return scorePattern(sz, n, sameCase, startOfWord, isWordEnd(i, subject, subject_lw, m));
-  };
-
-  exports.scoreExactMatch = scoreExactMatch = function(subject, subject_lw, query, query_lw, pos, n, m) {
-    var end, i, pos2, sameCase, start;
-    start = isWordStart(pos, subject, subject_lw);
-    if (!start) {
-      pos2 = subject_lw.indexOf(query_lw, pos + 1);
-      if (pos2 > -1) {
-        start = isWordStart(pos2, subject, subject_lw);
-        if (start) {
-          pos = pos2;
-        }
-      }
-    }
-    i = -1;
-    sameCase = 0;
-    while (++i < n) {
-      if (query[pos + i] === subject[i]) {
-        sameCase++;
-      }
-    }
-    end = isWordEnd(pos + n - 1, subject, subject_lw, m);
-    return scoreExact(n, m, scorePattern(n, n, sameCase, start, end), pos);
-  };
-
-  AcronymResult = (function() {
-    function AcronymResult(score, pos, count) {
-      this.score = score;
-      this.pos = pos;
-      this.count = count;
-    }
-
-    return AcronymResult;
-
-  })();
-
-  emptyAcronymResult = new AcronymResult(0, 0.1, 0);
-
-  exports.scoreAcronyms = scoreAcronyms = function(subject, subject_lw, query, query_lw) {
-    var count, fullWord, i, j, m, n, qj_lw, sameCase, score, sepCount, sumPos;
-    m = subject.length;
-    n = query.length;
-    if (!(m > 1 && n > 1)) {
-      return emptyAcronymResult;
-    }
-    count = 0;
-    sepCount = 0;
-    sumPos = 0;
-    sameCase = 0;
-    i = -1;
-    j = -1;
-    while (++j < n) {
-      qj_lw = query_lw[j];
-      if (isSeparator(qj_lw)) {
-        i = subject_lw.indexOf(qj_lw, i + 1);
-        if (i > -1) {
-          sepCount++;
-          continue;
-        } else {
-          break;
-        }
-      }
-      while (++i < m) {
-        if (qj_lw === subject_lw[i] && isWordStart(i, subject, subject_lw)) {
-          if (query[j] === subject[i]) {
-            sameCase++;
-          }
-          sumPos += i;
-          count++;
-          break;
-        }
-      }
-      if (i === m) {
-        break;
-      }
-    }
-    if (count < 2) {
-      return emptyAcronymResult;
-    }
-    fullWord = count === n ? isAcronymFullWord(subject, subject_lw, query, count) : false;
-    score = scorePattern(count, n, sameCase, true, fullWord);
-    return new AcronymResult(score, sumPos / count, count + sepCount);
-  };
-
-  isAcronymFullWord = function(subject, subject_lw, query, nbAcronymInQuery) {
-    var count, i, m, n;
-    m = subject.length;
-    n = query.length;
-    count = 0;
-    if (m > 12 * n) {
-      return false;
-    }
-    i = -1;
-    while (++i < m) {
-      if (isWordStart(i, subject, subject_lw) && ++count > nbAcronymInQuery) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var scorer_1 = scorer.score;
-var scorer_2 = scorer.isMatch;
-var scorer_3 = scorer.computeScore;
-var scorer_4 = scorer.isWordStart;
-var scorer_5 = scorer.isWordEnd;
-var scorer_6 = scorer.scoreSize;
-var scorer_7 = scorer.scorePattern;
-var scorer_8 = scorer.scoreCharacter;
-var scorer_9 = scorer.scoreConsecutives;
-var scorer_10 = scorer.scoreExactMatch;
-var scorer_11 = scorer.scoreAcronyms;
-
-var pathScorer = createCommonjsModule(function (module, exports) {
-(function() {
-  var computeScore, countDir, file_coeff, getExtension, getExtensionScore, isMatch, scorePath, scoreSize, tau_depth, _ref;
-
-  _ref = scorer, isMatch = _ref.isMatch, computeScore = _ref.computeScore, scoreSize = _ref.scoreSize;
-
-  tau_depth = 20;
-
-  file_coeff = 2.5;
-
-  exports.score = function(string, query, options) {
-    var allowErrors, preparedQuery, score, string_lw;
-    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return 0;
-    }
-    string_lw = string.toLowerCase();
-    score = computeScore(string, string_lw, preparedQuery);
-    score = scorePath(string, string_lw, score, options);
-    return Math.ceil(score);
-  };
-
-  scorePath = function(subject, subject_lw, fullPathScore, options) {
-    var alpha, basePathScore, basePos, depth, end, extAdjust, fileLength, pathSeparator, preparedQuery, useExtensionBonus;
-    if (fullPathScore === 0) {
-      return 0;
-    }
-    preparedQuery = options.preparedQuery, useExtensionBonus = options.useExtensionBonus, pathSeparator = options.pathSeparator;
-    end = subject.length - 1;
-    while (subject[end] === pathSeparator) {
-      end--;
-    }
-    basePos = subject.lastIndexOf(pathSeparator, end);
-    fileLength = end - basePos;
-    extAdjust = 1.0;
-    if (useExtensionBonus) {
-      extAdjust += getExtensionScore(subject_lw, preparedQuery.ext, basePos, end, 2);
-      fullPathScore *= extAdjust;
-    }
-    if (basePos === -1) {
-      return fullPathScore;
-    }
-    depth = preparedQuery.depth;
-    while (basePos > -1 && depth-- > 0) {
-      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
-    }
-    basePathScore = basePos === -1 ? fullPathScore : extAdjust * computeScore(subject.slice(basePos + 1, end + 1), subject_lw.slice(basePos + 1, end + 1), preparedQuery);
-    alpha = 0.5 * tau_depth / (tau_depth + countDir(subject, end + 1, pathSeparator));
-    return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
-  };
-
-  exports.countDir = countDir = function(path, end, pathSeparator) {
-    var count, i;
-    if (end < 1) {
-      return 0;
-    }
-    count = 0;
-    i = -1;
-    while (++i < end && path[i] === pathSeparator) {
-      continue;
-    }
-    while (++i < end) {
-      if (path[i] === pathSeparator) {
-        count++;
-        while (++i < end && path[i] === pathSeparator) {
-          continue;
-        }
-      }
-    }
-    return count;
-  };
-
-  exports.getExtension = getExtension = function(str) {
-    var pos;
-    pos = str.lastIndexOf(".");
-    if (pos < 0) {
-      return "";
-    } else {
-      return str.substr(pos + 1);
-    }
-  };
-
-  getExtensionScore = function(candidate, ext, startPos, endPos, maxDepth) {
-    var m, matched, n, pos;
-    if (!ext.length) {
-      return 0;
-    }
-    pos = candidate.lastIndexOf(".", endPos);
-    if (!(pos > startPos)) {
-      return 0;
-    }
-    n = ext.length;
-    m = endPos - pos;
-    if (m < n) {
-      n = m;
-      m = ext.length;
-    }
-    pos++;
-    matched = -1;
-    while (++matched < n) {
-      if (candidate[pos + matched] !== ext[matched]) {
-        break;
-      }
-    }
-    if (matched === 0 && maxDepth > 0) {
-      return 0.9 * getExtensionScore(candidate, ext, startPos, pos - 2, maxDepth - 1);
-    }
-    return matched / m;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var pathScorer_1 = pathScorer.score;
-var pathScorer_2 = pathScorer.countDir;
-var pathScorer_3 = pathScorer.getExtension;
-
-var query = createCommonjsModule(function (module) {
-(function() {
-  var Query, coreChars, countDir, getCharCodes, getExtension, opt_char_re, truncatedUpperCase, _ref;
-
-  _ref = pathScorer, countDir = _ref.countDir, getExtension = _ref.getExtension;
-
-  module.exports = Query = (function() {
-    function Query(query, _arg) {
-      var optCharRegEx, pathSeparator, _ref1;
-      _ref1 = _arg != null ? _arg : {}, optCharRegEx = _ref1.optCharRegEx, pathSeparator = _ref1.pathSeparator;
-      if (!(query && query.length)) {
-        return null;
-      }
-      this.query = query;
-      this.query_lw = query.toLowerCase();
-      this.core = coreChars(query, optCharRegEx);
-      this.core_lw = this.core.toLowerCase();
-      this.core_up = truncatedUpperCase(this.core);
-      this.depth = countDir(query, query.length, pathSeparator);
-      this.ext = getExtension(this.query_lw);
-      this.charCodes = getCharCodes(this.query_lw);
-    }
-
-    return Query;
-
-  })();
-
-  opt_char_re = /[ _\-:\/\\]/g;
-
-  coreChars = function(query, optCharRegEx) {
-    if (optCharRegEx == null) {
-      optCharRegEx = opt_char_re;
-    }
-    return query.replace(optCharRegEx, '');
-  };
-
-  truncatedUpperCase = function(str) {
-    var char, upper, _i, _len;
-    upper = "";
-    for (_i = 0, _len = str.length; _i < _len; _i++) {
-      char = str[_i];
-      upper += char.toUpperCase()[0];
-    }
-    return upper;
-  };
-
-  getCharCodes = function(str) {
-    var charCodes, i, len;
-    len = str.length;
-    i = -1;
-    charCodes = [];
-    while (++i < len) {
-      charCodes[str.charCodeAt(i)] = true;
-    }
-    return charCodes;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var filter = createCommonjsModule(function (module) {
-(function() {
-  var Query, pathScorer$$1, pluckCandidates, scorer$$1, sortCandidates;
-
-  scorer$$1 = scorer;
-
-  pathScorer$$1 = pathScorer;
-
-  pluckCandidates = function(a) {
-    return a.candidate;
-  };
-
-  sortCandidates = function(a, b) {
-    return b.score - a.score;
-  };
-
-  module.exports = function(candidates, query$$1, options) {
-    var bKey, candidate, key, maxInners, maxResults, score, scoreProvider, scoredCandidates, spotLeft, string, usePathScoring, _i, _len;
-    scoredCandidates = [];
-    key = options.key, maxResults = options.maxResults, maxInners = options.maxInners, usePathScoring = options.usePathScoring;
-    spotLeft = (maxInners != null) && maxInners > 0 ? maxInners : candidates.length + 1;
-    bKey = key != null;
-    scoreProvider = usePathScoring ? pathScorer$$1 : scorer$$1;
-    for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-      candidate = candidates[_i];
-      string = bKey ? candidate[key] : candidate;
-      if (!string) {
-        continue;
-      }
-      score = scoreProvider.score(string, query$$1, options);
-      if (score > 0) {
-        scoredCandidates.push({
-          candidate: candidate,
-          score: score
-        });
-        if (!--spotLeft) {
-          break;
-        }
-      }
-    }
-    scoredCandidates.sort(sortCandidates);
-    candidates = scoredCandidates.map(pluckCandidates);
-    if (maxResults != null) {
-      candidates = candidates.slice(0, maxResults);
-    }
-    return candidates;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var matcher = createCommonjsModule(function (module, exports) {
-(function() {
-  var basenameMatch, computeMatch, isMatch, isWordStart, match, mergeMatches, scoreAcronyms, scoreCharacter, scoreConsecutives, _ref;
-
-  _ref = scorer, isMatch = _ref.isMatch, isWordStart = _ref.isWordStart, scoreConsecutives = _ref.scoreConsecutives, scoreCharacter = _ref.scoreCharacter, scoreAcronyms = _ref.scoreAcronyms;
-
-  exports.match = match = function(string, query, options) {
-    var allowErrors, baseMatches, matches, pathSeparator, preparedQuery, string_lw;
-    allowErrors = options.allowErrors, preparedQuery = options.preparedQuery, pathSeparator = options.pathSeparator;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return [];
-    }
-    string_lw = string.toLowerCase();
-    matches = computeMatch(string, string_lw, preparedQuery);
-    if (matches.length === 0) {
-      return matches;
-    }
-    if (string.indexOf(pathSeparator) > -1) {
-      baseMatches = basenameMatch(string, string_lw, preparedQuery, pathSeparator);
-      matches = mergeMatches(matches, baseMatches);
-    }
-    return matches;
-  };
-
-  exports.wrap = function(string, query, options) {
-    var matchIndex, matchPos, matchPositions, output, strPos, tagClass, tagClose, tagOpen, _ref1;
-    if ((options.wrap != null)) {
-      _ref1 = options.wrap, tagClass = _ref1.tagClass, tagOpen = _ref1.tagOpen, tagClose = _ref1.tagClose;
-    }
-    if (tagClass == null) {
-      tagClass = 'highlight';
-    }
-    if (tagOpen == null) {
-      tagOpen = '<strong class="' + tagClass + '">';
-    }
-    if (tagClose == null) {
-      tagClose = '</strong>';
-    }
-    if (string === query) {
-      return tagOpen + string + tagClose;
-    }
-    matchPositions = match(string, query, options);
-    if (matchPositions.length === 0) {
-      return string;
-    }
-    output = '';
-    matchIndex = -1;
-    strPos = 0;
-    while (++matchIndex < matchPositions.length) {
-      matchPos = matchPositions[matchIndex];
-      if (matchPos > strPos) {
-        output += string.substring(strPos, matchPos);
-        strPos = matchPos;
-      }
-      while (++matchIndex < matchPositions.length) {
-        if (matchPositions[matchIndex] === matchPos + 1) {
-          matchPos++;
-        } else {
-          matchIndex--;
-          break;
-        }
-      }
-      matchPos++;
-      if (matchPos > strPos) {
-        output += tagOpen;
-        output += string.substring(strPos, matchPos);
-        output += tagClose;
-        strPos = matchPos;
-      }
-    }
-    if (strPos <= string.length - 1) {
-      output += string.substring(strPos);
-    }
-    return output;
-  };
-
-  basenameMatch = function(subject, subject_lw, preparedQuery, pathSeparator) {
-    var basePos, depth, end;
-    end = subject.length - 1;
-    while (subject[end] === pathSeparator) {
-      end--;
-    }
-    basePos = subject.lastIndexOf(pathSeparator, end);
-    if (basePos === -1) {
-      return [];
-    }
-    depth = preparedQuery.depth;
-    while (depth-- > 0) {
-      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
-      if (basePos === -1) {
-        return [];
-      }
-    }
-    basePos++;
-    end++;
-    return computeMatch(subject.slice(basePos, end), subject_lw.slice(basePos, end), preparedQuery, basePos);
-  };
-
-  mergeMatches = function(a, b) {
-    var ai, bj, i, j, m, n, out;
-    m = a.length;
-    n = b.length;
-    if (n === 0) {
-      return a.slice();
-    }
-    if (m === 0) {
-      return b.slice();
-    }
-    i = -1;
-    j = 0;
-    bj = b[j];
-    out = [];
-    while (++i < m) {
-      ai = a[i];
-      while (bj <= ai && ++j < n) {
-        if (bj < ai) {
-          out.push(bj);
-        }
-        bj = b[j];
-      }
-      out.push(ai);
-    }
-    while (j < n) {
-      out.push(b[j++]);
-    }
-    return out;
-  };
-
-  computeMatch = function(subject, subject_lw, preparedQuery, offset) {
-    var DIAGONAL, LEFT, STOP, UP, acro_score, align, backtrack, csc_diag, csc_row, csc_score, i, j, m, matches, move, n, pos, query, query_lw, score, score_diag, score_row, score_up, si_lw, start, trace;
-    if (offset == null) {
-      offset = 0;
-    }
-    query = preparedQuery.query;
-    query_lw = preparedQuery.query_lw;
-    m = subject.length;
-    n = query.length;
-    acro_score = scoreAcronyms(subject, subject_lw, query, query_lw).score;
-    score_row = new Array(n);
-    csc_row = new Array(n);
-    STOP = 0;
-    UP = 1;
-    LEFT = 2;
-    DIAGONAL = 3;
-    trace = new Array(m * n);
-    pos = -1;
-    j = -1;
-    while (++j < n) {
-      score_row[j] = 0;
-      csc_row[j] = 0;
-    }
-    i = -1;
-    while (++i < m) {
-      score = 0;
-      score_up = 0;
-      csc_diag = 0;
-      si_lw = subject_lw[i];
-      j = -1;
-      while (++j < n) {
-        csc_score = 0;
-        align = 0;
-        score_diag = score_up;
-        if (query_lw[j] === si_lw) {
-          start = isWordStart(i, subject, subject_lw);
-          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
-          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
-        }
-        score_up = score_row[j];
-        csc_diag = csc_row[j];
-        if (score > score_up) {
-          move = LEFT;
-        } else {
-          score = score_up;
-          move = UP;
-        }
-        if (align > score) {
-          score = align;
-          move = DIAGONAL;
-        } else {
-          csc_score = 0;
-        }
-        score_row[j] = score;
-        csc_row[j] = csc_score;
-        trace[++pos] = score > 0 ? move : STOP;
-      }
-    }
-    i = m - 1;
-    j = n - 1;
-    pos = i * n + j;
-    backtrack = true;
-    matches = [];
-    while (backtrack && i >= 0 && j >= 0) {
-      switch (trace[pos]) {
-        case UP:
-          i--;
-          pos -= n;
-          break;
-        case LEFT:
-          j--;
-          pos--;
-          break;
-        case DIAGONAL:
-          matches.push(i + offset);
-          j--;
-          i--;
-          pos -= n + 1;
-          break;
-        default:
-          backtrack = false;
-      }
-    }
-    matches.reverse();
-    return matches;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var matcher_1 = matcher.match;
-var matcher_2 = matcher.wrap;
-
-var fuzzaldrin = createCommonjsModule(function (module) {
-(function() {
-  var Query, defaultPathSeparator, filter$$1, matcher$$1, parseOptions, pathScorer$$1, preparedQueryCache, scorer$$1;
-
-  filter$$1 = filter;
-
-  matcher$$1 = matcher;
-
-  scorer$$1 = scorer;
-
-  pathScorer$$1 = pathScorer;
-
-  Query = query;
-
-  preparedQueryCache = null;
-
-  defaultPathSeparator = (typeof process !== "undefined" && process !== null ? process.platform : void 0) === "win32" ? '\\' : '/';
-
-  module.exports = {
-    filter: function(candidates, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!((query$$1 != null ? query$$1.length : void 0) && (candidates != null ? candidates.length : void 0))) {
-        return [];
-      }
-      options = parseOptions(options, query$$1);
-      return filter$$1(candidates, query$$1, options);
-    },
-    score: function(string, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!((string != null ? string.length : void 0) && (query$$1 != null ? query$$1.length : void 0))) {
-        return 0;
-      }
-      options = parseOptions(options, query$$1);
-      if (options.usePathScoring) {
-        return pathScorer$$1.score(string, query$$1, options);
-      } else {
-        return scorer$$1.score(string, query$$1, options);
-      }
-    },
-    match: function(string, query$$1, options) {
-      var _i, _ref, _results;
-      if (options == null) {
-        options = {};
-      }
-      if (!string) {
-        return [];
-      }
-      if (!query$$1) {
-        return [];
-      }
-      if (string === query$$1) {
-        return (function() {
-          _results = [];
-          for (var _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
-          return _results;
-        }).apply(this);
-      }
-      options = parseOptions(options, query$$1);
-      return matcher$$1.match(string, query$$1, options);
-    },
-    wrap: function(string, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!string) {
-        return [];
-      }
-      if (!query$$1) {
-        return [];
-      }
-      options = parseOptions(options, query$$1);
-      return matcher$$1.wrap(string, query$$1, options);
-    },
-    prepareQuery: function(query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      options = parseOptions(options, query$$1);
-      return options.preparedQuery;
-    }
-  };
-
-  parseOptions = function(options, query$$1) {
-    if (options.allowErrors == null) {
-      options.allowErrors = false;
-    }
-    if (options.usePathScoring == null) {
-      options.usePathScoring = true;
-    }
-    if (options.useExtensionBonus == null) {
-      options.useExtensionBonus = false;
-    }
-    if (options.pathSeparator == null) {
-      options.pathSeparator = defaultPathSeparator;
-    }
-    if (options.optCharRegEx == null) {
-      options.optCharRegEx = null;
-    }
-    if (options.wrap == null) {
-      options.wrap = null;
-    }
-    if (options.preparedQuery == null) {
-      options.preparedQuery = preparedQueryCache && preparedQueryCache.query === query$$1 ? preparedQueryCache : (preparedQueryCache = new Query(query$$1, options));
-    }
-    return options;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var fuzzaldrin_1 = fuzzaldrin.filter;
-var fuzzaldrin_2 = fuzzaldrin.score;
-var fuzzaldrin_3 = fuzzaldrin.match;
-var fuzzaldrin_4 = fuzzaldrin.wrap;
-var fuzzaldrin_5 = fuzzaldrin.prepareQuery;
-
-var isVisible = function isVisible(state) {
-	return state.visible;
-};
-var getOptions = function getOptions(state) {
-	return state.options;
-};
-var getData = function getData(state) {
-	return state.data;
-};
-var getIndex = function getIndex(state) {
-	return state.index;
-};
-var getOffset = function getOffset(state) {
-	return state.offset;
-};
-var getPattern = function getPattern(state) {
-	return state.pattern;
-};
-var getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getOffset(state) + getIndex(state)];
-};
-var getRawDataLength = function getRawDataLength(state) {
-	return state.data.length;
-};
-var getSparklingData = function getSparklingData(state) {
-	return state.sparklingData;
-};
-var getSearch = function getSearch(state) {
-	return state.search;
-};
-var isSearchVisible = function isSearchVisible(state) {
-	return state.searchVisible;
-};
-
-var classnames = createCommonjsModule(function (module) {
-/*!
-  Copyright (c) 2016 Jed Watson.
-  Licensed under the MIT License (MIT), see
-  http://jedwatson.github.io/classnames
-*/
-/* global define */
-
-(function () {
-	var hasOwn = {}.hasOwnProperty;
-
-	function classNames () {
-		var classes = [];
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg;
-
-			if (argType === 'string' || argType === 'number') {
-				classes.push(arg);
-			} else if (Array.isArray(arg)) {
-				classes.push(classNames.apply(null, arg));
-			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes.push(key);
-					}
-				}
-			}
-		}
-
-		return classes.join(' ');
-	}
-
-	if ('object' !== 'undefined' && module.exports) {
-		module.exports = classNames;
-	} else if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
-		// register as 'classnames', consistent with npm package name
-		undefined('classnames', [], function () {
-			return classNames;
-		});
-	} else {
-		window.classNames = classNames;
-	}
-}());
-});
-
-var classCallCheck$1 = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-
-
-
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends$2 = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-
-
-var inherits$1 = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-
-
-
-
-
-
-
-
-var objectWithoutProperties$1 = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn$1 = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-
-
-
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-
-
-
-
-
-
-
-
-
-
-
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
-var Sparkling = function (_Component) {
-	inherits$1(Sparkling, _Component);
-
-	function Sparkling() {
-		classCallCheck$1(this, Sparkling);
-		return possibleConstructorReturn$1(this, (Sparkling.__proto__ || Object.getPrototypeOf(Sparkling)).apply(this, arguments));
-	}
-
-	createClass(Sparkling, [{
-		key: 'componentDidMount',
-		value: function componentDidMount() {
-			this.input.focus();
-		}
-	}, {
-		key: 'render',
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    options$$1 = _props.options,
-			    selectedValue = _props.selectedValue,
-			    data = _props.data,
-			    selectedIndex = _props.selectedIndex,
-			    rawDataLength = _props.rawDataLength,
-			    offset = _props.offset,
-			    pattern = _props.pattern;
-			var preview = options$$1.preview,
-			    renderer = options$$1.renderer,
-			    accept = options$$1.accept;
-
-			var filteredDataLength = data.length;
-
-			return h(
-				'div',
-				{ className: 'sparkling' },
-				h(
-					'div',
-					{ className: 'sparkling-results-block' },
-					h(
-						'div',
-						{ className: 'sparkling-results', id: 'sparkling-results' },
-						data.slice(offset, offset + 10).map(function (item, index) {
-							return renderer({
-								item: item,
-								index: index,
-								selectedIndex: selectedIndex,
-								accept: accept,
-								pattern: pattern
-							});
-						})
-					),
-					preview && selectedValue && h(
-						'div',
-						{ className: 'sparkling-preview' },
-						preview(selectedValue)
-					)
-				),
-				h(
-					'div',
-					{ className: 'sparkling-input-container' },
-					h(
-						'div',
-						{ className: 'sparkling-search-meta-data' },
-						filteredDataLength + ' / ' + rawDataLength
-					),
-					h('input', {
-						id: 'sparkling-input',
-						className: classnames('sparkling-input native-key-bindings', {
-							'sparkling-input--has-results': filteredDataLength > 0,
-							'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
-						}),
-						placeholder: 'Sparkling find',
-						ref: function ref(input) {
-							_this2.input = input;
-						},
-						onInput: function onInput(event) {
-							_this2.props.setPattern(event.target.value);
-						},
-						value: this.props.pattern
-					})
-				)
-			);
-		}
-	}]);
-	return Sparkling;
-}(Component);
-
-var SparklingContainer = function (_Component) {
-	inherits$1(SparklingContainer, _Component);
-
-	function SparklingContainer() {
-		classCallCheck$1(this, SparklingContainer);
-		return possibleConstructorReturn$1(this, (SparklingContainer.__proto__ || Object.getPrototypeOf(SparklingContainer)).apply(this, arguments));
-	}
-
-	createClass(SparklingContainer, [{
-		key: 'render',
-		value: function render$$1() {
-			if (!this.props.visible) {
-				return null;
-			}
-
-			if (!this.props.data) {
-				return h(
-					'div',
-					null,
-					'Loading...'
-				);
-			}
-
-			return h(Sparkling, this.props);
-		}
-	}]);
-	return SparklingContainer;
-}(Component);
-
-var SparklingContainer$1 = connect(function (state) {
-	return {
-		visible: isVisible(state),
-		data: getSparklingData(state),
-		selectedIndex: getIndex(state),
-		options: getOptions(state),
-		selectedValue: getSelectedValue(state),
-		rawDataLength: getRawDataLength(state),
-		offset: getOffset(state),
-		pattern: getPattern(state)
-	};
-}, function (dispatch) {
-	return {
-		setPattern: function setPattern(pattern) {
-			return dispatch({ type: 'SET_PATTERN', payload: { pattern: pattern } });
-		}
-	};
-})(SparklingContainer);
-
-var Search = function (_Component) {
-	inherits$1(Search, _Component);
-
-	function Search() {
-		classCallCheck$1(this, Search);
-		return possibleConstructorReturn$1(this, (Search.__proto__ || Object.getPrototypeOf(Search)).apply(this, arguments));
-	}
-
-	createClass(Search, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			this.input.focus();
-		}
-	}, {
-		key: "render",
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    search = _props.search,
-			    setSearch = _props.setSearch;
-
-
-			return h(
-				"div",
-				{ className: "sparking-search sparkling-input-container" },
-				h("input", {
-					id: "sparkling-input",
-					className: "sparkling-input native-key-bindings",
-					placeholder: "Sparkling find",
-					ref: function ref(input) {
-						_this2.input = input;
-					},
-					onInput: function onInput(event) {
-						setSearch(event.target.value);
-					},
-					value: search
-				})
-			);
-		}
-	}]);
-	return Search;
-}(Component);
-
-var SearchContainer = function (_Component) {
-	inherits$1(SearchContainer, _Component);
-
-	function SearchContainer() {
-		classCallCheck$1(this, SearchContainer);
-		return possibleConstructorReturn$1(this, (SearchContainer.__proto__ || Object.getPrototypeOf(SearchContainer)).apply(this, arguments));
-	}
-
-	createClass(SearchContainer, [{
-		key: 'render',
-		value: function render$$1() {
-			if (!this.props.visible) {
-				return null;
-			}
-
-			return h(Search, this.props);
-		}
-	}]);
-	return SearchContainer;
-}(Component);
-
-var SearchContainer$1 = connect(function (state) {
-	return {
-		visible: isSearchVisible(state),
-		search: getSearch(state)
-	};
-}, function (dispatch) {
-	return {
-		setSearch: function setSearch(search) {
-			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
-		}
-	};
-})(SearchContainer);
-
-var loadData = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('git', ['branch'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-});
-
-var gitBranchesFactory = function gitBranchesFactory(h, store) {
-	var accept = function accept(branch) {
-		var cwd = atom.project.getPaths()[0];
-		var value = branch.value.trim(0);
-
-		if (/^\*/.test(value)) {
+		if (!pattern.length && (!data || !data.length)) {
 			return;
 		}
 
-		var cmdProcess = child_process.spawn('git', ['checkout', value], { cwd: cwd });
-		cmdProcess.stdout.on('data', function () {
+		if (!pattern.length) {
 			store.dispatch({
-				type: 'HIDE'
+				type: 'SET_FILTERED_DATA',
+				payload: { data: data }
 			});
-		});
-	};
-
-	return { loadData: loadData, accept: accept };
-};
-
-var loadData$1 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-
-	return function () {
-		cmdProcess.stdin.pause();
-		cmdProcess.kill();
-	};
-});
-
-var defaultRenderer = function defaultRenderer(_ref) {
-	var item = _ref.item,
-	    pattern = _ref.pattern,
-	    className = _ref.className,
-	    index = _ref.index,
-	    selectedIndex = _ref.selectedIndex,
-	    accept = _ref.accept;
-
-	var value = item.value;
-	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
-	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
-	return h('div', {
-		className: finalClassName,
-		'aria-role': 'button',
-		onClick: function onClick() {
-			return accept(item);
-		},
-		dangerouslySetInnerHTML: { __html: wrappedValue }
-	});
-};
-
-var fileIconsService = null;
-
-var setFileIconsService = function setFileIconsService(service) {
-	fileIconsService = service;
-};
-
-var iconClassForPath = function iconClassForPath(path) {
-	return fileIconsService.iconClassForPath(path);
-};
-
-var interspere = function interspere(array, value) {
-	return array.reduce(function (acc, s, index, array) {
-		acc.push(s);
-
-		if (index < array.length - 1) {
-			acc.push(value);
-		}
-
-		return acc;
-	}, []);
-};
-
-var renderer = (function (props) {
-	return defaultRenderer(_extends$2({}, props, {
-		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
-	}));
-});
-
-var filesFactory = function filesFactory(h, store) {
-	var accept = function accept(file) {
-		atom.workspace.open(file.value);
-		store.dispatch({
-			type: 'HIDE'
-		});
-	};
-
-	return {
-		loadData: loadData$1,
-		accept: accept,
-		renderer: renderer
-	};
-};
-
-var loadData$2 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (value) {
-			return value.trim() !== '';
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-});
-
-var gitFilesFactory = function gitFilesFactory(h, store) {
-	var accept = function accept(file) {
-		var filePath = file.value.slice(2).trim();
-		atom.workspace.open(filePath);
-		store.dispatch({
-			type: 'HIDE'
-		});
-	};
-
-	return { loadData: loadData$2, accept: accept };
-};
-
-var linesFactory = function linesFactory(h, store) {
-	var loadData = function loadData(onData) {
-		var editor = atom.workspace.getActiveTextEditor();
-		var buffer = editor.getBuffer();
-		var lines = buffer.getLines().map(function (value, lineNumber) {
-			return {
-				value: value,
-				lineNumber: lineNumber
-			};
-		}).filter(function (_ref) {
-			var value = _ref.value;
-			return value.trim().length > 1;
-		}).reverse();
-		onData(lines);
-	};
-
-	var accept = function accept(line) {
-		store.dispatch({ type: 'HIDE' });
-		var editor = atom.workspace.getActiveTextEditor();
-		editor.setCursorBufferPosition([line.lineNumber, 0]);
-		var cursor = editor.cursors[0];
-		cursor.moveToFirstCharacterOfLine();
-	};
-
-	return { loadData: loadData, accept: accept };
-};
-
-var RG_RESULT = 'RG_RESULT';
-
-var loadDataFactory = (function (store) {
-	return function (onData) {
-		var search = getSearch(store.getState());
-
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('rg', [search, '-n', '--replace', RG_RESULT], {
-			cwd: cwd
-		});
-		cmdProcess.stdout.on('data', function (data) {
-			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-				var _value$split = value.split(':', 3),
-				    _value$split2 = slicedToArray(_value$split, 3),
-				    path = _value$split2[0],
-				    lineNumber = _value$split2[1],
-				    line = _value$split2[2];
-
-				if (line && line.length > 1) {
-					acc.push({ value: value, search: search, line: line, path: path, lineNumber: lineNumber });
-				}
-				return acc;
-			}, []));
-		});
-
-		return function () {
-			cmdProcess.stdin.pause();
-			cmdProcess.kill();
-		};
-	};
-});
-
-var renderer$1 = (function (_ref) {
-	var item = _ref.item,
-	    pattern = _ref.pattern,
-	    index = _ref.index,
-	    selectedIndex = _ref.selectedIndex,
-	    accept = _ref.accept;
-	var search = item.search,
-	    value = item.value,
-	    path = item.path;
-
-
-	var fuzzyWrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value.replace(RG_RESULT, search), pattern).replace(search, RG_RESULT) : value;
-
-	var wrappedValue = interspere(fuzzyWrappedValue.split(RG_RESULT), '<span class="search-highlight">' + search + '</span>').join();
-
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
-
-	return h('div', {
-		className: finalClassName,
-		'aria-role': 'button',
-		onClick: function onClick() {
-			return accept(item);
-		},
-		dangerouslySetInnerHTML: { __html: wrappedValue }
-	});
-});
-
-var searchFactory = function searchFactory(h, store) {
-	var loadData = loadDataFactory(store);
-
-	var accept = function accept(line) {
-		store.dispatch({ type: 'HIDE' });
-		atom.workspace.open(line.path, {
-			initialLine: line.lineNumber - 1
-		});
-	};
-
-	return { loadData: loadData, accept: accept, renderer: renderer$1 };
-};
-
-var loadData$3 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '500K'], {
-		cwd: cwd
-	});
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-			var _value$split = value.split(':', 3),
-			    _value$split2 = slicedToArray(_value$split, 3),
-			    path = _value$split2[0],
-			    lineNumber = _value$split2[1],
-			    line = _value$split2[2];
-
-			if (line && line.length > 1) {
-				acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
-			}
-			return acc;
-		}, []));
-	});
-
-	return function () {
-		cmdProcess.stdout.pause();
-		cmdProcess.kill();
-	};
-});
-
-var renderer$2 = (function (_ref) {
-	var item = _ref.item,
-	    props = objectWithoutProperties$1(_ref, ['item']);
-	return defaultRenderer(_extends$2({}, props, {
-		item: _extends$2({}, item, {
-			value: item.line
-		})
-	}));
-});
-
-var allLinesFactory = function allLinesFactory(h, store) {
-	var accept = function accept(line) {
-		store.dispatch({ type: 'HIDE' });
-		atom.workspace.open(line.path, {
-			initialLine: line.lineNumber - 1
-		});
-	};
-
-	return { loadData: loadData$3, accept: accept };
-};
-
-var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
-	var accept = function accept(item) {
-		store.dispatch({ type: 'HIDE' });
-		var editor = atom.workspace.getActiveTextEditor();
-		editor.insertText(item.line);
-	};
-
-	return { loadData: loadData$3, accept: accept, renderer: renderer$2 };
-};
-
-var fromSelectorFactory = function fromSelectorFactory(store) {
-	return function (selector) {
-		return Observable_2.create(function (observer) {
-			store.subscribe(function () {
-				var state = store.getState();
-				var selectedState = selector(state);
-				observer.next(selectedState);
-			});
-		}).distinctUntilChanged();
-	};
-};
-
-var fromActionFactory = function fromActionFactory(store) {
-	var oldDispatch = store.dispatch;
-
-	var subscriptions = new Set();
-
-	var subscribe = function subscribe(event) {
-		subscriptions.add(event);
-
-		return function () {
-			subscriptions.delete(event);
-		};
-	};
-
-	var newDispatch = function newDispatch(action) {
-		oldDispatch(action);
-
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = subscriptions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var subscription = _step.value;
-				var actionType = subscription.actionType,
-				    observer = subscription.observer;
-
-
-				if (actionType === action.type) {
-					observer.next(actionType);
-				}
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-	};
-
-	store.dispatch = newDispatch;
-
-	return function (actionType) {
-		return Observable_2.create(function (observer) {
-			subscribe({ actionType: actionType, observer: observer });
-		});
-	};
-};
-
-function storeFactory(reducers) {
-	var store = createStore(reducers);
-	var fromAction = fromActionFactory(store);
-	var fromSelector = fromSelectorFactory(store);
-
-	return { store: store, fromSelector: fromSelector, fromAction: fromAction };
-}
-
-var config = {
-	files: {
-		title: 'Find files with ripgrep',
-		description: 'Enable find files with ripgrep (requires ripgrep installed in path)',
-		type: 'boolean',
-		default: false
-	},
-	gitFiles: {
-		title: 'Find files with git',
-		description: 'Enable find files that have been modified according to git',
-		type: 'boolean',
-		default: true
-	},
-	gitBranches: {
-		title: 'Checkout git branches',
-		description: 'Enable checkout git branches',
-		type: 'boolean',
-		default: true
-	},
-	lines: {
-		title: 'Find buffer lines',
-		description: 'Enable find buffer lines',
-		type: 'boolean',
-		default: true
-	},
-	allLines: {
-		title: 'Find project lines',
-		description: 'Enable find project lines',
-		type: 'boolean',
-		default: true
-	},
-	autocompleteLines: {
-		title: 'Autocomplete project lines',
-		description: 'Enable autocomplete project lines',
-		type: 'boolean',
-		default: true
-	}
-};
-
-var reducerCreator = function reducerCreator(actions) {
-	return function (initialState) {
-		return function () {
-			var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
-			var _ref = arguments[1];
-			var type = _ref.type,
-			    payload = _ref.payload;
-
-			var action = actions[type];
-
-			if (action !== null && action !== undefined) {
-				return typeof action === 'function' ? action(state, payload) : action;
-			}
-
-			return state;
-		};
-	};
-};
-
-var returnPayload = function returnPayload(field) {
-	return function (state, payload) {
-		return field ? payload[field] : payload;
-	};
-};
-
-var visible = reducerCreator({
-	SHOW: true,
-	HIDE: false,
-	SHOW_SEARCH: false,
-	HIDE_SEARCH: false
-})(false);
-
-var searchVisible = reducerCreator({
-	SHOW_SEARCH: true,
-	HIDE_SEARCH: false,
-	SHOW: false,
-	HIDE: false
-})(false);
-
-var search = reducerCreator({
-	SHOW_SEARCH: '',
-	SET_SEARCH: returnPayload('search')
-})('');
-
-var options$1 = reducerCreator({
-	SHOW: returnPayload()
-})({});
-
-var data = reducerCreator({
-	APPEND_DATA: function APPEND_DATA(state, _ref2) {
-		var data = _ref2.data;
-		return state.concat(data);
-	},
-	SHOW: [],
-	SHOW_SEARCH: []
-})([]);
-
-var sparklingData = reducerCreator({
-	SET_FILTERED_DATA: returnPayload('data'),
-	SHOW: [],
-	SHOW_SEARCH: []
-})([]);
-
-var pattern = reducerCreator({
-	SET_PATTERN: returnPayload('pattern'),
-	SHOW: '',
-	HIDE: ''
-})('');
-
-var index$2 = reducerCreator({
-	SET_INDEX: returnPayload('value'),
-	SET_DATA: 0,
-	SET_PATTERN: 0,
-	SHOW: 0
-})(0);
-
-var offset = reducerCreator({
-	SET_OFFSET: returnPayload('value'),
-	SET_DATA: 0,
-	SET_PATTERN: 0,
-	SHOW: 0
-})(0);
-
-var reducers = combineReducers({
-	visible: visible,
-	options: options$1,
-	data: data,
-	sparklingData: sparklingData,
-	index: index$2,
-	offset: offset,
-	pattern: pattern,
-	searchVisible: searchVisible,
-	search: search
-});
-
-var _storeFactory = storeFactory(reducers);
-var fromSelector = _storeFactory.fromSelector;
-var fromAction = _storeFactory.fromAction;
-var store = _storeFactory.store;
-// let fuzzysortPromise = null
-
-
-var cancelLoadData = null;
-
-Observable_2.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref) {
-	var _ref2 = slicedToArray(_ref, 2),
-	    data = _ref2[0],
-	    pattern = _ref2[1];
-
-	if (!pattern.length && (!data || !data.length)) {
-		return;
-	}
-
-	if (!pattern.length) {
-		store.dispatch({
-			type: 'SET_FILTERED_DATA',
-			payload: { data: data }
-		});
-	} else {
-		var filteredData = fuzzaldrin.filter(data, pattern, {
-			key: 'value'
-		});
-
-		store.dispatch({
-			type: 'SET_FILTERED_DATA',
-			payload: { data: filteredData }
-		});
-	}
-});
-
-Observable_2.combineLatest(fromSelector(isVisible), fromSelector(getOptions)).distinctUntilChanged(function (a, b) {
-	return a[0] === b[0] && a[1] === b[1];
-}).subscribe(function (_ref3) {
-	var _ref4 = slicedToArray(_ref3, 2),
-	    visible = _ref4[0],
-	    options$$1 = _ref4[1];
-
-	if (!visible) {
-		return;
-	}
-
-	var _getOptions = getOptions(store.getState()),
-	    loadData = _getOptions.loadData;
-
-	if (cancelLoadData && typeof cancelLoadData === 'function') {
-		cancelLoadData();
-	}
-
-	cancelLoadData = loadData(function (data) {
-		store.dispatch({
-			type: 'APPEND_DATA',
-			payload: {
-				data: data
-			}
-		});
-	});
-});
-
-fromAction('HIDE').subscribe(function () {
-	var editor = atom.workspace.getActiveTextEditor();
-	var view = editor && atom.views.getView(editor);
-	view && view.focus();
-
-	// if (fuzzysortPromise) {
-	// 	fuzzysortPromise.cancel()
-	// }
-
-	if (cancelLoadData && typeof cancelLoadData === 'function') {
-		cancelLoadData();
-		cancelLoadData = null;
-	}
-});
-
-var next = function next() {
-	var state = store.getState();
-	var index$$1 = getIndex(state);
-	var sparklingData = getSparklingData(state);
-
-	if (index$$1 === 9) {
-		var offset = getOffset(state);
-		var value = Math.min(offset + 1, sparklingData.length - 10);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value = Math.min(index$$1 + 1, sparklingData.length - 1, 9);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
-	}
-};
-
-var previous = function previous() {
-	var state = store.getState();
-	var index$$1 = getIndex(state);
-
-	if (index$$1 === 0) {
-		var offset = getOffset(state);
-		var value = Math.max(offset - 1, 0);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value2 = Math.max(index$$1 - 1, 0);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
-	}
-};
-
-var hide = function hide() {
-	store.dispatch({ type: 'HIDE' });
-};
-
-var accept = function accept() {
-	var state = store.getState();
-	var value = getSelectedValue(state);
-
-	if (value === null || value === undefined) {
-		return;
-	}
-
-	var _getOptions2 = getOptions(state),
-	    accept = _getOptions2.accept;
-
-	accept(value);
-};
-
-var sparklingSearch = function sparklingSearch(optionsFactory) {
-	var _optionsFactory = optionsFactory(h, store),
-	    loadData = _optionsFactory.loadData,
-	    accept = _optionsFactory.accept,
-	    _optionsFactory$rende = _optionsFactory.renderer,
-	    renderer = _optionsFactory$rende === undefined ? defaultRenderer : _optionsFactory$rende,
-	    _optionsFactory$previ = _optionsFactory.preview,
-	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ;
-
-	var options$$1 = {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer,
-		preview: preview
-	};
-
-	return function () {
-		var state = store.getState();
-		if (isVisible(state)) {
-			var storeOptions = getOptions(state);
-			var sparklingInput = document.getElementById('sparkling-input');
-
-			if (storeOptions === options$$1) {
-				if (sparklingInput === document.activeElement) {
-					hide();
-				} else {
-					sparklingInput.focus();
-				}
-			} else {
-				store.dispatch({
-					type: 'SHOW',
-					payload: options$$1
-				});
-				sparklingInput.focus();
-			}
 		} else {
+			var filteredData = fuzzaldrin.filter(data, pattern, {
+				key: 'value'
+			});
+
 			store.dispatch({
-				type: 'SHOW',
-				payload: options$$1
+				type: 'SET_FILTERED_DATA',
+				payload: { data: filteredData }
 			});
 		}
-	};
-};
+	});
+
+	Observable_2.combineLatest(fromSelector(isVisible), fromSelector(getOptions)).distinctUntilChanged(function (a, b) {
+		return a[0] === b[0] && a[1] === b[1];
+	}).subscribe(function (_ref3) {
+		var _ref4 = slicedToArray(_ref3, 2),
+		    visible = _ref4[0],
+		    options = _ref4[1];
+
+		if (!visible) {
+			return;
+		}
+
+		var _getOptions = getOptions(store.getState()),
+		    loadData = _getOptions.loadData;
+
+		if (cancelLoadData && typeof cancelLoadData === 'function') {
+			cancelLoadData();
+		}
+
+		cancelLoadData = loadData(function (data) {
+			store.dispatch({
+				type: 'APPEND_DATA',
+				payload: {
+					data: data
+				}
+			});
+		});
+	});
+
+	fromAction('HIDE').subscribe(function () {
+		var editor = atom.workspace.getActiveTextEditor();
+		var view = editor && atom.views.getView(editor);
+		view && view.focus();
+
+		// if (fuzzysortPromise) {
+		// 	fuzzysortPromise.cancel()
+		// }
+
+		if (cancelLoadData && typeof cancelLoadData === 'function') {
+			cancelLoadData();
+			cancelLoadData = null;
+		}
+	});
+});
 
 var searchToggle = function searchToggle() {
 	if (isSearchVisible(store.getState())) {
@@ -7321,7 +7393,7 @@ module.exports = {
 	commands: [{ id: 'files', factory: filesFactory }, { id: 'gitFiles', factory: gitFilesFactory }, { id: 'gitBranches', factory: gitBranchesFactory }, { id: 'lines', factory: linesFactory }, { id: 'allLines', factory: allLinesFactory }, { id: 'autocompleteLines', factory: autocompleteLinesFactory }],
 
 	provideSparkling: function provideSparkling() {
-		return sparklingSearch;
+		return commandFactory;
 	},
 	setup: function setup() {
 		var reactRoot = document.createElement('div');
@@ -7337,6 +7409,8 @@ module.exports = {
 			)
 		), reactRoot);
 
+		setupObservables();
+
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
@@ -7348,7 +7422,7 @@ module.exports = {
 
 		var workspaceView = atom.views.getView(atom.workspace);
 
-		var searchCommand = sparklingSearch(searchFactory);
+		var searchCommand = commandFactory(searchFactory);
 
 		atom.commands.add('atom-workspace', {
 			'sparkling:acceptSearch': searchCommand
@@ -7358,11 +7432,35 @@ module.exports = {
 			'sparkling:search': searchToggle
 		});
 
+		var lsShow = function lsShow() {
+			var activeTextEditor = atom.workspace.getActiveTextEditor();
+			var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+			ls({ path: finalPath });
+		};
+
+		var lsShowUp = function lsShowUp() {
+			var _getOptions = getOptions(store.getState()),
+			    optionsPath = _getOptions.path;
+
+			var finalPath = path.resolve(optionsPath, '..');
+			ls({ path: finalPath });
+		};
+
+		atom.commands.add('atom-workspace', {
+			'sparkling:ls': lsShow
+		});
+
+		atom.commands.add('atom-workspace', {
+			'sparkling:lsUp': lsShowUp
+		});
+
 		this.commands.forEach(function (commandConfig) {
 			atom.config.observe('sparkling.' + commandConfig.id, function (value) {
 				if (value) {
-					var command = sparklingSearch(commandConfig.factory);
-					commandConfig.subscription = atom.commands.add('atom-workspace', defineProperty({}, 'sparkling:' + commandConfig.id, command));
+					var command = commandFactory(commandConfig.factory);
+					commandConfig.subscription = atom.commands.add('atom-workspace', defineProperty({}, 'sparkling:' + commandConfig.id, function undefined() {
+						return command();
+					}));
 					workspaceView.classList.add('sparkling-' + commandConfig.id);
 				} else {
 					var subscription = commandConfig.subscription;

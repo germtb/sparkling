@@ -10,7 +10,7 @@ module.exports = {
 		format: 'cjs',
 		file: './dist/bundle.js'
 	},
-	external: ['fs', 'path', 'child_process', 'atom'],
+	external: ['fs', 'path', 'child_process', 'atom', 'os'],
 	plugins: [
 		babel({
 			exclude: ['node_modules/**', '**/*.json']
