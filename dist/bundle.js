@@ -6398,6 +6398,28 @@ var slicedToArray = function () {
   };
 }();
 
+
+
+
+
+
+
+
+
+
+
+
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
 var Sparkling = function (_Component) {
 	inherits$1(Sparkling, _Component);
 
@@ -6660,6 +6682,43 @@ var loadData$1 = (function (onData) {
 	};
 });
 
+var defaultRenderer = function defaultRenderer(_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    className = _ref.className,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+
+	var value = item.value;
+	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+};
+
+var fileIconsService = null;
+
+var setFileIconsService = function setFileIconsService(service) {
+	fileIconsService = service;
+};
+
+var iconClassForPath = function iconClassForPath(path) {
+	return fileIconsService.iconClassForPath(path);
+};
+
+var renderer = (function (props) {
+	return defaultRenderer(_extends$2({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
+	}));
+});
+
 var filesFactory = function filesFactory(h, store) {
 	var accept = function accept(file) {
 		atom.workspace.open(file.value);
@@ -6670,7 +6729,8 @@ var filesFactory = function filesFactory(h, store) {
 
 	return {
 		loadData: loadData$1,
-		accept: accept
+		accept: accept,
+		renderer: renderer
 	};
 };
 
@@ -6792,27 +6852,7 @@ var loadData$3 = (function (onData) {
 	};
 });
 
-var defaultRenderer = function defaultRenderer(_ref) {
-	var item = _ref.item,
-	    pattern = _ref.pattern,
-	    index = _ref.index,
-	    selectedIndex = _ref.selectedIndex,
-	    accept = _ref.accept;
-
-	var value = item.value;
-	var className = index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row';
-	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
-	return h('div', {
-		className: className,
-		'aria-role': 'button',
-		onClick: function onClick() {
-			return accept(item);
-		},
-		dangerouslySetInnerHTML: { __html: wrappedValue }
-	});
-};
-
-var renderer = (function (_ref) {
+var renderer$1 = (function (_ref) {
 	var item = _ref.item,
 	    props = objectWithoutProperties$1(_ref, ['item']);
 	return defaultRenderer(_extends$2({}, props, {
@@ -6834,13 +6874,13 @@ var allLinesFactory = function allLinesFactory(h, store) {
 };
 
 var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
-	var accept = function accept(line) {
+	var accept = function accept(item) {
 		store.dispatch({ type: 'HIDE' });
 		var editor = atom.workspace.getActiveTextEditor();
-		editor.insertText(line.line);
+		editor.insertText(item.line);
 	};
 
-	return { loadData: loadData$3, accept: accept, renderer: renderer };
+	return { loadData: loadData$3, accept: accept, renderer: renderer$1 };
 };
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -7313,5 +7353,8 @@ module.exports = {
 	},
 	serialize: function serialize() {
 		return {};
+	},
+	consumeFileIcons: function consumeFileIcons(service) {
+		setFileIconsService(service);
 	}
 };
