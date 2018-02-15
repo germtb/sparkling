@@ -5572,6 +5572,8 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 	return { loadData: loadData, accept: accept };
 };
 
+var gitBranches = commandFactory(gitBranchesFactory);
+
 var loadData$1 = (function (onData) {
 	var cwd = atom.project.getPaths()[0];
 	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
@@ -5632,6 +5634,8 @@ var filesFactory = function filesFactory(h, store) {
 	};
 };
 
+var files = commandFactory(filesFactory);
+
 var loadData$2 = (function (onData) {
 	var cwd = atom.project.getPaths()[0];
 	var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
@@ -5655,6 +5659,8 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 
 	return { loadData: loadData$2, accept: accept };
 };
+
+var gitFiles = commandFactory(gitFilesFactory);
 
 var linesFactory = function linesFactory(h, store) {
 	var loadData = function loadData(onData) {
@@ -5682,6 +5688,8 @@ var linesFactory = function linesFactory(h, store) {
 
 	return { loadData: loadData, accept: accept };
 };
+
+var lines = commandFactory(linesFactory);
 
 var RG_RESULT = 'RG_RESULT';
 
@@ -5754,6 +5762,8 @@ var searchFactory = function searchFactory(h, store) {
 	return { loadData: loadData, accept: accept, renderer: renderer$1 };
 };
 
+var search$1 = commandFactory(searchFactory);
+
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
@@ -5778,7 +5788,7 @@ var loadDataFactory$1 = (function (store) {
 				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
 
 				return { value: projectRelativePath, absolutePath: absolutePath };
-			}));
+			}).reverse());
 		});
 
 		return function () {
@@ -5842,16 +5852,6 @@ var loadData$3 = (function (onData) {
 	};
 });
 
-var renderer$3 = (function (_ref) {
-	var item = _ref.item,
-	    props = objectWithoutProperties$1(_ref, ['item']);
-	return defaultRenderer(_extends$2({}, props, {
-		item: _extends$2({}, item, {
-			value: item.line
-		})
-	}));
-});
-
 var allLinesFactory = function allLinesFactory(h, store) {
 	var accept = function accept(line) {
 		store.dispatch({ type: 'HIDE' });
@@ -5863,6 +5863,18 @@ var allLinesFactory = function allLinesFactory(h, store) {
 	return { loadData: loadData$3, accept: accept };
 };
 
+var allLines = commandFactory(allLinesFactory);
+
+var renderer$3 = (function (_ref) {
+	var item = _ref.item,
+	    props = objectWithoutProperties$1(_ref, ['item']);
+	return defaultRenderer(_extends$2({}, props, {
+		item: _extends$2({}, item, {
+			value: item.line
+		})
+	}));
+});
+
 var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	var accept = function accept(item) {
 		store.dispatch({ type: 'HIDE' });
@@ -5872,6 +5884,8 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 
 	return { loadData: loadData$3, accept: accept, renderer: renderer$3 };
 };
+
+var autocompleteLines = commandFactory(autocompleteLinesFactory);
 
 var config = {
 	files: {
@@ -5907,6 +5921,12 @@ var config = {
 	autocompleteLines: {
 		title: 'Autocomplete project lines',
 		description: 'Enable autocomplete project lines',
+		type: 'boolean',
+		default: true
+	},
+	search: {
+		title: 'Find pattern with ripgrep',
+		description: 'Enable autocomplete search with ripgrep',
 		type: 'boolean',
 		default: true
 	}
@@ -7385,12 +7405,26 @@ var searchToggle = function searchToggle() {
 	}
 };
 
+var lsShow = function lsShow() {
+	var activeTextEditor = atom.workspace.getActiveTextEditor();
+	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+	ls({ path: finalPath });
+};
+
+var lsShowUp = function lsShowUp() {
+	var _getOptions = getOptions(store.getState()),
+	    optionsPath = _getOptions.path;
+
+	var finalPath = path.resolve(optionsPath, '..');
+	ls({ path: finalPath });
+};
+
 module.exports = {
 	subscriptions: null,
 
 	config: config,
 
-	commands: [{ id: 'files', factory: filesFactory }, { id: 'gitFiles', factory: gitFilesFactory }, { id: 'gitBranches', factory: gitBranchesFactory }, { id: 'lines', factory: linesFactory }, { id: 'allLines', factory: allLinesFactory }, { id: 'autocompleteLines', factory: autocompleteLinesFactory }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
@@ -7422,29 +7456,9 @@ module.exports = {
 
 		var workspaceView = atom.views.getView(atom.workspace);
 
-		var searchCommand = commandFactory(searchFactory);
-
-		atom.commands.add('atom-workspace', {
-			'sparkling:acceptSearch': searchCommand
-		});
-
-		atom.commands.add('atom-workspace', {
+		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:search': searchToggle
-		});
-
-		var lsShow = function lsShow() {
-			var activeTextEditor = atom.workspace.getActiveTextEditor();
-			var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
-			ls({ path: finalPath });
-		};
-
-		var lsShowUp = function lsShowUp() {
-			var _getOptions = getOptions(store.getState()),
-			    optionsPath = _getOptions.path;
-
-			var finalPath = path.resolve(optionsPath, '..');
-			ls({ path: finalPath });
-		};
+		}));
 
 		atom.commands.add('atom-workspace', {
 			'sparkling:ls': lsShow
@@ -7455,18 +7469,20 @@ module.exports = {
 		});
 
 		this.commands.forEach(function (commandConfig) {
+			var id = commandConfig.id,
+			    command = commandConfig.command;
+
 			atom.config.observe('sparkling.' + commandConfig.id, function (value) {
 				if (value) {
-					var command = commandFactory(commandConfig.factory);
-					commandConfig.subscription = atom.commands.add('atom-workspace', defineProperty({}, 'sparkling:' + commandConfig.id, function undefined() {
+					commandConfig.subscription = atom.commands.add('atom-workspace', defineProperty({}, 'sparkling:' + id, function undefined() {
 						return command();
 					}));
-					workspaceView.classList.add('sparkling-' + commandConfig.id);
+					workspaceView.classList.add('sparkling-' + id);
 				} else {
 					var subscription = commandConfig.subscription;
 
 					subscription && subscription.dispose();
-					workspaceView.classList.remove('sparkling-' + commandConfig.id);
+					workspaceView.classList.remove('sparkling-' + id);
 				}
 			});
 		});

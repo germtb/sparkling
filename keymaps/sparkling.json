@@ -1,10 +1,12 @@
 {
 	"atom-workspace": {
-		"cmd-shift-a": "sparkling:search"
+		"cmd-l cmd-s": "sparkling:ls"
 	},
 	".sparkling-files": {
-		"cmd-p": "sparkling:files",
-		"cmd-l cmd-s": "sparkling:ls"
+		"cmd-p": "sparkling:files"
+	},
+	".sparkling-search": {
+		"cmd-shift-a": "sparkling:search"
 	},
 	".sparkling-gitFiles": {
 		"cmd-m": "sparkling:gitFiles"
