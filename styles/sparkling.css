@@ -37,6 +37,10 @@
 	color: #4f65d1;
 }
 
+.search-highlight .highlight {
+	color: #eddc96;
+}
+
 .sparkling-row.selected {
 	background-color: #3f4252;
 }

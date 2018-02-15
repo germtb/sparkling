@@ -5727,18 +5727,6 @@ var iconClassForPath = function iconClassForPath(path$$1) {
 	return fileIconsService.iconClassForPath(path$$1);
 };
 
-var interspere = function interspere(array, value) {
-	return array.reduce(function (acc, s, index, array) {
-		acc.push(s);
-
-		if (index < array.length - 1) {
-			acc.push(value);
-		}
-
-		return acc;
-	}, []);
-};
-
 var renderer = (function (props) {
 	return defaultRenderer(_extends$2({}, props, {
 		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
@@ -5860,9 +5848,34 @@ var renderer$1 = (function (_ref) {
 	    path$$1 = item.path;
 
 
-	var fuzzyWrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value.replace(RG_RESULT, search), pattern).replace(search, RG_RESULT) : value;
+	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
 
-	var wrappedValue = interspere(fuzzyWrappedValue.split(RG_RESULT), '<span class="search-highlight">' + search + '</span>').join();
+	var styleHash = fuzzyMatches.reduce(function (acc, x) {
+		acc[x] = 'fuzzy';
+		return acc;
+	}, {});
+
+	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'searchOpenAndFuzzy' : 'searchOpen';
+	styleHash[value.indexOf(RG_RESULT) + search.length] = 'searchClose';
+
+	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), search);
+	var wrappedValue = '';
+
+	for (var i = 0; i < rawValue.length; i++) {
+		var c = rawValue[i];
+
+		if (styleHash[i] === 'fuzzy') {
+			wrappedValue += '<span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'searchOpenAndFuzzy') {
+			wrappedValue += '<span class="search-highlight"><span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'searchOpen') {
+			wrappedValue += '<span class="search-highlight">' + c;
+		} else if (styleHash[i] === 'searchClose') {
+			wrappedValue += c + '</span>';
+		} else {
+			wrappedValue += c;
+		}
+	}
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
