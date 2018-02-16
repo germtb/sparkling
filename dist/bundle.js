@@ -6094,10 +6094,10 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(item) {
+		var replace = getReplace(store.getState());
 		var lineNumber = item.lineNumber,
 		    path$$1 = item.path,
-		    find = item.find,
-		    replace = item.replace;
+		    find = item.find;
 
 		var cwd = atom.project.getPaths()[0];
 
