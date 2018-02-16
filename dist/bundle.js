@@ -2927,11 +2927,11 @@ var getRawDataLength = function getRawDataLength(state) {
 var getSparklingData = function getSparklingData(state) {
 	return state.sparklingData;
 };
-var getSearch = function getSearch(state) {
-	return state.search;
+var getFind = function getFind(state) {
+	return state.find;
 };
-var isSearchVisible = function isSearchVisible(state) {
-	return state.searchVisible;
+var isFindVisible = function isFindVisible(state) {
+	return state.findVisible;
 };
 var getReplace = function getReplace(state) {
 	return state.replace;
@@ -3229,7 +3229,7 @@ var Sparkling = function (_Component) {
 					{ className: 'sparkling-input-container' },
 					h(
 						'div',
-						{ className: 'sparkling-search-meta-data' },
+						{ className: 'sparkling-find-meta-data' },
 						h(
 							'span',
 							null,
@@ -3311,15 +3311,15 @@ var SparklingContainer$1 = connect(function (state) {
 	};
 })(SparklingContainer);
 
-var Search = function (_Component) {
-	inherits$1(Search, _Component);
+var Find = function (_Component) {
+	inherits$1(Find, _Component);
 
-	function Search() {
-		classCallCheck$1(this, Search);
-		return possibleConstructorReturn$1(this, (Search.__proto__ || Object.getPrototypeOf(Search)).apply(this, arguments));
+	function Find() {
+		classCallCheck$1(this, Find);
+		return possibleConstructorReturn$1(this, (Find.__proto__ || Object.getPrototypeOf(Find)).apply(this, arguments));
 	}
 
-	createClass(Search, [{
+	createClass(Find, [{
 		key: "componentDidMount",
 		value: function componentDidMount() {
 			this.input.focus();
@@ -3330,13 +3330,13 @@ var Search = function (_Component) {
 			var _this2 = this;
 
 			var _props = this.props,
-			    search = _props.search,
-			    setSearch = _props.setSearch;
+			    find = _props.find,
+			    setFind = _props.setFind;
 
 
 			return h(
 				"div",
-				{ className: "sparking-search sparkling-input-container" },
+				{ className: "sparking-find sparkling-input-container" },
 				h("input", {
 					id: "sparkling-input",
 					className: "sparkling-input native-key-bindings",
@@ -3345,49 +3345,49 @@ var Search = function (_Component) {
 						_this2.input = input;
 					},
 					onInput: function onInput(event) {
-						setSearch(event.target.value);
+						setFind(event.target.value);
 					},
-					value: search
+					value: find
 				})
 			);
 		}
 	}]);
-	return Search;
+	return Find;
 }(Component);
 
-var SearchContainer = function (_Component) {
-	inherits$1(SearchContainer, _Component);
+var FindContainer = function (_Component) {
+	inherits$1(FindContainer, _Component);
 
-	function SearchContainer() {
-		classCallCheck$1(this, SearchContainer);
-		return possibleConstructorReturn$1(this, (SearchContainer.__proto__ || Object.getPrototypeOf(SearchContainer)).apply(this, arguments));
+	function FindContainer() {
+		classCallCheck$1(this, FindContainer);
+		return possibleConstructorReturn$1(this, (FindContainer.__proto__ || Object.getPrototypeOf(FindContainer)).apply(this, arguments));
 	}
 
-	createClass(SearchContainer, [{
+	createClass(FindContainer, [{
 		key: 'render',
 		value: function render$$1() {
 			if (!this.props.visible) {
 				return null;
 			}
 
-			return h(Search, this.props);
+			return h(Find, this.props);
 		}
 	}]);
-	return SearchContainer;
+	return FindContainer;
 }(Component);
 
-var SearchContainer$1 = connect(function (state) {
+var FindContainer$1 = connect(function (state) {
 	return {
-		visible: isSearchVisible(state),
-		search: getSearch(state)
+		visible: isFindVisible(state),
+		find: getFind(state)
 	};
 }, function (dispatch) {
 	return {
-		setSearch: function setSearch(search) {
-			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
+		setFind: function setFind(find) {
+			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
 		}
 	};
-})(SearchContainer);
+})(FindContainer);
 
 var Replace = function (_Component) {
 	inherits$1(Replace, _Component);
@@ -3408,10 +3408,10 @@ var Replace = function (_Component) {
 			var _this2 = this;
 
 			var _props = this.props,
-			    search = _props.search,
+			    find = _props.find,
 			    replace = _props.replace,
 			    setReplace = _props.setReplace,
-			    setSearch = _props.setSearch;
+			    setFind = _props.setFind;
 
 
 			return h(
@@ -3425,9 +3425,9 @@ var Replace = function (_Component) {
 						_this2.input = input;
 					},
 					onInput: function onInput(event) {
-						setSearch(event.target.value);
+						setFind(event.target.value);
 					},
-					value: search
+					value: find
 				}),
 				h("input", {
 					tabIndex: 1,
@@ -3468,13 +3468,13 @@ var ReplaceContainer = function (_Component) {
 var ReplaceContainer$1 = connect(function (state) {
 	return {
 		visible: isReplaceVisible(state),
-		search: getSearch(state),
+		find: getFind(state),
 		replace: getReplace(state)
 	};
 }, function (dispatch) {
 	return {
-		setSearch: function setSearch(search) {
-			return dispatch({ type: 'SET_SEARCH', payload: { search: search } });
+		setFind: function setFind(find) {
+			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
 		},
 		setReplace: function setReplace(replace) {
 			return dispatch({ type: 'SET_REPLACE', payload: { replace: replace } });
@@ -4482,7 +4482,7 @@ var visible = reducerCreator({
 	HIDE_REPLACE: false
 })(false);
 
-var searchVisible = reducerCreator({
+var findVisible = reducerCreator({
 	SHOW_SEARCH: true,
 	HIDE_SEARCH: false,
 	SHOW_REPLACE: false,
@@ -4500,10 +4500,10 @@ var replaceVisible = reducerCreator({
 	HIDE: false
 })(false);
 
-var search = reducerCreator({
+var find = reducerCreator({
 	SHOW_SEARCH: '',
 	SHOW_REPLACE: '',
-	SET_SEARCH: returnPayload('search')
+	SET_SEARCH: returnPayload('find')
 })('');
 
 var replace = reducerCreator({
@@ -4562,8 +4562,8 @@ var reducers = combineReducers({
 	index: index$2,
 	offset: offset,
 	pattern: pattern,
-	searchVisible: searchVisible,
-	search: search,
+	findVisible: findVisible,
+	find: find,
 	replaceVisible: replaceVisible,
 	replace: replace
 });
@@ -5992,11 +5992,11 @@ var RG_RESULT = 'RG_RESULT';
 
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
-		var search = getSearch(store.getState());
+		var find = getFind(store.getState());
 		var replace = getReplace(store.getState());
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('rg', [search, '-n', '--replace', RG_RESULT], {
+		var cmdProcess = child_process.spawn('rg', [find, '-n', '--replace', RG_RESULT], {
 			cwd: cwd
 		});
 		cmdProcess.stdout.on('data', function (data) {
@@ -6008,7 +6008,7 @@ var loadDataFactory$1 = (function (store) {
 				    line = _value$split2[2];
 
 				if (line && line.length > 1) {
-					acc.push({ value: value, search: search, line: line, path: path$$1, lineNumber: lineNumber, replace: replace });
+					acc.push({ value: value, find: find, line: line, path: path$$1, lineNumber: lineNumber, replace: replace });
 				}
 				return acc;
 			}, []));
@@ -6027,22 +6027,22 @@ var renderer$2 = (function (_ref) {
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
-	var search = item.search,
+	var find = item.find,
 	    value = item.value,
 	    path$$1 = item.path;
 
 
-	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
+	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, find), pattern) : [];
 
 	var styleHash = fuzzyMatches.reduce(function (acc, x) {
 		acc[x] = 'fuzzy';
 		return acc;
 	}, {});
 
-	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'searchOpenAndFuzzy' : 'searchOpen';
-	styleHash[value.indexOf(RG_RESULT) + search.length] = 'searchClose';
+	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
+	styleHash[value.indexOf(RG_RESULT) + find.length] = 'findClose';
 
-	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), search);
+	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
 	var wrappedValue = '';
 
 	for (var i = 0; i < rawValue.length; i++) {
@@ -6050,11 +6050,11 @@ var renderer$2 = (function (_ref) {
 
 		if (styleHash[i] === 'fuzzy') {
 			wrappedValue += '<span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'searchOpenAndFuzzy') {
-			wrappedValue += '<span class="search-highlight"><span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'searchOpen') {
-			wrappedValue += '<span class="search-highlight">' + c;
-		} else if (styleHash[i] === 'searchClose') {
+		} else if (styleHash[i] === 'findOpenAndFuzzy') {
+			wrappedValue += '<span class="find-highlight"><span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'findOpen') {
+			wrappedValue += '<span class="find-highlight">' + c;
+		} else if (styleHash[i] === 'findClose') {
 			wrappedValue += '</span>' + c;
 		} else {
 			wrappedValue += c;
@@ -6073,7 +6073,7 @@ var renderer$2 = (function (_ref) {
 	});
 });
 
-var searchFactory = function searchFactory(h, store) {
+var findFactory = function findFactory(h, store) {
 	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(line) {
@@ -6082,10 +6082,16 @@ var searchFactory = function searchFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$2, description: 'Find pattern in project' };
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$2,
+		description: 'Find pattern in project',
+		id: 'find-in-project'
+	};
 };
 
-var search$1 = commandFactory(searchFactory);
+var find$1 = commandFactory(findFactory);
 
 var renderer$3 = (function (_ref) {
 	var item = _ref.item,
@@ -6093,23 +6099,23 @@ var renderer$3 = (function (_ref) {
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
-	var search = item.search,
+	var find = item.find,
 	    replace = item.replace,
 	    value = item.value,
 	    path$$1 = item.path;
 
 
-	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
+	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, find), pattern) : [];
 
 	var styleHash = fuzzyMatches.reduce(function (acc, x) {
 		acc[x] = 'fuzzy';
 		return acc;
 	}, {});
 
-	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'searchOpenAndFuzzy' : 'searchOpen';
-	styleHash[value.indexOf(RG_RESULT) + search.length] = 'searchClose';
+	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
+	styleHash[value.indexOf(RG_RESULT) + find.length] = 'findClose';
 
-	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), search);
+	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
 	var wrappedValue = '';
 
 	for (var i = 0; i < rawValue.length; i++) {
@@ -6117,11 +6123,11 @@ var renderer$3 = (function (_ref) {
 
 		if (styleHash[i] === 'fuzzy') {
 			wrappedValue += '<span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'searchOpenAndFuzzy') {
+		} else if (styleHash[i] === 'findOpenAndFuzzy') {
 			wrappedValue += '<span class="replace-downlight"><span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'searchOpen') {
+		} else if (styleHash[i] === 'findOpen') {
 			wrappedValue += '<span class="replace-downlight">' + c;
-		} else if (styleHash[i] === 'searchClose') {
+		} else if (styleHash[i] === 'findClose') {
 			wrappedValue += '</span><span class="replace-highlight">' + replace + '</span>' + c;
 		} else {
 			wrappedValue += c;
@@ -6146,13 +6152,13 @@ var replaceFactory = function replaceFactory(h, store) {
 	var accept = function accept(item) {
 		var lineNumber = item.lineNumber,
 		    path$$1 = item.path,
-		    search = item.search,
+		    find = item.find,
 		    replace = item.replace;
 
 		var cwd = atom.project.getPaths()[0];
 
 		// sed -i '' -e '11,12s/console.log/supersuper/' lib/commands/replace.js
-		var sedRegex = lineNumber + '/' + lineNumber + '/' + search + '/' + replace;
+		var sedRegex = lineNumber + '/' + lineNumber + '/' + find + '/' + replace;
 		child_process.spawn('sed', ['-i', "''", '-e', sedRegex, path$$1], {
 			cwd: cwd
 		});
@@ -6195,8 +6201,21 @@ var loadDataFactory$2 = (function (store) {
 				var cwd = atom.project.getPaths()[0];
 				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
 
-				return { value: projectRelativePath, absolutePath: absolutePath };
-			}).reverse());
+				var isFolder = fs.lstatSync(absolutePath).isDirectory();
+				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
+			}).sort(function (a, b) {
+				if (a.isFolder && !b.isFolder) {
+					return -1;
+				} else if (!a.isFolder && b.isFolder) {
+					return 1;
+				} else if (a.absolutePath > b.absolutePath) {
+					return 1;
+				} else if (b.absolutePath < a.absolutePath) {
+					return -1;
+				}
+
+				return 0;
+			}));
 		});
 
 		return function () {
@@ -6348,9 +6367,9 @@ var config = {
 		type: 'boolean',
 		default: true
 	},
-	search: {
+	find: {
 		title: 'Find pattern with ripgrep',
-		description: 'Enable autocomplete search with ripgrep',
+		description: 'Enable autocomplete find with ripgrep',
 		type: 'boolean',
 		default: true
 	},
@@ -8178,8 +8197,8 @@ var setupObservables = (function () {
 	});
 });
 
-var searchToggle = function searchToggle() {
-	if (isSearchVisible(store.getState())) {
+var findToggle = function findToggle() {
+	if (isFindVisible(store.getState())) {
 		store.dispatch({ type: 'HIDE_SEARCH' });
 	} else {
 		store.dispatch({ type: 'SHOW_SEARCH' });
@@ -8213,7 +8232,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }, { id: 'replace', command: replace$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
@@ -8228,7 +8247,7 @@ module.exports = {
 				'div',
 				null,
 				h(SparklingContainer$1, null),
-				h(SearchContainer$1, null),
+				h(FindContainer$1, null),
 				h(ReplaceContainer$1, null)
 			)
 		), reactRoot);
@@ -8247,7 +8266,7 @@ module.exports = {
 		var workspaceView = atom.views.getView(atom.workspace);
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
-			'sparkling:searchToggle': searchToggle
+			'sparkling:findToggle': findToggle
 		}));
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {

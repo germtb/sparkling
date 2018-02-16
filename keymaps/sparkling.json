@@ -5,8 +5,8 @@
 	".sparkling-files": {
 		"cmd-p": "sparkling:files"
 	},
-	".sparkling-search": {
-		"cmd-shift-a": "sparkling:searchToggle"
+	".sparkling-find": {
+		"cmd-shift-a": "sparkling:findToggle"
 	},
 	".sparkling-replace": {
 		"cmd-shift-e": "sparkling:replaceToggle"
@@ -27,8 +27,8 @@
 	".sparkling-autocompleteLines atom-text-editor": {
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
-	".sparking-search .sparkling-input": {
-		"enter": "sparkling:search",
+	".sparking-find .sparkling-input": {
+		"enter": "sparkling:find",
 		"cmd-escape": "sparkling:hide",
 		"escape": "sparkling:hide"
 	},

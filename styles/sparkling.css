@@ -33,7 +33,7 @@
 	padding: 0;
 }
 
-.search-highlight {
+.find-highlight {
 	display: inline-block;
 	background-color: #4f65d1;
 	border-radius: 2px;
@@ -76,7 +76,7 @@
 	box-shadow: 0 0 0 1px #ff6347;
 }
 
-.sparkling-search-meta-data {
+.sparkling-find-meta-data {
 	padding-bottom: 0.75em;
 }
 
