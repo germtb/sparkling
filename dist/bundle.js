@@ -4652,53 +4652,6 @@ function storeFactory(reducers$$1) {
 
 var store = storeFactory(reducers);
 
-var next = function next() {
-	var state = store.getState();
-	var index = getIndex(state);
-	var sparklingData = getSparklingData(state);
-
-	if (index === 9) {
-		var offset = getOffset(state);
-		var value = Math.min(offset + 1, sparklingData.length - 10);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value = Math.min(index + 1, sparklingData.length - 1, 9);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
-	}
-};
-
-var previous = function previous() {
-	var state = store.getState();
-	var index = getIndex(state);
-
-	if (index === 0) {
-		var offset = getOffset(state);
-		var value = Math.max(offset - 1, 0);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value2 = Math.max(index - 1, 0);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
-	}
-};
-
-var hide = function hide() {
-	store.dispatch({ type: 'HIDE' });
-};
-
-var accept = function accept() {
-	var state = store.getState();
-	var value = getSelectedValue(state);
-
-	if (value === null || value === undefined) {
-		return;
-	}
-
-	var _getOptions = getOptions(state),
-	    accept = _getOptions.accept;
-
-	accept(value);
-};
-
 var scorer = createCommonjsModule(function (module, exports) {
 (function() {
   var AcronymResult, computeScore, emptyAcronymResult, isAcronymFullWord, isMatch, isSeparator, isWordEnd, isWordStart, miss_coeff, pos_bonus, scoreAcronyms, scoreCharacter, scoreConsecutives, scoreExact, scoreExactMatch, scorePattern, scorePosition, scoreSize, tau_size, wm;
@@ -5634,7 +5587,7 @@ var defaultRenderer = function defaultRenderer(_ref) {
 var commandFactory = (function (optionsFactory) {
 	var _optionsFactory = optionsFactory(h, store),
 	    loadData = _optionsFactory.loadData,
-	    accept$$1 = _optionsFactory.accept,
+	    accept = _optionsFactory.accept,
 	    _optionsFactory$rende = _optionsFactory.renderer,
 	    renderer = _optionsFactory$rende === undefined ? defaultRenderer : _optionsFactory$rende,
 	    _optionsFactory$previ = _optionsFactory.preview,
@@ -5643,7 +5596,7 @@ var commandFactory = (function (optionsFactory) {
 
 	var options$$1 = _extends$2({
 		loadData: loadData,
-		accept: accept$$1,
+		accept: accept,
 		renderer: renderer,
 		preview: preview
 	}, extraOptions);
@@ -5659,7 +5612,9 @@ var commandFactory = (function (optionsFactory) {
 
 			if (storeOptions === options$$1) {
 				if (sparklingInput === document.activeElement) {
-					hide();
+					store.dispatch({
+						type: 'HIDE'
+					});
 				} else {
 					sparklingInput.focus();
 				}
@@ -6178,86 +6133,6 @@ var replaceFactory = function replaceFactory(h, store) {
 
 var replace$1 = commandFactory(replaceFactory);
 
-var loadDataFactory$2 = (function (store) {
-	return function (onData) {
-		var options = getOptions(store.getState());
-		var path$$1 = options.path;
-
-
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
-			cwd: cwd
-		});
-
-		cmdProcess.stdout.on('data', function (data) {
-			var options = getOptions(store.getState());
-			var path$$1 = options.path;
-
-
-			onData(data.toString('utf-8').split('\n').filter(function (s) {
-				return s.length > 1;
-			}).map(function (value) {
-				var absolutePath = path.resolve(path$$1, value);
-				var cwd = atom.project.getPaths()[0];
-				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
-
-				var isFolder = fs.lstatSync(absolutePath).isDirectory();
-				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
-			}).sort(function (a, b) {
-				if (a.isFolder && !b.isFolder) {
-					return -1;
-				} else if (!a.isFolder && b.isFolder) {
-					return 1;
-				} else if (a.absolutePath > b.absolutePath) {
-					return 1;
-				} else if (b.absolutePath < a.absolutePath) {
-					return -1;
-				}
-
-				return 0;
-			}));
-		});
-
-		return function () {
-			cmdProcess.stdin.pause();
-			cmdProcess.kill();
-		};
-	};
-});
-
-var renderer$4 = (function (props) {
-	var absolutePath = props.item.absolutePath;
-
-
-	return defaultRenderer(_extends$2({}, props, {
-		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
-	}));
-});
-
-var lsFactory = function lsFactory(h, store) {
-	var loadData = loadDataFactory$2(store);
-
-	var accept = function accept(_ref) {
-		var absolutePath = _ref.absolutePath;
-
-		if (fs.lstatSync(absolutePath).isDirectory()) {
-			ls({ path: absolutePath });
-		} else {
-			store.dispatch({ type: 'HIDE' });
-			atom.workspace.open(absolutePath);
-		}
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer$4,
-		description: 'Project navigation'
-	};
-};
-
-var ls = commandFactory(lsFactory);
-
 var loadData$2 = (function (onData) {
 	var cwd = atom.project.getPaths()[0];
 	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '100K'], {
@@ -6297,7 +6172,7 @@ var allLinesFactory = function allLinesFactory(h, store) {
 
 var allLines = commandFactory(allLinesFactory);
 
-var renderer$5 = (function (_ref) {
+var renderer$4 = (function (_ref) {
 	var item = _ref.item,
 	    props = objectWithoutProperties$1(_ref, ['item']);
 	return defaultRenderer(_extends$2({}, props, {
@@ -6317,7 +6192,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		renderer: renderer$5,
+		renderer: renderer$4,
 		description: 'Autocomplete lines from project'
 	};
 };
@@ -6379,6 +6254,163 @@ var config = {
 		type: 'boolean',
 		default: true
 	}
+};
+
+var loadDataFactory$2 = (function (store) {
+	return function (onData) {
+		var options = getOptions(store.getState());
+		var path$$1 = options.path;
+
+
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
+			cwd: cwd
+		});
+
+		cmdProcess.stdout.on('data', function (data) {
+			var options = getOptions(store.getState());
+			var path$$1 = options.path;
+
+
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length > 1;
+			}).map(function (value) {
+				var absolutePath = path.resolve(path$$1, value);
+				var cwd = atom.project.getPaths()[0];
+				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
+
+				var isFolder = fs.lstatSync(absolutePath).isDirectory();
+				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
+			}).sort(function (a, b) {
+				if (a.isFolder && !b.isFolder) {
+					return -1;
+				} else if (!a.isFolder && b.isFolder) {
+					return 1;
+				} else if (a.absolutePath > b.absolutePath) {
+					return 1;
+				} else if (b.absolutePath < a.absolutePath) {
+					return -1;
+				}
+
+				return 0;
+			}));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var renderer$5 = (function (props) {
+	var absolutePath = props.item.absolutePath;
+
+
+	return defaultRenderer(_extends$2({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+	}));
+});
+
+var lsFactory = function lsFactory(h, store) {
+	var loadData = loadDataFactory$2(store);
+
+	var accept = function accept(_ref) {
+		var absolutePath = _ref.absolutePath;
+
+		if (fs.lstatSync(absolutePath).isDirectory()) {
+			ls({ path: absolutePath });
+		} else {
+			store.dispatch({ type: 'HIDE' });
+			atom.workspace.open(absolutePath);
+		}
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$5,
+		description: 'Project navigation'
+	};
+};
+
+var ls = commandFactory(lsFactory);
+
+var next = function next() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var sparklingData = getSparklingData(state);
+
+	if (index === 9) {
+		var offset = getOffset(state);
+		var value = Math.min(offset + 1, sparklingData.length - 10);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value = Math.min(index + 1, sparklingData.length - 1, 9);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
+	}
+};
+
+var previous = function previous() {
+	var state = store.getState();
+	var index = getIndex(state);
+
+	if (index === 0) {
+		var offset = getOffset(state);
+		var value = Math.max(offset - 1, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value2 = Math.max(index - 1, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+	}
+};
+
+var hide = function hide() {
+	store.dispatch({ type: 'HIDE' });
+};
+
+var accept = function accept() {
+	var state = store.getState();
+	var value = getSelectedValue(state);
+
+	if (value === null || value === undefined) {
+		return;
+	}
+
+	var _getOptions = getOptions(state),
+	    accept = _getOptions.accept;
+
+	accept(value);
+};
+
+var findToggle = function findToggle() {
+	if (isFindVisible(store.getState())) {
+		store.dispatch({ type: 'HIDE_SEARCH' });
+	} else {
+		store.dispatch({ type: 'SHOW_SEARCH' });
+	}
+};
+
+var replaceToggle = function replaceToggle() {
+	if (isReplaceVisible(store.getState())) {
+		store.dispatch({ type: 'HIDE_REPLACE' });
+	} else {
+		store.dispatch({ type: 'SHOW_REPLACE' });
+	}
+};
+
+var lsShow = function lsShow() {
+	var activeTextEditor = atom.workspace.getActiveTextEditor();
+	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+	ls({ path: finalPath });
+};
+
+var lsShowUp = function lsShowUp() {
+	var _getOptions2 = getOptions(store.getState()),
+	    optionsPath = _getOptions2.path;
+
+	var finalPath = path.resolve(optionsPath, '..');
+	ls({ path: finalPath });
 };
 
 function isScheduler(value) {
@@ -8196,36 +8228,6 @@ var setupObservables = (function () {
 		}
 	});
 });
-
-var findToggle = function findToggle() {
-	if (isFindVisible(store.getState())) {
-		store.dispatch({ type: 'HIDE_SEARCH' });
-	} else {
-		store.dispatch({ type: 'SHOW_SEARCH' });
-	}
-};
-
-var replaceToggle = function replaceToggle() {
-	if (isReplaceVisible(store.getState())) {
-		store.dispatch({ type: 'HIDE_REPLACE' });
-	} else {
-		store.dispatch({ type: 'SHOW_REPLACE' });
-	}
-};
-
-var lsShow = function lsShow() {
-	var activeTextEditor = atom.workspace.getActiveTextEditor();
-	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
-	ls({ path: finalPath });
-};
-
-var lsShowUp = function lsShowUp() {
-	var _getOptions = getOptions(store.getState()),
-	    optionsPath = _getOptions.path;
-
-	var finalPath = path.resolve(optionsPath, '..');
-	ls({ path: finalPath });
-};
 
 module.exports = {
 	subscriptions: null,
