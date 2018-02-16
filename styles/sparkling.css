@@ -1,4 +1,4 @@
-.sparkling-results-block {
+.sparkling-results-container {
 	display: flex;
 	max-height: 100%;
 }
@@ -76,7 +76,7 @@
 	box-shadow: 0 0 0 1px #ff6347;
 }
 
-.sparkling-find-meta-data {
+.sparkling-meta-data {
 	padding-bottom: 0.75em;
 }
 

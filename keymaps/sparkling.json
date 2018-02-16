@@ -1,15 +1,10 @@
 {
 	"atom-workspace": {
-		"cmd-l cmd-s": "sparkling:ls"
+		"cmd-l cmd-s": "sparkling:ls",
+		"cmd-shift-a": "sparkling:findToggle"
 	},
 	".sparkling-files": {
 		"cmd-p": "sparkling:files"
-	},
-	".sparkling-find": {
-		"cmd-shift-a": "sparkling:findToggle"
-	},
-	".sparkling-replace": {
-		"cmd-shift-e": "sparkling:replaceToggle"
 	},
 	".sparkling-gitFiles": {
 		"cmd-g cmd-p": "sparkling:gitFiles",
@@ -27,13 +22,9 @@
 	".sparkling-autocompleteLines atom-text-editor": {
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
-	".sparking-find .sparkling-input": {
+	".sparking-find.sparkling-input": {
 		"enter": "sparkling:find",
-		"cmd-escape": "sparkling:hide",
-		"escape": "sparkling:hide"
-	},
-	".sparking-replace .sparkling-input": {
-		"enter": "sparkling:replace",
+		"shift-enter": "sparkling:replace",
 		"cmd-escape": "sparkling:hide",
 		"escape": "sparkling:hide"
 	},

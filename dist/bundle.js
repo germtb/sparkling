@@ -2936,9 +2936,6 @@ var isFindVisible = function isFindVisible(state) {
 var getReplace = function getReplace(state) {
 	return state.replace;
 };
-var isReplaceVisible = function isReplaceVisible(state) {
-	return state.replaceVisible;
-};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3166,18 +3163,20 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var Sparkling = function (_Component) {
-	inherits$1(Sparkling, _Component);
+var Input = function (_Component) {
+	inherits$1(Input, _Component);
 
-	function Sparkling() {
-		classCallCheck$1(this, Sparkling);
-		return possibleConstructorReturn$1(this, (Sparkling.__proto__ || Object.getPrototypeOf(Sparkling)).apply(this, arguments));
+	function Input() {
+		classCallCheck$1(this, Input);
+		return possibleConstructorReturn$1(this, (Input.__proto__ || Object.getPrototypeOf(Input)).apply(this, arguments));
 	}
 
-	createClass(Sparkling, [{
+	createClass(Input, [{
 		key: 'componentDidMount',
 		value: function componentDidMount() {
-			this.input.focus();
+			if (this.props.autoFocus) {
+				this.input.focus();
+			}
 		}
 	}, {
 		key: 'render',
@@ -3185,126 +3184,82 @@ var Sparkling = function (_Component) {
 			var _this2 = this;
 
 			var _props = this.props,
-			    options$$1 = _props.options,
-			    selectedValue = _props.selectedValue,
-			    data = _props.data,
-			    selectedIndex = _props.selectedIndex,
-			    rawDataLength = _props.rawDataLength,
-			    offset = _props.offset,
-			    pattern = _props.pattern;
-			var preview = options$$1.preview,
-			    renderer = options$$1.renderer,
-			    accept = options$$1.accept,
-			    description = options$$1.description,
-			    id = options$$1.id,
-			    childrenRenderer = options$$1.childrenRenderer;
+			    id = _props.id,
+			    setValue = _props.setValue,
+			    value = _props.value,
+			    className = _props.className,
+			    placeholder = _props.placeholder,
+			    _props$tabIndex = _props.tabIndex,
+			    tabIndex = _props$tabIndex === undefined ? -1 : _props$tabIndex;
 
-			var filteredDataLength = data.length;
 
-			return h(
-				'div',
-				{ className: 'sparkling', id: id },
-				h(
-					'div',
-					{ className: 'sparkling-results-block' },
-					h(
-						'div',
-						{ className: 'sparkling-results', id: 'sparkling-results' },
-						data.slice(offset, offset + 10).map(function (item, index) {
-							return renderer({
-								item: item,
-								index: index,
-								selectedIndex: selectedIndex,
-								accept: accept,
-								pattern: pattern
-							});
-						})
-					),
-					preview && selectedValue && h(
-						'div',
-						{ className: 'sparkling-preview' },
-						preview(selectedValue)
-					)
-				),
-				h(
-					'div',
-					{ className: 'sparkling-input-container' },
-					h(
-						'div',
-						{ className: 'sparkling-find-meta-data' },
-						h(
-							'span',
-							null,
-							filteredDataLength + ' / ' + rawDataLength
-						),
-						h(
-							'span',
-							{ className: 'sparkling-command-description' },
-							description
-						)
-					),
-					h('input', {
-						id: 'sparkling-input',
-						tabIndex: 1,
-						className: classnames('sparkling-input', 'native-key-bindings', {
-							'sparkling-input--has-results': filteredDataLength > 0,
-							'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
-						}),
-						placeholder: 'Sparkling find',
-						ref: function ref(input) {
-							_this2.input = input;
-						},
-						onInput: function onInput(event) {
-							_this2.props.setPattern(event.target.value);
-						},
-						value: this.props.pattern
-					}),
-					childrenRenderer && childrenRenderer()
-				)
-			);
+			return h('input', {
+				id: id,
+				tabIndex: tabIndex,
+				className: classnames('sparkling-input native-key-bindings', className),
+				placeholder: placeholder,
+				onInput: function onInput(event) {
+					setValue(event.target.value);
+				},
+				value: value,
+				ref: function ref(input) {
+					_this2.input = input;
+				}
+			});
 		}
 	}]);
-	return Sparkling;
+	return Input;
 }(Component);
 
-var SparklingContainer = function (_Component) {
-	inherits$1(SparklingContainer, _Component);
+var SparklingInput = function SparklingInput(_ref) {
+	var options$$1 = _ref.options,
+	    data = _ref.data,
+	    rawDataLength = _ref.rawDataLength,
+	    pattern = _ref.pattern,
+	    setPattern = _ref.setPattern;
+	var description = options$$1.description,
+	    childrenRenderer = options$$1.childrenRenderer;
 
-	function SparklingContainer() {
-		classCallCheck$1(this, SparklingContainer);
-		return possibleConstructorReturn$1(this, (SparklingContainer.__proto__ || Object.getPrototypeOf(SparklingContainer)).apply(this, arguments));
-	}
+	var filteredDataLength = data.length;
 
-	createClass(SparklingContainer, [{
-		key: 'render',
-		value: function render$$1() {
-			if (!this.props.visible) {
-				return null;
-			}
+	return h(
+		'div',
+		{ className: 'sparkling-input-container' },
+		h(
+			'div',
+			{ className: 'sparkling-meta-data' },
+			h(
+				'span',
+				null,
+				filteredDataLength + ' / ' + rawDataLength
+			),
+			h(
+				'span',
+				{ className: 'sparkling-command-description' },
+				description
+			)
+		),
+		h(Input, {
+			autoFocus: true,
+			id: 'sparkling-input',
+			tabIndex: 1,
+			className: classnames('sparkling-input', 'native-key-bindings', {
+				'sparkling-input--has-results': filteredDataLength > 0,
+				'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
+			}),
+			placeholder: 'Sparkling fuzzy filter',
+			value: pattern,
+			setValue: setPattern
+		}),
+		childrenRenderer && childrenRenderer()
+	);
+};
 
-			if (!this.props.data) {
-				return h(
-					'div',
-					null,
-					'Loading...'
-				);
-			}
-
-			return h(Sparkling, this.props);
-		}
-	}]);
-	return SparklingContainer;
-}(Component);
-
-var SparklingContainer$1 = connect(function (state) {
+var SparklingInput$1 = connect(function (state) {
 	return {
-		visible: isVisible(state),
 		data: getSparklingData(state),
-		selectedIndex: getIndex(state),
 		options: getOptions(state),
-		selectedValue: getSelectedValue(state),
 		rawDataLength: getRawDataLength(state),
-		offset: getOffset(state),
 		pattern: getPattern(state)
 	};
 }, function (dispatch) {
@@ -3313,166 +3268,120 @@ var SparklingContainer$1 = connect(function (state) {
 			return dispatch({ type: 'SET_PATTERN', payload: { pattern: pattern } });
 		}
 	};
+})(SparklingInput);
+
+var SparklingResults = function SparklingResults(_ref) {
+	var options$$1 = _ref.options,
+	    selectedValue = _ref.selectedValue,
+	    data = _ref.data,
+	    selectedIndex = _ref.selectedIndex,
+	    offset = _ref.offset,
+	    pattern = _ref.pattern;
+	var preview = options$$1.preview,
+	    renderer = options$$1.renderer,
+	    accept = options$$1.accept;
+
+
+	return h(
+		'div',
+		{ className: 'sparkling-results-container' },
+		h(
+			'div',
+			{ className: 'sparkling-results' },
+			data.slice(offset, offset + 10).map(function (item, index$$1) {
+				return renderer({
+					item: item,
+					index: index$$1,
+					selectedIndex: selectedIndex,
+					accept: accept,
+					pattern: pattern
+				});
+			})
+		),
+		preview && selectedValue && h(
+			'div',
+			{ className: 'sparkling-preview' },
+			preview(selectedValue)
+		)
+	);
+};
+
+var SparklingResults$1 = connect(function (state) {
+	return {
+		options: getOptions(state),
+		data: getSparklingData(state),
+		selectedIndex: getIndex(state),
+		selectedValue: getSelectedValue(state),
+		offset: getOffset(state),
+		pattern: getPattern(state)
+	};
+})(SparklingResults);
+
+var Sparkling = (function (_ref) {
+	var options$$1 = _ref.options;
+	var id = options$$1.id;
+
+
+	return h(
+		'div',
+		{ className: 'sparkling', id: id },
+		h(SparklingResults$1, null),
+		h(SparklingInput$1, null)
+	);
+});
+
+var SparklingContainer = function SparklingContainer(_ref) {
+	var visible = _ref.visible,
+	    props = objectWithoutProperties$1(_ref, ['visible']);
+
+	if (!visible) {
+		return null;
+	}
+
+	return h(Sparkling, props);
+};
+
+var SparklingContainer$1 = connect(function (state) {
+	return {
+		visible: isVisible(state),
+		options: getOptions(state)
+	};
 })(SparklingContainer);
 
-var Find = function (_Component) {
-	inherits$1(Find, _Component);
+var FindContainer = function FindContainer(_ref) {
+	var visible = _ref.visible,
+	    value = _ref.value,
+	    setValue = _ref.setValue;
 
-	function Find() {
-		classCallCheck$1(this, Find);
-		return possibleConstructorReturn$1(this, (Find.__proto__ || Object.getPrototypeOf(Find)).apply(this, arguments));
+	if (!visible) {
+		return null;
 	}
 
-	createClass(Find, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			this.input.focus();
-		}
-	}, {
-		key: "render",
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    find = _props.find,
-			    setFind = _props.setFind;
-
-
-			return h(
-				"div",
-				{ className: "sparking-find sparkling-input-container" },
-				h("input", {
-					id: "sparkling-input",
-					className: "sparkling-input native-key-bindings",
-					placeholder: "Find in project",
-					ref: function ref(input) {
-						_this2.input = input;
-					},
-					onInput: function onInput(event) {
-						setFind(event.target.value);
-					},
-					value: find
-				})
-			);
-		}
-	}]);
-	return Find;
-}(Component);
-
-var FindContainer = function (_Component) {
-	inherits$1(FindContainer, _Component);
-
-	function FindContainer() {
-		classCallCheck$1(this, FindContainer);
-		return possibleConstructorReturn$1(this, (FindContainer.__proto__ || Object.getPrototypeOf(FindContainer)).apply(this, arguments));
-	}
-
-	createClass(FindContainer, [{
-		key: 'render',
-		value: function render$$1() {
-			if (!this.props.visible) {
-				return null;
-			}
-
-			return h(Find, this.props);
-		}
-	}]);
-	return FindContainer;
-}(Component);
+	return h(
+		'div',
+		{ className: 'sparkling-input-container' },
+		h(Input, {
+			className: 'sparking-find',
+			autoFocus: true,
+			value: value,
+			setValue: setValue,
+			placeholder: 'Find in project'
+		})
+	);
+};
 
 var FindContainer$1 = connect(function (state) {
 	return {
 		visible: isFindVisible(state),
-		find: getFind(state)
+		value: getFind(state)
 	};
 }, function (dispatch) {
 	return {
-		setFind: function setFind(find) {
+		setValue: function setValue(find) {
 			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
 		}
 	};
 })(FindContainer);
-
-var Replace = function (_Component) {
-	inherits$1(Replace, _Component);
-
-	function Replace() {
-		classCallCheck$1(this, Replace);
-		return possibleConstructorReturn$1(this, (Replace.__proto__ || Object.getPrototypeOf(Replace)).apply(this, arguments));
-	}
-
-	createClass(Replace, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			this.input.focus();
-		}
-	}, {
-		key: "render",
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    find = _props.find,
-			    setFind = _props.setFind;
-
-
-			return h(
-				"div",
-				{ className: "sparking-replace sparkling-input-container" },
-				h("input", {
-					className: "sparkling-input native-key-bindings",
-					placeholder: "Find in project",
-					ref: function ref(input) {
-						_this2.input = input;
-					},
-					onInput: function onInput(event) {
-						setFind(event.target.value);
-					},
-					value: find
-				})
-			);
-		}
-	}]);
-	return Replace;
-}(Component);
-
-var ReplaceContainer = function (_Component) {
-	inherits$1(ReplaceContainer, _Component);
-
-	function ReplaceContainer() {
-		classCallCheck$1(this, ReplaceContainer);
-		return possibleConstructorReturn$1(this, (ReplaceContainer.__proto__ || Object.getPrototypeOf(ReplaceContainer)).apply(this, arguments));
-	}
-
-	createClass(ReplaceContainer, [{
-		key: 'render',
-		value: function render$$1() {
-			if (!this.props.visible) {
-				return null;
-			}
-
-			return h(Replace, this.props);
-		}
-	}]);
-	return ReplaceContainer;
-}(Component);
-
-var ReplaceContainer$1 = connect(function (state) {
-	return {
-		visible: isReplaceVisible(state),
-		find: getFind(state),
-		replace: getReplace(state)
-	};
-}, function (dispatch) {
-	return {
-		setFind: function setFind(find) {
-			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
-		},
-		setReplace: function setReplace(replace) {
-			return dispatch({ type: 'SET_REPLACE', payload: { replace: replace } });
-		}
-	};
-})(ReplaceContainer);
 
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
@@ -5588,8 +5497,11 @@ var defaultRenderer = function defaultRenderer(_ref) {
 	    accept = _ref.accept;
 	var value = item.value;
 
+
 	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
 	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+
 	return h('div', {
 		className: finalClassName,
 		'aria-role': 'button',
@@ -6136,63 +6048,36 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	});
 };
 
-var Replace$2 = connect(function (state) {
+var Replace = connect(function (state) {
 	return {
 		replace: getReplace(state)
 	};
 })(replaceRenderer);
 
 var renderer$3 = (function (props) {
-	return h(Replace$2, props);
+	return h(Replace, props);
 });
 
-var ReplaceInput = function (_Component) {
-	inherits$1(ReplaceInput, _Component);
-
-	function ReplaceInput() {
-		classCallCheck$1(this, ReplaceInput);
-		return possibleConstructorReturn$1(this, (ReplaceInput.__proto__ || Object.getPrototypeOf(ReplaceInput)).apply(this, arguments));
-	}
-
-	createClass(ReplaceInput, [{
-		key: 'componentDidMount',
-		value: function componentDidMount() {
-			this.input.focus();
-		}
-	}, {
-		key: 'render',
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    setReplace = _props.setReplace,
-			    replace = _props.replace;
-
-
-			return h('input', {
-				tabIndex: 0,
-				className: 'sparkling-input sparkling-replace native-key-bindings',
-				placeholder: 'Replace',
-				onInput: function onInput(event) {
-					setReplace(event.target.value);
-				},
-				value: replace,
-				ref: function ref(input) {
-					_this2.input = input;
-				}
-			});
-		}
-	}]);
-	return ReplaceInput;
-}(Component);
+var ReplaceInput = function ReplaceInput(_ref) {
+	var value = _ref.value,
+	    setValue = _ref.setValue;
+	return h(Input, {
+		autoFocus: true,
+		tabIndex: 0,
+		className: 'sparkling-replace',
+		placeholder: 'Replace',
+		setValue: setValue,
+		value: value
+	});
+};
 
 var ReplaceInputContainer = connect(function (state) {
 	return {
-		replace: getReplace(state)
+		value: getReplace(state)
 	};
 }, function (dispatch) {
 	return {
-		setReplace: function setReplace(replace) {
+		setValue: function setValue(replace) {
 			return dispatch({ type: 'SET_REPLACE', payload: { replace: replace } });
 		}
 	};
@@ -6225,7 +6110,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		renderer: renderer$3,
 		description: 'Replace pattern in project',
 		id: 'replace-in-project',
-		children: function children() {
+		childrenRenderer: function childrenRenderer() {
 			return h$$1(ReplaceInputContainer, null);
 		}
 	};
@@ -6506,18 +6391,6 @@ var findToggle = function findToggle() {
 		store.dispatch({ type: 'HIDE_SEARCH' });
 	} else {
 		store.dispatch({ type: 'SHOW_SEARCH' });
-	}
-};
-
-var replaceToggle = function replaceToggle() {
-	var replaceInput = document.querySelector('#replace-in-project #sparkling-input');
-
-	if (replaceInput && replaceInput !== document.activeElement) {
-		replaceInput.focus();
-	} else if (isReplaceVisible(store.getState())) {
-		store.dispatch({ type: 'HIDE_REPLACE' });
-	} else {
-		store.dispatch({ type: 'SHOW_REPLACE' });
 	}
 };
 
@@ -8371,8 +8244,7 @@ module.exports = {
 				'div',
 				null,
 				h(SparklingContainer$1, null),
-				h(FindContainer$1, null),
-				h(ReplaceContainer$1, null)
+				h(FindContainer$1, null)
 			)
 		), reactRoot);
 
@@ -8391,10 +8263,6 @@ module.exports = {
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:findToggle': findToggle
-		}));
-
-		this.subscriptions.add(atom.commands.add('atom-workspace', {
-			'sparkling:replaceToggle': replaceToggle
 		}));
 
 		atom.commands.add('atom-workspace', {
