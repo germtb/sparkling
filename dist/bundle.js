@@ -4378,37 +4378,23 @@ var visible = reducerCreator({
 	SHOW: true,
 	HIDE: false,
 	SHOW_SEARCH: false,
-	HIDE_SEARCH: false,
-	SHOW_REPLACE: false,
-	HIDE_REPLACE: false
+	HIDE_SEARCH: false
 })(false);
 
 var findVisible = reducerCreator({
 	SHOW_SEARCH: true,
-	HIDE_SEARCH: false,
-	SHOW_REPLACE: false,
-	HIDE_REPLACE: false,
-	SHOW: false,
-	HIDE: false
-})(false);
-
-var replaceVisible = reducerCreator({
-	SHOW_REPLACE: true,
-	HIDE_REPLACE: false,
-	SHOW_SEARCH: false,
 	HIDE_SEARCH: false,
 	SHOW: false,
 	HIDE: false
 })(false);
 
 var find = reducerCreator({
-	SHOW_SEARCH: '',
-	SHOW_REPLACE: '',
+	SHOW_SEARCH: returnPayload('find'),
 	SET_SEARCH: returnPayload('find')
 })('');
 
 var replace = reducerCreator({
-	SHOW_REPLACE: '',
+	SHOW_SEARCH: '',
 	SET_REPLACE: returnPayload('replace')
 })('');
 
@@ -4490,7 +4476,6 @@ var reducers = combineReducers({
 	pattern: pattern,
 	findVisible: findVisible,
 	find: find,
-	replaceVisible: replaceVisible,
 	replace: replace
 });
 
@@ -6391,7 +6376,9 @@ var findToggle = function findToggle() {
 	} else if (isFindVisible(store.getState())) {
 		store.dispatch({ type: 'HIDE_SEARCH' });
 	} else {
-		store.dispatch({ type: 'SHOW_SEARCH' });
+		var editor = atom.workspace.getActiveTextEditor();
+		var find = editor ? editor.getSelectedText() : '';
+		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find } });
 	}
 };
 
