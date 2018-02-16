@@ -4512,14 +4512,16 @@ var data = reducerCreator({
 	},
 	SHOW: [],
 	HIDE: [],
-	SHOW_SEARCH: []
+	SHOW_SEARCH: [],
+	RELOAD: []
 })([]);
 
 var sparklingData = reducerCreator({
 	SET_FILTERED_DATA: returnPayload('data'),
 	SHOW: [],
 	HIDE: [],
-	SHOW_SEARCH: []
+	SHOW_SEARCH: [],
+	RELOAD: []
 })([]);
 
 var pattern = reducerCreator({
@@ -4582,7 +4584,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		// console.log('action: ', action)
+		console.log('action: ', action);
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -4631,9 +4633,9 @@ function storeFactory(reducers$$1) {
 	var fromSelector = fromSelectorFactory(store);
 	store.fromSelector = fromSelector;
 	store.fromAction = fromAction;
-	// store.subscribe(() => {
-	// 	console.log(store.getState())
-	// })
+	store.subscribe(function () {
+		console.log(store.getState());
+	});
 
 	return store;
 }
@@ -5755,12 +5757,15 @@ var loadDataFactory = (function (_ref) {
 	return function (onData) {
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
+
+		console.log('Calculating git status');
+
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').filter(function (value) {
 				return value.trim() !== '';
 			}).reduce(function (acc, value) {
 				var path$$1 = value.slice(2).trim();
-				var status = value.slice(0, 2).trim();
+				var status = value.slice(0, 2);
 
 				if (hideDeletedFiles && status === 'D' || status === 'DD') {
 					return acc;
@@ -5774,8 +5779,6 @@ var loadDataFactory = (function (_ref) {
 });
 
 var renderer$1 = (function (_ref) {
-	var _classNames;
-
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    className = _ref.className,
@@ -5790,24 +5793,82 @@ var renderer$1 = (function (_ref) {
 
 	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
 
-	var statusClassName = classnames('git-status', (_classNames = {}, defineProperty(_classNames, 'git-status-modified', status === 'M'), defineProperty(_classNames, 'git-status-modified-staged', status === 'MM'), defineProperty(_classNames, 'git-status-new-file', status === 'A'), defineProperty(_classNames, 'git-status-new-file-staged', status === 'AM'), defineProperty(_classNames, 'git-status-deleted', status === 'D'), defineProperty(_classNames, 'git-status-deleted-staged', status === 'DD'), defineProperty(_classNames, 'git-status-untracked', status === '??'), _classNames));
-
 	var statusLabel = void 0;
 
-	if (status === 'M') {
-		statusLabel = 'modified';
-	} else if (status === '??') {
-		statusLabel = 'untracked';
+	if (status === 'M ') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-modified-staged' },
+			'modified'
+		);
+	} else if (status === ' M') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-modified' },
+			'modified'
+		);
 	} else if (status === 'MM') {
-		statusLabel = 'modified';
-	} else if (status === 'D') {
-		statusLabel = 'deleted';
+		statusLabel = [h(
+			'span',
+			{ className: 'git-status-modified-staged' },
+			'modi'
+		), h(
+			'span',
+			{ className: 'git-status-modified' },
+			'fied'
+		)];
+	} else if (status === '??') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-untracked' },
+			'untracked'
+		);
+	} else if (status === 'D ') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-deleted-staged' },
+			'deleted'
+		);
+	} else if (status === ' D') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-deleted' },
+			'deleted'
+		);
+	} else if (status === 'AD') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-deleted' },
+			'deleted'
+		);
 	} else if (status === 'DD') {
-		statusLabel = 'deleted';
-	} else if (status === 'A') {
-		statusLabel = 'new file';
+		statusLabel = [h(
+			'span',
+			{ className: 'git-status-deleted-staged' },
+			'del'
+		), h(
+			'span',
+			{ className: 'git-status-deleted' },
+			'eted'
+		)];
+	} else if (status === 'A ') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-new-file-staged' },
+			'new file'
+		);
+	} else if (status === ' A') {
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-new-file-staged' },
+			'new file'
+		);
 	} else if (status === 'AM') {
-		statusLabel = 'new file';
+		statusLabel = h(
+			'span',
+			{ className: 'git-status-new-file-staged' },
+			'new file'
+		);
 	} else {
 		statusLabel = status;
 	}
@@ -5823,7 +5884,7 @@ var renderer$1 = (function (_ref) {
 		},
 		h(
 			'span',
-			{ className: statusClassName },
+			{ className: 'git-status' },
 			statusLabel
 		),
 		h('span', { dangerouslySetInnerHTML: { __html: wrappedValue } })
@@ -5846,6 +5907,40 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 };
 
 var gitFiles = commandFactory(gitFilesFactory);
+
+var gitStageFactory = function gitStageFactory(h, store) {
+	var loadData = loadDataFactory({ hideDeletedFiles: false });
+
+	var accept = function accept(_ref) {
+		var path$$1 = _ref.path,
+		    status = _ref.status;
+
+		var cwd = atom.project.getPaths()[0];
+
+		var cmdProcess = void 0;
+		var unstaged = [' M', 'MM', '??', ' D', 'AD', 'DD', ' A'];
+
+		if (unstaged.includes(status)) {
+			cmdProcess = child_process.spawn('git', ['add', path$$1], {
+				cwd: cwd
+			});
+		} else {
+			cmdProcess = child_process.spawn('git', ['reset', path$$1], {
+				cwd: cwd
+			});
+		}
+
+		cmdProcess.on('exit', function () {
+			store.dispatch({
+				type: 'RELOAD'
+			});
+		});
+	};
+
+	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+};
+
+var gitStage = commandFactory(gitStageFactory);
 
 var linesFactory = function linesFactory(h, store) {
 	var loadData = function loadData(onData) {
@@ -6188,6 +6283,12 @@ var config = {
 	gitFiles: {
 		title: 'Find files with git',
 		description: 'Enable find files that have been modified according to git',
+		type: 'boolean',
+		default: true
+	},
+	gitStage: {
+		title: 'Stage files with git',
+		description: 'Enable staging files with git',
 		type: 'boolean',
 		default: true
 	},
@@ -6914,6 +7015,238 @@ var __extends$8 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
+
+/* tslint:enable:max-line-length */
+/**
+ * Projects each source value to an Observable which is merged in the output
+ * Observable.
+ *
+ * <span class="informal">Maps each value to an Observable, then flattens all of
+ * these inner Observables using {@link mergeAll}.</span>
+ *
+ * <img src="./img/mergeMap.png" width="100%">
+ *
+ * Returns an Observable that emits items based on applying a function that you
+ * supply to each item emitted by the source Observable, where that function
+ * returns an Observable, and then merging those resulting Observables and
+ * emitting the results of this merger.
+ *
+ * @example <caption>Map and flatten each letter to an Observable ticking every 1 second</caption>
+ * var letters = Rx.Observable.of('a', 'b', 'c');
+ * var result = letters.mergeMap(x =>
+ *   Rx.Observable.interval(1000).map(i => x+i)
+ * );
+ * result.subscribe(x => console.log(x));
+ *
+ * // Results in the following:
+ * // a0
+ * // b0
+ * // c0
+ * // a1
+ * // b1
+ * // c1
+ * // continues to list a,b,c with respective ascending integers
+ *
+ * @see {@link concatMap}
+ * @see {@link exhaustMap}
+ * @see {@link merge}
+ * @see {@link mergeAll}
+ * @see {@link mergeMapTo}
+ * @see {@link mergeScan}
+ * @see {@link switchMap}
+ *
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
+ * that, when applied to an item emitted by the source Observable, returns an
+ * Observable.
+ * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+ * A function to produce the value on the output Observable based on the values
+ * and the indices of the source (outer) emission and the inner Observable
+ * emission. The arguments passed to this function are:
+ * - `outerValue`: the value that came from the source
+ * - `innerValue`: the value that came from the projected Observable
+ * - `outerIndex`: the "index" of the value that came from the source
+ * - `innerIndex`: the "index" of the value from the projected Observable
+ * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
+ * Observables being subscribed to concurrently.
+ * @return {Observable} An Observable that emits the result of applying the
+ * projection function (and the optional `resultSelector`) to each item emitted
+ * by the source Observable and merging the results of the Observables obtained
+ * from this transformation.
+ * @method mergeMap
+ * @owner Observable
+ */
+function mergeMap(project, resultSelector, concurrent) {
+    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+    return function mergeMapOperatorFunction(source) {
+        if (typeof resultSelector === 'number') {
+            concurrent = resultSelector;
+            resultSelector = null;
+        }
+        return source.lift(new MergeMapOperator(project, resultSelector, concurrent));
+    };
+}
+var mergeMap_2 = mergeMap;
+var MergeMapOperator = (function () {
+    function MergeMapOperator(project, resultSelector, concurrent) {
+        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+        this.project = project;
+        this.resultSelector = resultSelector;
+        this.concurrent = concurrent;
+    }
+    MergeMapOperator.prototype.call = function (observer, source) {
+        return source.subscribe(new MergeMapSubscriber(observer, this.project, this.resultSelector, this.concurrent));
+    };
+    return MergeMapOperator;
+}());
+var MergeMapOperator_1 = MergeMapOperator;
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var MergeMapSubscriber = (function (_super) {
+    __extends$8(MergeMapSubscriber, _super);
+    function MergeMapSubscriber(destination, project, resultSelector, concurrent) {
+        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+        _super.call(this, destination);
+        this.project = project;
+        this.resultSelector = resultSelector;
+        this.concurrent = concurrent;
+        this.hasCompleted = false;
+        this.buffer = [];
+        this.active = 0;
+        this.index = 0;
+    }
+    MergeMapSubscriber.prototype._next = function (value) {
+        if (this.active < this.concurrent) {
+            this._tryNext(value);
+        }
+        else {
+            this.buffer.push(value);
+        }
+    };
+    MergeMapSubscriber.prototype._tryNext = function (value) {
+        var result;
+        var index = this.index++;
+        try {
+            result = this.project(value, index);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        this.active++;
+        this._innerSub(result, value, index);
+    };
+    MergeMapSubscriber.prototype._innerSub = function (ish, value, index) {
+        this.add(subscribeToResult_1.subscribeToResult(this, ish, value, index));
+    };
+    MergeMapSubscriber.prototype._complete = function () {
+        this.hasCompleted = true;
+        if (this.active === 0 && this.buffer.length === 0) {
+            this.destination.complete();
+        }
+    };
+    MergeMapSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
+        if (this.resultSelector) {
+            this._notifyResultSelector(outerValue, innerValue, outerIndex, innerIndex);
+        }
+        else {
+            this.destination.next(innerValue);
+        }
+    };
+    MergeMapSubscriber.prototype._notifyResultSelector = function (outerValue, innerValue, outerIndex, innerIndex) {
+        var result;
+        try {
+            result = this.resultSelector(outerValue, innerValue, outerIndex, innerIndex);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        this.destination.next(result);
+    };
+    MergeMapSubscriber.prototype.notifyComplete = function (innerSub) {
+        var buffer = this.buffer;
+        this.remove(innerSub);
+        this.active--;
+        if (buffer.length > 0) {
+            this._next(buffer.shift());
+        }
+        else if (this.active === 0 && this.hasCompleted) {
+            this.destination.complete();
+        }
+    };
+    return MergeMapSubscriber;
+}(OuterSubscriber_1.OuterSubscriber));
+var MergeMapSubscriber_1 = MergeMapSubscriber;
+//# sourceMappingURL=mergeMap.js.map
+
+var mergeMap_1 = {
+	mergeMap: mergeMap_2,
+	MergeMapOperator: MergeMapOperator_1,
+	MergeMapSubscriber: MergeMapSubscriber_1
+};
+
+function identity(x) {
+    return x;
+}
+var identity_2 = identity;
+//# sourceMappingURL=identity.js.map
+
+var identity_1 = {
+	identity: identity_2
+};
+
+function mergeAll(concurrent) {
+    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+    return mergeMap_1.mergeMap(identity_1.identity, null, concurrent);
+}
+var mergeAll_2 = mergeAll;
+//# sourceMappingURL=mergeAll.js.map
+
+var mergeAll_1 = {
+	mergeAll: mergeAll_2
+};
+
+function merge() {
+    var observables = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        observables[_i - 0] = arguments[_i];
+    }
+    var concurrent = Number.POSITIVE_INFINITY;
+    var scheduler = null;
+    var last = observables[observables.length - 1];
+    if (isScheduler_1.isScheduler(last)) {
+        scheduler = observables.pop();
+        if (observables.length > 1 && typeof observables[observables.length - 1] === 'number') {
+            concurrent = observables.pop();
+        }
+    }
+    else if (typeof last === 'number') {
+        concurrent = observables.pop();
+    }
+    if (scheduler === null && observables.length === 1 && observables[0] instanceof Observable_1.Observable) {
+        return observables[0];
+    }
+    return mergeAll_1.mergeAll(concurrent)(new ArrayObservable_1.ArrayObservable(observables, scheduler));
+}
+var merge_2 = merge;
+//# sourceMappingURL=merge.js.map
+
+var merge_1 = {
+	merge: merge_2
+};
+
+Observable_1.Observable.merge = merge_1.merge;
+//# sourceMappingURL=merge.js.map
+
+var __extends$9 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
 /**
  * A unit of work to be executed in a {@link Scheduler}. An action is typically
  * created from within a Scheduler and an RxJS user does not need to concern
@@ -6929,7 +7262,7 @@ var __extends$8 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b
  * @class Action<T>
  */
 var Action = (function (_super) {
-    __extends$8(Action, _super);
+    __extends$9(Action, _super);
     function Action(scheduler, work) {
         _super.call(this);
     }
@@ -6956,7 +7289,7 @@ var Action_1 = {
 	Action: Action_2
 };
 
-var __extends$9 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$10 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -6969,7 +7302,7 @@ var __extends$9 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b
  * @extends {Ignored}
  */
 var AsyncAction = (function (_super) {
-    __extends$9(AsyncAction, _super);
+    __extends$10(AsyncAction, _super);
     function AsyncAction(scheduler, work) {
         _super.call(this, scheduler, work);
         this.scheduler = scheduler;
@@ -7139,14 +7472,14 @@ var Scheduler_1 = {
 	Scheduler: Scheduler_2
 };
 
-var __extends$10 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$11 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
 var AsyncScheduler = (function (_super) {
-    __extends$10(AsyncScheduler, _super);
+    __extends$11(AsyncScheduler, _super);
     function AsyncScheduler() {
         _super.apply(this, arguments);
         this.actions = [];
@@ -7201,7 +7534,7 @@ var async = {
 	async: async_1
 };
 
-var __extends$11 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$12 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -7271,7 +7604,7 @@ var AuditOperator = (function () {
  * @extends {Ignored}
  */
 var AuditSubscriber = (function (_super) {
-    __extends$11(AuditSubscriber, _super);
+    __extends$12(AuditSubscriber, _super);
     function AuditSubscriber(destination, durationSelector) {
         _super.call(this, destination);
         this.durationSelector = durationSelector;
@@ -7348,7 +7681,7 @@ var isDate_1 = {
 	isDate: isDate_2
 };
 
-var __extends$12 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$13 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -7364,7 +7697,7 @@ var __extends$12 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, 
  * @hide true
  */
 var TimerObservable = (function (_super) {
-    __extends$12(TimerObservable, _super);
+    __extends$13(TimerObservable, _super);
     function TimerObservable(dueTime, period, scheduler) {
         if (dueTime === void 0) { dueTime = 0; }
         _super.call(this);
@@ -7491,7 +7824,7 @@ var auditTime_2$1 = {
 Observable_1.Observable.prototype.auditTime = auditTime_2$1.auditTime;
 //# sourceMappingURL=auditTime.js.map
 
-var __extends$13 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$14 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -7556,7 +7889,7 @@ var MapOperator_1 = MapOperator;
  * @extends {Ignored}
  */
 var MapSubscriber = (function (_super) {
-    __extends$13(MapSubscriber, _super);
+    __extends$14(MapSubscriber, _super);
     function MapSubscriber(destination, project, thisArg) {
         _super.call(this, destination);
         this.project = project;
@@ -7598,7 +7931,7 @@ var map_2$1 = {
 Observable_1.Observable.prototype.map = map_2$1.map;
 //# sourceMappingURL=map.js.map
 
-var __extends$14 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+var __extends$15 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -7666,7 +7999,7 @@ var DistinctUntilChangedOperator = (function () {
  * @extends {Ignored}
  */
 var DistinctUntilChangedSubscriber = (function (_super) {
-    __extends$14(DistinctUntilChangedSubscriber, _super);
+    __extends$15(DistinctUntilChangedSubscriber, _super);
     function DistinctUntilChangedSubscriber(destination, compare, keySelector) {
         _super.call(this, destination);
         this.keySelector = keySelector;
@@ -7757,7 +8090,7 @@ var setupObservables = (function () {
 		}
 	});
 
-	fromAction('SHOW').map(function () {
+	Observable_2.merge(fromAction('RELOAD'), fromAction('SHOW')).map(function () {
 		return [isVisible(store.getState()), getOptions(store.getState())];
 	}).subscribe(function (_ref3) {
 		var _ref4 = slicedToArray(_ref3, 2),
@@ -7848,7 +8181,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }, { id: 'replace', command: replace$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'search', command: search$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;

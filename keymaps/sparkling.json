@@ -12,7 +12,8 @@
 		"cmd-shift-e": "sparkling:replaceToggle"
 	},
 	".sparkling-gitFiles": {
-		"cmd-m": "sparkling:gitFiles"
+		"cmd-g cmd-p": "sparkling:gitFiles",
+		"cmd-g cmd-s": "sparkling:gitStage"
 	},
 	".sparkling-gitBranches": {
 		"cmd-b": "sparkling:gitBranches"
@@ -28,10 +29,12 @@
 	},
 	".sparking-search .sparkling-input": {
 		"enter": "sparkling:search",
+		"cmd-escape": "sparkling:hide",
 		"escape": "sparkling:hide"
 	},
 	".sparking-replace .sparkling-input": {
 		"enter": "sparkling:replace",
+		"cmd-escape": "sparkling:hide",
 		"escape": "sparkling:hide"
 	},
 	".sparkling .sparkling-input": {
