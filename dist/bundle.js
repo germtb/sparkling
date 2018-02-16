@@ -3365,7 +3365,7 @@ var FindContainer = function FindContainer(_ref) {
 			autoFocus: true,
 			value: value,
 			setValue: setValue,
-			placeholder: 'Find in project'
+			placeholder: 'Enter to find, shift Enter to replace'
 		})
 	);
 };
@@ -4505,7 +4505,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		console.log('action: ', action);
+		// console.log('action: ', action)
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -4554,9 +4554,9 @@ function storeFactory(reducers$$1) {
 	var fromSelector = fromSelectorFactory(store);
 	store.fromSelector = fromSelector;
 	store.fromAction = fromAction;
-	store.subscribe(function () {
-		console.log(store.getState());
-	});
+	// store.subscribe(() => {
+	// 	console.log(store.getState())
+	// })
 
 	return store;
 }
@@ -5645,8 +5645,6 @@ var loadDataFactory = (function (_ref) {
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
 
-		console.log('Calculating git status');
-
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').filter(function (value) {
 				return value.trim() !== '';
@@ -5883,7 +5881,7 @@ var loadDataFactory$1 = (function (store) {
 		var replace = getReplace(store.getState());
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('rg', [find, '-n', '--replace', RG_RESULT], {
+		var cmdProcess = child_process.spawn('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'], {
 			cwd: cwd
 		});
 		cmdProcess.stdout.on('data', function (data) {
@@ -5895,7 +5893,30 @@ var loadDataFactory$1 = (function (store) {
 				    line = _value$split2[2];
 
 				if (line && line.length > 1) {
-					acc.push({ value: value, find: find, line: line, path: path$$1, lineNumber: lineNumber, replace: replace });
+					line.split(RG_RESULT).forEach(function (_, index, splitLine) {
+						if (index === splitLine.length - 1) {
+							return;
+						}
+
+						var line = splitLine.reduce(function (s, substr, i) {
+							if (i === index) {
+								return s + substr + RG_RESULT;
+							} else if (i < splitLine.length - 1) {
+								return s + substr + find;
+							}
+
+							return s + substr;
+						}, '');
+
+						acc.push({
+							value: value.split(':', 2).concat([line]).join(''),
+							find: find,
+							line: line,
+							path: path$$1,
+							lineNumber: lineNumber,
+							replace: replace
+						});
+					});
 				}
 				return acc;
 			}, []));
@@ -5992,7 +6013,7 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	    path$$1 = item.path;
 
 
-	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
+	var rawValue = value.replace(RG_RESULT, find);
 
 	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(rawValue, pattern) : [];
 
