@@ -6275,9 +6275,16 @@ var loadDataFactory$2 = (function (store) {
 
 
 			onData(data.toString('utf-8').split('\n').filter(function (s) {
-				return s.length > 1;
+				return s.length && s !== '.';
 			}).map(function (value) {
 				var absolutePath = path.resolve(path$$1, value);
+
+				if (value === '.') {
+					return { value: '.', absolutePath: absolutePath, isFolder: true };
+				} else if (value === '..') {
+					return { value: '..', absolutePath: absolutePath, isFolder: true };
+				}
+
 				var cwd = atom.project.getPaths()[0];
 				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
 
