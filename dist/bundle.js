@@ -3196,7 +3196,8 @@ var Sparkling = function (_Component) {
 			    renderer = options$$1.renderer,
 			    accept = options$$1.accept,
 			    description = options$$1.description,
-			    id = options$$1.id;
+			    id = options$$1.id,
+			    childrenRenderer = options$$1.childrenRenderer;
 
 			var filteredDataLength = data.length;
 
@@ -3244,6 +3245,7 @@ var Sparkling = function (_Component) {
 					),
 					h('input', {
 						id: 'sparkling-input',
+						tabIndex: 1,
 						className: classnames('sparkling-input', 'native-key-bindings', {
 							'sparkling-input--has-results': filteredDataLength > 0,
 							'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
@@ -3256,7 +3258,8 @@ var Sparkling = function (_Component) {
 							_this2.props.setPattern(event.target.value);
 						},
 						value: this.props.pattern
-					})
+					}),
+					childrenRenderer && childrenRenderer()
 				)
 			);
 		}
@@ -3410,8 +3413,6 @@ var Replace = function (_Component) {
 
 			var _props = this.props,
 			    find = _props.find,
-			    replace = _props.replace,
-			    setReplace = _props.setReplace,
 			    setFind = _props.setFind;
 
 
@@ -3419,7 +3420,6 @@ var Replace = function (_Component) {
 				"div",
 				{ className: "sparking-replace sparkling-input-container" },
 				h("input", {
-					tabIndex: 0,
 					className: "sparkling-input native-key-bindings",
 					placeholder: "Find in project",
 					ref: function ref(input) {
@@ -3429,15 +3429,6 @@ var Replace = function (_Component) {
 						setFind(event.target.value);
 					},
 					value: find
-				}),
-				h("input", {
-					tabIndex: 1,
-					className: "sparkling-input native-key-bindings",
-					placeholder: "Replace",
-					onInput: function onInput(event) {
-						setReplace(event.target.value);
-					},
-					value: replace
 				})
 			);
 		}
@@ -4619,7 +4610,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		// console.log('action: ', action)
+		console.log('action: ', action);
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -4668,9 +4659,9 @@ function storeFactory(reducers$$1) {
 	var fromSelector = fromSelectorFactory(store);
 	store.fromSelector = fromSelector;
 	store.fromAction = fromAction;
-	// store.subscribe(() => {
-	// 	console.log(store.getState())
-	// })
+	store.subscribe(function () {
+		console.log(store.getState());
+	});
 
 	return store;
 }
@@ -6091,14 +6082,14 @@ var findFactory = function findFactory(h, store) {
 
 var find$1 = commandFactory(findFactory);
 
-var renderer$3 = (function (_ref) {
+var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
-	    index = _ref.index,
+	    index$$1 = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
-	    accept = _ref.accept;
+	    accept = _ref.accept,
+	    replace = _ref.replace;
 	var find = item.find,
-	    replace = item.replace,
 	    value = item.value,
 	    path$$1 = item.path;
 
@@ -6133,7 +6124,7 @@ var renderer$3 = (function (_ref) {
 		}
 	}
 
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
 	return h('div', {
 		className: finalClassName,
@@ -6143,9 +6134,71 @@ var renderer$3 = (function (_ref) {
 		},
 		dangerouslySetInnerHTML: { __html: wrappedValue }
 	});
+};
+
+var Replace$2 = connect(function (state) {
+	return {
+		replace: getReplace(state)
+	};
+})(replaceRenderer);
+
+var renderer$3 = (function (props) {
+	return h(Replace$2, props);
 });
 
-var replaceFactory = function replaceFactory(h, store) {
+var ReplaceInput = function (_Component) {
+	inherits$1(ReplaceInput, _Component);
+
+	function ReplaceInput() {
+		classCallCheck$1(this, ReplaceInput);
+		return possibleConstructorReturn$1(this, (ReplaceInput.__proto__ || Object.getPrototypeOf(ReplaceInput)).apply(this, arguments));
+	}
+
+	createClass(ReplaceInput, [{
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.input.focus();
+		}
+	}, {
+		key: 'render',
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    setReplace = _props.setReplace,
+			    replace = _props.replace;
+
+
+			return h('input', {
+				tabIndex: 0,
+				className: 'sparkling-input sparkling-replace native-key-bindings',
+				placeholder: 'Replace',
+				onInput: function onInput(event) {
+					setReplace(event.target.value);
+				},
+				value: replace,
+				ref: function ref(input) {
+					_this2.input = input;
+				}
+			});
+		}
+	}]);
+	return ReplaceInput;
+}(Component);
+
+var ReplaceInputContainer = connect(function (state) {
+	return {
+		replace: getReplace(state)
+	};
+}, function (dispatch) {
+	return {
+		setReplace: function setReplace(replace) {
+			return dispatch({ type: 'SET_REPLACE', payload: { replace: replace } });
+		}
+	};
+})(ReplaceInput);
+
+var replaceFactory = function replaceFactory(h$$1, store) {
 	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(item) {
@@ -6171,7 +6224,10 @@ var replaceFactory = function replaceFactory(h, store) {
 		accept: accept,
 		renderer: renderer$3,
 		description: 'Replace pattern in project',
-		id: 'replace-in-project'
+		id: 'replace-in-project',
+		children: function children() {
+			return h$$1(ReplaceInputContainer, null);
+		}
 	};
 };
 

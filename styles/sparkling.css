@@ -80,10 +80,6 @@
 	padding-bottom: 0.75em;
 }
 
-.sparking-replace .sparkling-input + .sparkling-input {
-	margin-top: 0.75em;
-}
-
 .replace-downlight {
 	display: inline-block;
 	background-color: #ac4142;
@@ -141,4 +137,8 @@
 
 .sparkling-command-description {
 	margin-left: 10px;
+}
+
+.sparkling-replace {
+	margin-top: 0.75em;
 }
