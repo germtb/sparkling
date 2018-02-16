@@ -1,6 +1,5 @@
 * [ ] Fix file preview
 * [ ] Revisit dangerouslySetInnerHTML
-* [ ] Fix focus bug for replace
 * [ ] Find/Replace in buffer
 * [ ] Keybindings for other platforms
 * [ ] Multiline search with ag

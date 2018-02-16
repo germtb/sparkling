@@ -6116,7 +6116,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		accept: accept,
 		renderer: renderer$3,
 		description: 'Replace pattern in project',
-		id: 'replace-in-project',
+		id: 'sparkling-project-replace',
 		childrenRenderer: function childrenRenderer() {
 			return h$$1(ReplaceInputContainer, null);
 		}
@@ -6391,9 +6391,12 @@ var accept = function accept() {
 
 var findToggle = function findToggle() {
 	var findInput = document.querySelector('#sparkling-project-find #sparkling-input');
+	var replaceInput = document.querySelector('#sparkling-project-replace #sparkling-input');
 
 	if (findInput && findInput !== document.activeElement) {
 		findInput.focus();
+	} else if (replaceInput && replaceInput !== document.activeElement) {
+		replaceInput.focus();
 	} else if (isFindVisible(store.getState())) {
 		store.dispatch({ type: 'HIDE_SEARCH' });
 	} else {
