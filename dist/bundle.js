@@ -2916,7 +2916,7 @@ var getOffset = function getOffset(state) {
 	return state.offset;
 };
 var getPattern = function getPattern(state) {
-	return state.pattern;
+	return state.pattern.value;
 };
 var getSelectedValue = function getSelectedValue(state) {
 	return getSparklingData(state)[getOffset(state) + getIndex(state)];
@@ -4536,10 +4536,23 @@ var sparklingData = reducerCreator({
 })([]);
 
 var pattern = reducerCreator({
-	SET_PATTERN: returnPayload('pattern'),
-	SHOW: '',
-	HIDE: ''
-})('');
+	SET_PATTERN: function SET_PATTERN(state, _ref3) {
+		var pattern = _ref3.pattern;
+		return _extends$2({}, state, { value: pattern });
+	},
+	SHOW: function SHOW(state, _ref4) {
+		var id = _ref4.id;
+
+		if (state.id === id) {
+			return state;
+		}
+
+		return {
+			value: '',
+			id: id
+		};
+	}
+})({ value: '', id: '' });
 
 var index$2 = reducerCreator({
 	SET_INDEX: returnPayload('value'),
@@ -4595,7 +4608,7 @@ var fromActionFactory = function fromActionFactory(store) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		console.log('action: ', action);
+		// console.log('action: ', action)
 		oldDispatch(action);
 
 		var _iteratorNormalCompletion = true;
@@ -4644,9 +4657,9 @@ function storeFactory(reducers$$1) {
 	var fromSelector = fromSelectorFactory(store);
 	store.fromSelector = fromSelector;
 	store.fromAction = fromAction;
-	store.subscribe(function () {
-		console.log(store.getState());
-	});
+	// store.subscribe(() => {
+	// 	console.log(store.getState())
+	// })
 
 	return store;
 }
@@ -5664,7 +5677,12 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, description: 'Checkout git branches' };
+	return {
+		loadData: loadData,
+		accept: accept,
+		description: 'Checkout git branches',
+		id: 'sparkling-git-branches'
+	};
 };
 
 var gitBranches = commandFactory(gitBranchesFactory);
@@ -5714,7 +5732,8 @@ var filesFactory = function filesFactory(h, store) {
 		loadData: loadData$1,
 		accept: accept,
 		renderer: renderer,
-		description: 'Find files in project'
+		description: 'Find files in project',
+		id: 'sparkling-files'
 	};
 };
 
@@ -5871,7 +5890,13 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$1, description: 'Find git status files' };
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$1,
+		description: 'Find git status files',
+		id: 'sparkling-git-files'
+	};
 };
 
 var gitFiles = commandFactory(gitFilesFactory);
@@ -5909,7 +5934,8 @@ var gitStageFactory = function gitStageFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$1,
-		description: 'Stage and unstage git files'
+		description: 'Stage and unstage git files',
+		id: 'sparkling-git-stage'
 	};
 };
 
@@ -5939,7 +5965,12 @@ var linesFactory = function linesFactory(h, store) {
 		cursor.moveToFirstCharacterOfLine();
 	};
 
-	return { loadData: loadData, accept: accept, description: 'Find lines in current buffer' };
+	return {
+		loadData: loadData,
+		accept: accept,
+		description: 'Find lines in current buffer',
+		id: 'sparkling-buffer-lines'
+	};
 };
 
 var lines = commandFactory(linesFactory);
@@ -6043,7 +6074,7 @@ var findFactory = function findFactory(h, store) {
 		accept: accept,
 		renderer: renderer$2,
 		description: 'Find pattern in project',
-		id: 'find-in-project'
+		id: 'sparkling-project-find'
 	};
 };
 
@@ -6169,7 +6200,12 @@ var allLinesFactory = function allLinesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData$2, accept: accept, description: 'Find lines in project' };
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		description: 'Find lines in project',
+		id: 'sparkling-project-lines'
+	};
 };
 
 var allLines = commandFactory(allLinesFactory);
@@ -6195,7 +6231,8 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 		loadData: loadData$2,
 		accept: accept,
 		renderer: renderer$4,
-		description: 'Autocomplete lines from project'
+		description: 'Autocomplete lines from project',
+		id: 'sparkling-autocomplete-lines'
 	};
 };
 
@@ -6339,7 +6376,8 @@ var lsFactory = function lsFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$5,
-		description: 'Project navigation'
+		description: 'Project navigation',
+		id: 'sparkling-ls'
 	};
 };
 
@@ -6393,7 +6431,7 @@ var accept = function accept() {
 };
 
 var findToggle = function findToggle() {
-	var findInput = document.querySelector('#find-in-project #sparkling-input');
+	var findInput = document.querySelector('#sparkling-project-find #sparkling-input');
 
 	if (findInput && findInput !== document.activeElement) {
 		findInput.focus();
