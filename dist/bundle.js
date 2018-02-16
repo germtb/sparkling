@@ -4524,7 +4524,12 @@ var data = reducerCreator({
 	SHOW: [],
 	HIDE: [],
 	SHOW_SEARCH: [],
-	RELOAD: []
+	RELOAD: [],
+	REMOVE_ITEM: function REMOVE_ITEM(state, item) {
+		return state.filter(function (x) {
+			return x !== item;
+		});
+	}
 })([]);
 
 var sparklingData = reducerCreator({
@@ -4532,7 +4537,12 @@ var sparklingData = reducerCreator({
 	SHOW: [],
 	HIDE: [],
 	SHOW_SEARCH: [],
-	RELOAD: []
+	RELOAD: [],
+	REMOVE_ITEM: function REMOVE_ITEM(state, item) {
+		return state.filter(function (x) {
+			return x !== item;
+		});
+	}
 })([]);
 
 var pattern = reducerCreator({
@@ -4558,7 +4568,8 @@ var index$2 = reducerCreator({
 	SET_INDEX: returnPayload('value'),
 	SET_DATA: 0,
 	SET_PATTERN: 0,
-	SHOW: 0
+	SHOW: 0,
+	REMOVE_ITEM: 0
 })(0);
 
 var offset = reducerCreator({
@@ -6027,7 +6038,7 @@ var renderer$2 = (function (_ref) {
 	}, {});
 
 	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length] = 'findClose';
+	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = 'findClose';
 
 	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
 	var wrappedValue = '';
@@ -6042,7 +6053,7 @@ var renderer$2 = (function (_ref) {
 		} else if (styleHash[i] === 'findOpen') {
 			wrappedValue += '<span class="find-highlight">' + c;
 		} else if (styleHash[i] === 'findClose') {
-			wrappedValue += '</span>' + c;
+			wrappedValue += c + '</span>';
 		} else {
 			wrappedValue += c;
 		}
@@ -6092,7 +6103,9 @@ var renderer$3 = (function (_ref) {
 	    path$$1 = item.path;
 
 
-	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, find), pattern) : [];
+	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
+
+	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(rawValue, pattern) : [];
 
 	var styleHash = fuzzyMatches.reduce(function (acc, x) {
 		acc[x] = 'fuzzy';
@@ -6100,9 +6113,8 @@ var renderer$3 = (function (_ref) {
 	}, {});
 
 	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length] = 'findClose';
+	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = 'findClose';
 
-	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
 	var wrappedValue = '';
 
 	for (var i = 0; i < rawValue.length; i++) {
@@ -6115,7 +6127,7 @@ var renderer$3 = (function (_ref) {
 		} else if (styleHash[i] === 'findOpen') {
 			wrappedValue += '<span class="replace-downlight">' + c;
 		} else if (styleHash[i] === 'findClose') {
-			wrappedValue += '</span><span class="replace-highlight">' + replace + '</span>' + c;
+			wrappedValue += c + '</span><span class="replace-highlight">' + replace + '</span>';
 		} else {
 			wrappedValue += c;
 		}
@@ -6144,14 +6156,13 @@ var replaceFactory = function replaceFactory(h, store) {
 
 		var cwd = atom.project.getPaths()[0];
 
-		// sed -i '' -e '11,12s/console.log/supersuper/' lib/commands/replace.js
-		var sedRegex = lineNumber + '/' + lineNumber + '/' + find + '/' + replace;
-		child_process.spawn('sed', ['-i', "''", '-e', sedRegex, path$$1], {
+		var sedRegex = lineNumber + ',' + (lineNumber + 1) + 's/' + find + '/' + replace + '/';
+		child_process.spawn('sed', ['-i', '', '-e', sedRegex, path$$1], {
 			cwd: cwd
 		});
 		store.dispatch({
 			type: 'REMOVE_ITEM',
-			payload: { item: item }
+			payload: item
 		});
 	};
 
