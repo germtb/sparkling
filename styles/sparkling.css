@@ -34,11 +34,12 @@
 }
 
 .search-highlight {
-	color: #4f65d1;
-}
-
-.search-highlight .highlight {
-	color: #eddc96;
+	display: inline-block;
+	background-color: #4f65d1;
+	border-radius: 2px;
+	color: white;
+	padding-left: 1px;
+	padding-right: 1px;
 }
 
 .sparkling-row.selected {
@@ -81,4 +82,26 @@
 
 .sparking-replace .sparkling-input + .sparkling-input {
 	margin-top: 0.75em;
+}
+
+.replace-downlight {
+	display: inline-block;
+	background-color: #ac4142;
+	border-radius: 2px;
+	color: white;
+	padding-left: 1px;
+	padding-right: 1px;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.replace-highlight {
+	display: inline-block;
+	background-color: #4f65d1;
+	border-radius: 2px;
+	color: white;
+	padding-left: 1px;
+	padding-right: 1px;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }

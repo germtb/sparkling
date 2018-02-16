@@ -3,7 +3,7 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var child_process = require('child_process');
-var path = _interopDefault(require('path'));
+var path$1 = _interopDefault(require('path'));
 var fs = _interopDefault(require('fs'));
 var atom$1 = require('atom');
 
@@ -5080,20 +5080,20 @@ var pathScorer = createCommonjsModule(function (module, exports) {
     return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
   };
 
-  exports.countDir = countDir = function(path$$1, end, pathSeparator) {
+  exports.countDir = countDir = function(path, end, pathSeparator) {
     var count, i;
     if (end < 1) {
       return 0;
     }
     count = 0;
     i = -1;
-    while (++i < end && path$$1[i] === pathSeparator) {
+    while (++i < end && path[i] === pathSeparator) {
       continue;
     }
     while (++i < end) {
-      if (path$$1[i] === pathSeparator) {
+      if (path[i] === pathSeparator) {
         count++;
-        while (++i < end && path$$1[i] === pathSeparator) {
+        while (++i < end && path[i] === pathSeparator) {
           continue;
         }
       }
@@ -5723,8 +5723,8 @@ var setFileIconsService = function setFileIconsService(service) {
 	fileIconsService = service;
 };
 
-var iconClassForPath = function iconClassForPath(path$$1) {
-	return fileIconsService.iconClassForPath(path$$1);
+var iconClassForPath = function iconClassForPath(path) {
+	return fileIconsService.iconClassForPath(path);
 };
 
 var renderer = (function (props) {
@@ -5810,6 +5810,7 @@ var RG_RESULT = 'RG_RESULT';
 var loadDataFactory = (function (store) {
 	return function (onData) {
 		var search = getSearch(store.getState());
+		var replace = getReplace(store.getState());
 
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = child_process.spawn('rg', [search, '-n', '--replace', RG_RESULT], {
@@ -5819,12 +5820,12 @@ var loadDataFactory = (function (store) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':', 3),
 				    _value$split2 = slicedToArray(_value$split, 3),
-				    path$$1 = _value$split2[0],
+				    path = _value$split2[0],
 				    lineNumber = _value$split2[1],
 				    line = _value$split2[2];
 
 				if (line && line.length > 1) {
-					acc.push({ value: value, search: search, line: line, path: path$$1, lineNumber: lineNumber });
+					acc.push({ value: value, search: search, line: line, path: path, lineNumber: lineNumber, replace: replace });
 				}
 				return acc;
 			}, []));
@@ -5845,7 +5846,7 @@ var renderer$1 = (function (_ref) {
 	    accept = _ref.accept;
 	var search = item.search,
 	    value = item.value,
-	    path$$1 = item.path;
+	    path = item.path;
 
 
 	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
@@ -5871,13 +5872,13 @@ var renderer$1 = (function (_ref) {
 		} else if (styleHash[i] === 'searchOpen') {
 			wrappedValue += '<span class="search-highlight">' + c;
 		} else if (styleHash[i] === 'searchClose') {
-			wrappedValue += c + '</span>';
+			wrappedValue += '</span>' + c;
 		} else {
 			wrappedValue += c;
 		}
 	}
 
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
 	return h('div', {
 		className: finalClassName,
@@ -5903,16 +5904,75 @@ var searchFactory = function searchFactory(h, store) {
 
 var search$1 = commandFactory(searchFactory);
 
+var renderer$2 = (function (_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+	var search = item.search,
+	    replace = item.replace,
+	    value = item.value,
+	    path = item.path;
+
+
+	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
+
+	var styleHash = fuzzyMatches.reduce(function (acc, x) {
+		acc[x] = 'fuzzy';
+		return acc;
+	}, {});
+
+	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'searchOpenAndFuzzy' : 'searchOpen';
+	styleHash[value.indexOf(RG_RESULT) + search.length] = 'searchClose';
+
+	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), search);
+	var wrappedValue = '';
+
+	for (var i = 0; i < rawValue.length; i++) {
+		var c = rawValue[i];
+
+		if (styleHash[i] === 'fuzzy') {
+			wrappedValue += '<span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'searchOpenAndFuzzy') {
+			wrappedValue += '<span class="replace-downlight"><span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'searchOpen') {
+			wrappedValue += '<span class="replace-downlight">' + c;
+		} else if (styleHash[i] === 'searchClose') {
+			wrappedValue += '</span><span class="replace-highlight">' + replace + '</span>' + c;
+		} else {
+			wrappedValue += c;
+		}
+	}
+
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+});
+
 var replaceFactory = function replaceFactory(h, store) {
 	var loadData = loadDataFactory(store);
 
-	var accept = function accept(line) {
-		atom.workspace.open(line.path, {
-			initialLine: line.lineNumber - 1
+	var accept = function accept(item) {
+		console.log('item: ', item);
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('ls', ['-a', path], {
+			cwd: cwd
 		});
+
+		// atom.workspace.open(line.path, {
+		// 	initialLine: line.lineNumber - 1
+		// })
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+	return { loadData: loadData, accept: accept, renderer: renderer$2 };
 };
 
 var replace$1 = commandFactory(replaceFactory);
@@ -5920,23 +5980,23 @@ var replace$1 = commandFactory(replaceFactory);
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
-		var path$$1 = options.path;
+		var path = options.path;
 
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
+		var cmdProcess = child_process.spawn('ls', ['-a', path], {
 			cwd: cwd
 		});
 
 		cmdProcess.stdout.on('data', function (data) {
 			var options = getOptions(store.getState());
-			var path$$1 = options.path;
+			var path = options.path;
 
 
 			onData(data.toString('utf-8').split('\n').filter(function (s) {
 				return s.length > 1;
 			}).map(function (value) {
-				var absolutePath = path.resolve(path$$1, value);
+				var absolutePath = path$1.resolve(path, value);
 				var cwd = atom.project.getPaths()[0];
 				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
 
@@ -5951,7 +6011,7 @@ var loadDataFactory$1 = (function (store) {
 	};
 });
 
-var renderer$2 = (function (props) {
+var renderer$3 = (function (props) {
 	var absolutePath = props.item.absolutePath;
 
 
@@ -5974,7 +6034,7 @@ var lsFactory = function lsFactory(h, store) {
 		}
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$2 };
+	return { loadData: loadData, accept: accept, renderer: renderer$3 };
 };
 
 var ls = commandFactory(lsFactory);
@@ -5988,12 +6048,12 @@ var loadData$3 = (function (onData) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 			var _value$split = value.split(':', 3),
 			    _value$split2 = slicedToArray(_value$split, 3),
-			    path$$1 = _value$split2[0],
+			    path = _value$split2[0],
 			    lineNumber = _value$split2[1],
 			    line = _value$split2[2];
 
 			if (line && line.length > 1) {
-				acc.push({ value: value, path: path$$1, line: line, lineNumber: lineNumber });
+				acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
 			}
 			return acc;
 		}, []));
@@ -6018,7 +6078,7 @@ var allLinesFactory = function allLinesFactory(h, store) {
 
 var allLines = commandFactory(allLinesFactory);
 
-var renderer$3 = (function (_ref) {
+var renderer$4 = (function (_ref) {
 	var item = _ref.item,
 	    props = objectWithoutProperties$1(_ref, ['item']);
 	return defaultRenderer(_extends$2({}, props, {
@@ -6035,7 +6095,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 		editor.insertText(item.line);
 	};
 
-	return { loadData: loadData$3, accept: accept, renderer: renderer$3 };
+	return { loadData: loadData$3, accept: accept, renderer: renderer$4 };
 };
 
 var autocompleteLines = commandFactory(autocompleteLinesFactory);
@@ -7693,7 +7753,7 @@ var replaceToggle = function replaceToggle() {
 
 var lsShow = function lsShow() {
 	var activeTextEditor = atom.workspace.getActiveTextEditor();
-	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+	var finalPath = activeTextEditor ? path$1.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
 	ls({ path: finalPath });
 };
 
@@ -7701,7 +7761,7 @@ var lsShowUp = function lsShowUp() {
 	var _getOptions = getOptions(store.getState()),
 	    optionsPath = _getOptions.path;
 
-	var finalPath = path.resolve(optionsPath, '..');
+	var finalPath = path$1.resolve(optionsPath, '..');
 	ls({ path: finalPath });
 };
 
