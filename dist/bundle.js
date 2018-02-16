@@ -4450,18 +4450,19 @@ var pattern = reducerCreator({
 		var pattern = _ref3.pattern;
 		return _extends$2({}, state, { value: pattern });
 	},
-	SHOW: function SHOW(state, _ref4) {
-		var id = _ref4.id;
-
-		if (state.id === id) {
-			return state;
-		}
-
-		return {
-			value: '',
-			id: id
-		};
+	SHOW: function SHOW(state) {
+		return _extends$2({}, state, { value: '' });
 	}
+	// SHOW: (state, { id }) => {
+	// 	if (state.id === id) {
+	// 		return state
+	// 	}
+	//
+	// 	return {
+	// 		value: '',
+	// 		id
+	// 	}
+	// }
 })({ value: '', id: '' });
 
 var index$2 = reducerCreator({
