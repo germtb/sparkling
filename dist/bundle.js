@@ -3,7 +3,7 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var child_process = require('child_process');
-var path$1 = _interopDefault(require('path'));
+var path = _interopDefault(require('path'));
 var fs = _interopDefault(require('fs'));
 var atom$1 = require('atom');
 
@@ -3233,7 +3233,7 @@ var Sparkling = function (_Component) {
 					),
 					h('input', {
 						id: 'sparkling-input',
-						className: classnames('sparkling-input native-key-bindings', {
+						className: classnames('sparkling-input', 'native-key-bindings', {
 							'sparkling-input--has-results': filteredDataLength > 0,
 							'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
 						}),
@@ -5080,20 +5080,20 @@ var pathScorer = createCommonjsModule(function (module, exports) {
     return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
   };
 
-  exports.countDir = countDir = function(path, end, pathSeparator) {
+  exports.countDir = countDir = function(path$$1, end, pathSeparator) {
     var count, i;
     if (end < 1) {
       return 0;
     }
     count = 0;
     i = -1;
-    while (++i < end && path[i] === pathSeparator) {
+    while (++i < end && path$$1[i] === pathSeparator) {
       continue;
     }
     while (++i < end) {
-      if (path[i] === pathSeparator) {
+      if (path$$1[i] === pathSeparator) {
         count++;
-        while (++i < end && path[i] === pathSeparator) {
+        while (++i < end && path$$1[i] === pathSeparator) {
           continue;
         }
       }
@@ -5605,8 +5605,8 @@ var defaultRenderer = function defaultRenderer(_ref) {
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
-
 	var value = item.value;
+
 	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
 	return h('div', {
@@ -5723,8 +5723,8 @@ var setFileIconsService = function setFileIconsService(service) {
 	fileIconsService = service;
 };
 
-var iconClassForPath = function iconClassForPath(path) {
-	return fileIconsService.iconClassForPath(path);
+var iconClassForPath = function iconClassForPath(path$$1) {
+	return fileIconsService.iconClassForPath(path$$1);
 };
 
 var renderer = (function (props) {
@@ -5750,28 +5750,99 @@ var filesFactory = function filesFactory(h, store) {
 
 var files = commandFactory(filesFactory);
 
-var loadData$2 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (value) {
-			return value.trim() !== '';
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
+var loadDataFactory = (function (_ref) {
+	var hideDeletedFiles = _ref.hideDeletedFiles;
+	return function (onData) {
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').filter(function (value) {
+				return value.trim() !== '';
+			}).reduce(function (acc, value) {
+				var path$$1 = value.slice(2).trim();
+				var status = value.slice(0, 2).trim();
+
+				if (hideDeletedFiles && status === 'D' || status === 'DD') {
+					return acc;
+				}
+
+				acc.push({ value: path$$1, status: status, path: path$$1 });
+				return acc;
+			}, []));
+		});
+	};
+});
+
+var renderer$1 = (function (_ref) {
+	var _classNames;
+
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    className = _ref.className,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+	var value = item.value,
+	    status = item.status;
+
+
+	var finalClassName = classnames(className, ['icon'].concat(toConsumableArray(iconClassForPath(value))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
+	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+
+	var statusClassName = classnames('git-status', (_classNames = {}, defineProperty(_classNames, 'git-status-modified', status === 'M'), defineProperty(_classNames, 'git-status-modified-staged', status === 'MM'), defineProperty(_classNames, 'git-status-new-file', status === 'A'), defineProperty(_classNames, 'git-status-new-file-staged', status === 'AM'), defineProperty(_classNames, 'git-status-deleted', status === 'D'), defineProperty(_classNames, 'git-status-deleted-staged', status === 'DD'), defineProperty(_classNames, 'git-status-untracked', status === '??'), _classNames));
+
+	var statusLabel = void 0;
+
+	if (status === 'M') {
+		statusLabel = 'modified';
+	} else if (status === '??') {
+		statusLabel = 'untracked';
+	} else if (status === 'MM') {
+		statusLabel = 'modified';
+	} else if (status === 'D') {
+		statusLabel = 'deleted';
+	} else if (status === 'DD') {
+		statusLabel = 'deleted';
+	} else if (status === 'A') {
+		statusLabel = 'new file';
+	} else if (status === 'AM') {
+		statusLabel = 'new file';
+	} else {
+		statusLabel = status;
+	}
+
+	return h(
+		'div',
+		{
+			className: finalClassName,
+			'aria-role': 'button',
+			onClick: function onClick() {
+				return accept(item);
+			}
+		},
+		h(
+			'span',
+			{ className: statusClassName },
+			statusLabel
+		),
+		h('span', { dangerouslySetInnerHTML: { __html: wrappedValue } })
+	);
 });
 
 var gitFilesFactory = function gitFilesFactory(h, store) {
-	var accept = function accept(file) {
-		var filePath = file.value.slice(2).trim();
-		atom.workspace.open(filePath);
+	var loadData = loadDataFactory({ hideDeletedFiles: true });
+
+	var accept = function accept(_ref) {
+		var path$$1 = _ref.path;
+
+		atom.workspace.open(path$$1);
 		store.dispatch({
 			type: 'HIDE'
 		});
 	};
 
-	return { loadData: loadData$2, accept: accept };
+	return { loadData: loadData, accept: accept, renderer: renderer$1 };
 };
 
 var gitFiles = commandFactory(gitFilesFactory);
@@ -5807,7 +5878,7 @@ var lines = commandFactory(linesFactory);
 
 var RG_RESULT = 'RG_RESULT';
 
-var loadDataFactory = (function (store) {
+var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var search = getSearch(store.getState());
 		var replace = getReplace(store.getState());
@@ -5820,12 +5891,12 @@ var loadDataFactory = (function (store) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':', 3),
 				    _value$split2 = slicedToArray(_value$split, 3),
-				    path = _value$split2[0],
+				    path$$1 = _value$split2[0],
 				    lineNumber = _value$split2[1],
 				    line = _value$split2[2];
 
 				if (line && line.length > 1) {
-					acc.push({ value: value, search: search, line: line, path: path, lineNumber: lineNumber, replace: replace });
+					acc.push({ value: value, search: search, line: line, path: path$$1, lineNumber: lineNumber, replace: replace });
 				}
 				return acc;
 			}, []));
@@ -5838,7 +5909,7 @@ var loadDataFactory = (function (store) {
 	};
 });
 
-var renderer$1 = (function (_ref) {
+var renderer$2 = (function (_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    index = _ref.index,
@@ -5846,7 +5917,7 @@ var renderer$1 = (function (_ref) {
 	    accept = _ref.accept;
 	var search = item.search,
 	    value = item.value,
-	    path = item.path;
+	    path$$1 = item.path;
 
 
 	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
@@ -5878,7 +5949,7 @@ var renderer$1 = (function (_ref) {
 		}
 	}
 
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
 	return h('div', {
 		className: finalClassName,
@@ -5891,7 +5962,7 @@ var renderer$1 = (function (_ref) {
 });
 
 var searchFactory = function searchFactory(h, store) {
-	var loadData = loadDataFactory(store);
+	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(line) {
 		atom.workspace.open(line.path, {
@@ -5899,12 +5970,12 @@ var searchFactory = function searchFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+	return { loadData: loadData, accept: accept, renderer: renderer$2 };
 };
 
 var search$1 = commandFactory(searchFactory);
 
-var renderer$2 = (function (_ref) {
+var renderer$3 = (function (_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    index = _ref.index,
@@ -5913,7 +5984,7 @@ var renderer$2 = (function (_ref) {
 	var search = item.search,
 	    replace = item.replace,
 	    value = item.value,
-	    path = item.path;
+	    path$$1 = item.path;
 
 
 	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, search), pattern) : [];
@@ -5945,7 +6016,7 @@ var renderer$2 = (function (_ref) {
 		}
 	}
 
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
 	return h('div', {
 		className: finalClassName,
@@ -5958,45 +6029,52 @@ var renderer$2 = (function (_ref) {
 });
 
 var replaceFactory = function replaceFactory(h, store) {
-	var loadData = loadDataFactory(store);
+	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(item) {
-		console.log('item: ', item);
+		var lineNumber = item.lineNumber,
+		    path$$1 = item.path,
+		    search = item.search,
+		    replace = item.replace;
+
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', ['-a', path], {
+
+		// sed -i '' -e '11,12s/console.log/supersuper/' lib/commands/replace.js
+		var sedRegex = lineNumber + '/' + lineNumber + '/' + search + '/' + replace;
+		child_process.spawn('sed', ['-i', "''", '-e', sedRegex, path$$1], {
 			cwd: cwd
 		});
-
-		// atom.workspace.open(line.path, {
-		// 	initialLine: line.lineNumber - 1
-		// })
+		store.dispatch({
+			type: 'REMOVE_ITEM',
+			payload: { item: item }
+		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$2 };
+	return { loadData: loadData, accept: accept, renderer: renderer$3 };
 };
 
 var replace$1 = commandFactory(replaceFactory);
 
-var loadDataFactory$1 = (function (store) {
+var loadDataFactory$2 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
-		var path = options.path;
+		var path$$1 = options.path;
 
 
 		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', ['-a', path], {
+		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
 			cwd: cwd
 		});
 
 		cmdProcess.stdout.on('data', function (data) {
 			var options = getOptions(store.getState());
-			var path = options.path;
+			var path$$1 = options.path;
 
 
 			onData(data.toString('utf-8').split('\n').filter(function (s) {
 				return s.length > 1;
 			}).map(function (value) {
-				var absolutePath = path$1.resolve(path, value);
+				var absolutePath = path.resolve(path$$1, value);
 				var cwd = atom.project.getPaths()[0];
 				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
 
@@ -6011,7 +6089,7 @@ var loadDataFactory$1 = (function (store) {
 	};
 });
 
-var renderer$3 = (function (props) {
+var renderer$4 = (function (props) {
 	var absolutePath = props.item.absolutePath;
 
 
@@ -6021,7 +6099,7 @@ var renderer$3 = (function (props) {
 });
 
 var lsFactory = function lsFactory(h, store) {
-	var loadData = loadDataFactory$1(store);
+	var loadData = loadDataFactory$2(store);
 
 	var accept = function accept(_ref) {
 		var absolutePath = _ref.absolutePath;
@@ -6034,26 +6112,26 @@ var lsFactory = function lsFactory(h, store) {
 		}
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$3 };
+	return { loadData: loadData, accept: accept, renderer: renderer$4 };
 };
 
 var ls = commandFactory(lsFactory);
 
-var loadData$3 = (function (onData) {
+var loadData$2 = (function (onData) {
 	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '500K'], {
+	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '100K'], {
 		cwd: cwd
 	});
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 			var _value$split = value.split(':', 3),
 			    _value$split2 = slicedToArray(_value$split, 3),
-			    path = _value$split2[0],
+			    path$$1 = _value$split2[0],
 			    lineNumber = _value$split2[1],
 			    line = _value$split2[2];
 
 			if (line && line.length > 1) {
-				acc.push({ value: value, path: path, line: line, lineNumber: lineNumber });
+				acc.push({ value: value, path: path$$1, line: line, lineNumber: lineNumber });
 			}
 			return acc;
 		}, []));
@@ -6073,12 +6151,12 @@ var allLinesFactory = function allLinesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData$3, accept: accept };
+	return { loadData: loadData$2, accept: accept };
 };
 
 var allLines = commandFactory(allLinesFactory);
 
-var renderer$4 = (function (_ref) {
+var renderer$5 = (function (_ref) {
 	var item = _ref.item,
 	    props = objectWithoutProperties$1(_ref, ['item']);
 	return defaultRenderer(_extends$2({}, props, {
@@ -6095,7 +6173,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 		editor.insertText(item.line);
 	};
 
-	return { loadData: loadData$3, accept: accept, renderer: renderer$4 };
+	return { loadData: loadData$2, accept: accept, renderer: renderer$5 };
 };
 
 var autocompleteLines = commandFactory(autocompleteLinesFactory);
@@ -7753,7 +7831,7 @@ var replaceToggle = function replaceToggle() {
 
 var lsShow = function lsShow() {
 	var activeTextEditor = atom.workspace.getActiveTextEditor();
-	var finalPath = activeTextEditor ? path$1.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
 	ls({ path: finalPath });
 };
 
@@ -7761,7 +7839,7 @@ var lsShowUp = function lsShowUp() {
 	var _getOptions = getOptions(store.getState()),
 	    optionsPath = _getOptions.path;
 
-	var finalPath = path$1.resolve(optionsPath, '..');
+	var finalPath = path.resolve(optionsPath, '..');
 	ls({ path: finalPath });
 };
 

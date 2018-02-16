@@ -105,3 +105,36 @@
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 }
+
+.git-status {
+	display: inline-block;
+	width: 84px;
+}
+
+.git-status-modified {
+	color: #ac4142;
+}
+
+.git-status-modified-staged {
+	color: #73c990;
+}
+
+.git-status-new-file {
+	color: #73c990;
+}
+
+.git-status-new-file-staged {
+	color: #73c990;
+}
+
+.git-status-deleted {
+	color: #ac4142;
+}
+
+.git-status-deleted-staged {
+	color: #ac4142;
+}
+
+.git-status-untracked {
+	color: #eddc96;
+}
