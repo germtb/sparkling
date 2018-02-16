@@ -138,3 +138,7 @@
 .git-status-untracked {
 	color: #eddc96;
 }
+
+.sparkling-command-description {
+	margin-left: 10px;
+}

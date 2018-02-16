@@ -3194,7 +3194,8 @@ var Sparkling = function (_Component) {
 			    pattern = _props.pattern;
 			var preview = options$$1.preview,
 			    renderer = options$$1.renderer,
-			    accept = options$$1.accept;
+			    accept = options$$1.accept,
+			    description = options$$1.description;
 
 			var filteredDataLength = data.length;
 
@@ -3229,7 +3230,16 @@ var Sparkling = function (_Component) {
 					h(
 						'div',
 						{ className: 'sparkling-search-meta-data' },
-						filteredDataLength + ' / ' + rawDataLength
+						h(
+							'span',
+							null,
+							filteredDataLength + ' / ' + rawDataLength
+						),
+						h(
+							'span',
+							{ className: 'sparkling-command-description' },
+							description
+						)
 					),
 					h('input', {
 						id: 'sparkling-input',
@@ -5628,14 +5638,15 @@ var commandFactory = (function (optionsFactory) {
 	    _optionsFactory$rende = _optionsFactory.renderer,
 	    renderer = _optionsFactory$rende === undefined ? defaultRenderer : _optionsFactory$rende,
 	    _optionsFactory$previ = _optionsFactory.preview,
-	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ;
+	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ,
+	    extraOptions = objectWithoutProperties$1(_optionsFactory, ['loadData', 'accept', 'renderer', 'preview']);
 
-	var options$$1 = {
+	var options$$1 = _extends$2({
 		loadData: loadData,
 		accept: accept$$1,
 		renderer: renderer,
 		preview: preview
-	};
+	}, extraOptions);
 
 	return function (extras) {
 		options$$1 = extras ? _extends$2({}, options$$1, extras) : options$$1;
@@ -5697,7 +5708,7 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept };
+	return { loadData: loadData, accept: accept, description: 'Checkout git branches' };
 };
 
 var gitBranches = commandFactory(gitBranchesFactory);
@@ -5746,7 +5757,8 @@ var filesFactory = function filesFactory(h, store) {
 	return {
 		loadData: loadData$1,
 		accept: accept,
-		renderer: renderer
+		renderer: renderer,
+		description: 'Find files in project'
 	};
 };
 
@@ -5903,7 +5915,7 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+	return { loadData: loadData, accept: accept, renderer: renderer$1, description: 'Find git status files' };
 };
 
 var gitFiles = commandFactory(gitFilesFactory);
@@ -5937,7 +5949,12 @@ var gitStageFactory = function gitStageFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$1 };
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$1,
+		description: 'Stage and unstage git files'
+	};
 };
 
 var gitStage = commandFactory(gitStageFactory);
@@ -5966,7 +5983,7 @@ var linesFactory = function linesFactory(h, store) {
 		cursor.moveToFirstCharacterOfLine();
 	};
 
-	return { loadData: loadData, accept: accept };
+	return { loadData: loadData, accept: accept, description: 'Find lines in current buffer' };
 };
 
 var lines = commandFactory(linesFactory);
@@ -6065,7 +6082,7 @@ var searchFactory = function searchFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$2 };
+	return { loadData: loadData, accept: accept, renderer: renderer$2, description: 'Find pattern in project' };
 };
 
 var search$1 = commandFactory(searchFactory);
@@ -6145,7 +6162,12 @@ var replaceFactory = function replaceFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$3 };
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$3,
+		description: 'Replace pattern in project'
+	};
 };
 
 var replace$1 = commandFactory(replaceFactory);
@@ -6207,7 +6229,12 @@ var lsFactory = function lsFactory(h, store) {
 		}
 	};
 
-	return { loadData: loadData, accept: accept, renderer: renderer$4 };
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$4,
+		description: 'Project navigation'
+	};
 };
 
 var ls = commandFactory(lsFactory);
@@ -6246,7 +6273,7 @@ var allLinesFactory = function allLinesFactory(h, store) {
 		});
 	};
 
-	return { loadData: loadData$2, accept: accept };
+	return { loadData: loadData$2, accept: accept, description: 'Find lines in project' };
 };
 
 var allLines = commandFactory(allLinesFactory);
@@ -6268,7 +6295,12 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 		editor.insertText(item.line);
 	};
 
-	return { loadData: loadData$2, accept: accept, renderer: renderer$5 };
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		renderer: renderer$5,
+		description: 'Autocomplete lines from project'
+	};
 };
 
 var autocompleteLines = commandFactory(autocompleteLinesFactory);
