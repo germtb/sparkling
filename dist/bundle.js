@@ -3195,13 +3195,14 @@ var Sparkling = function (_Component) {
 			var preview = options$$1.preview,
 			    renderer = options$$1.renderer,
 			    accept = options$$1.accept,
-			    description = options$$1.description;
+			    description = options$$1.description,
+			    id = options$$1.id;
 
 			var filteredDataLength = data.length;
 
 			return h(
 				'div',
-				{ className: 'sparkling' },
+				{ className: 'sparkling', id: id },
 				h(
 					'div',
 					{ className: 'sparkling-results-block' },
@@ -6127,7 +6128,8 @@ var replaceFactory = function replaceFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$3,
-		description: 'Replace pattern in project'
+		description: 'Replace pattern in project',
+		id: 'replace-in-project'
 	};
 };
 
@@ -6384,7 +6386,11 @@ var accept = function accept() {
 };
 
 var findToggle = function findToggle() {
-	if (isFindVisible(store.getState())) {
+	var findInput = document.querySelector('#find-in-project #sparkling-input');
+
+	if (findInput && findInput !== document.activeElement) {
+		findInput.focus();
+	} else if (isFindVisible(store.getState())) {
 		store.dispatch({ type: 'HIDE_SEARCH' });
 	} else {
 		store.dispatch({ type: 'SHOW_SEARCH' });
@@ -6392,7 +6398,11 @@ var findToggle = function findToggle() {
 };
 
 var replaceToggle = function replaceToggle() {
-	if (isReplaceVisible(store.getState())) {
+	var replaceInput = document.querySelector('#replace-in-project #sparkling-input');
+
+	if (replaceInput && replaceInput !== document.activeElement) {
+		replaceInput.focus();
+	} else if (isReplaceVisible(store.getState())) {
 		store.dispatch({ type: 'HIDE_REPLACE' });
 	} else {
 		store.dispatch({ type: 'SHOW_REPLACE' });
