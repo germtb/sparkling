@@ -5948,7 +5948,7 @@ var renderer$2 = (function (_ref) {
 	}, {});
 
 	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = 'findClose';
+	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = styleHash[value.indexOf(RG_RESULT) + find.length - 1] ? 'findCloseAndFuzzy' : 'findClose';
 
 	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
 	var wrappedValue = '';
@@ -5964,6 +5964,8 @@ var renderer$2 = (function (_ref) {
 			wrappedValue += '<span class="find-highlight">' + c;
 		} else if (styleHash[i] === 'findClose') {
 			wrappedValue += c + '</span>';
+		} else if (styleHash[i] === 'findCloseAndFuzzy') {
+			wrappedValue += '<span class="highlight">' + c + '</span></span>';
 		} else {
 			wrappedValue += c;
 		}
@@ -6023,7 +6025,7 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	}, {});
 
 	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = 'findClose';
+	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = styleHash[value.indexOf(RG_RESULT) + find.length - 1] ? 'findCloseAndFuzzy' : 'findClose';
 
 	var wrappedValue = '';
 
@@ -6038,6 +6040,8 @@ var replaceRenderer = function replaceRenderer(_ref) {
 			wrappedValue += '<span class="replace-downlight">' + c;
 		} else if (styleHash[i] === 'findClose') {
 			wrappedValue += c + '</span><span class="replace-highlight">' + replace + '</span>';
+		} else if (styleHash[i] === 'findCloseAndFuzzy') {
+			wrappedValue += '<span class="highlight">' + c + '</span></span><span class="replace-highlight">' + replace + '</span>';
 		} else {
 			wrappedValue += c;
 		}
