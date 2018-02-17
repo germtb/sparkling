@@ -1,7 +1,6 @@
 * [ ] Fix file preview
 * [ ] Revisit dangerouslySetInnerHTML
 * [ ] Find/Replace in buffer
-* [ ] Keybindings for other platforms
 * [ ] Multiline search with ag
 * [ ] Update documentation
 * [ ] Expose fuzzaldrin as a dependency for plugin service

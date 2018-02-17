@@ -1,34 +1,34 @@
 {
-	"atom-workspace": {
+	".platform-darwin atom-workspace": {
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-shift-a": "sparkling:findToggle"
 	},
-	".sparkling-files": {
+	".platform-darwin .sparkling-files": {
 		"cmd-p": "sparkling:files"
 	},
-	".sparkling-gitFiles": {
+	".platform-darwin .sparkling-gitFiles": {
 		"cmd-g cmd-p": "sparkling:gitFiles",
 		"cmd-g cmd-s": "sparkling:gitStage"
 	},
-	".sparkling-gitBranches": {
+	".platform-darwin .sparkling-gitBranches": {
 		"cmd-b": "sparkling:gitBranches"
 	},
-	".sparkling-lines atom-text-editor": {
+	".platform-darwin .sparkling-lines atom-text-editor": {
 		"cmd-l cmd-l": "sparkling:lines"
 	},
-	".sparkling-allLines": {
+	".platform-darwin .sparkling-allLines": {
 		"cmd-l cmd-L": "sparkling:allLines"
 	},
-	".sparkling-autocompleteLines atom-text-editor": {
+	".platform-darwin .sparkling-autocompleteLines atom-text-editor": {
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
-	".sparking-find.sparkling-input": {
+	".platform-darwin .sparking-find.sparkling-input": {
 		"enter": "sparkling:find",
 		"shift-enter": "sparkling:replace",
 		"cmd-escape": "sparkling:hide",
 		"escape": "sparkling:hide"
 	},
-	".sparkling .sparkling-input": {
+	".platform-darwin .sparkling .sparkling-input": {
 		"cmd-l cmd-s": "sparkling:lsUp",
 		"escape": "sparkling:hide",
 		"ctrl-k": "sparkling:next",
@@ -36,6 +36,86 @@
 		"ctrl-j": "sparkling:previous",
 		"down": "sparkling:previous",
 		"cmd-escape": "sparkling:hide",
+		"enter": "sparkling:accept"
+	},
+
+	".platform-win32 atom-workspace": {
+		"ctrl-l ctrl-s": "sparkling:ls",
+		"ctrl-shift-a": "sparkling:findToggle"
+	},
+	".platform-win32 .sparkling-files": {
+		"ctrl-p": "sparkling:files"
+	},
+	".platform-win32 .sparkling-gitFiles": {
+		"ctrl-g ctrl-p": "sparkling:gitFiles",
+		"ctrl-g ctrl-s": "sparkling:gitStage"
+	},
+	".platform-win32 .sparkling-gitBranches": {
+		"ctrl-b": "sparkling:gitBranches"
+	},
+	".platform-win32 .sparkling-lines atom-text-editor": {
+		"ctrl-l ctrl-l": "sparkling:lines"
+	},
+	".platform-win32 .sparkling-allLines": {
+		"ctrl-l ctrl-L": "sparkling:allLines"
+	},
+	".platform-win32 .sparkling-autocompleteLines atom-text-editor": {
+		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
+	},
+	".platform-win32 .sparking-find.sparkling-input": {
+		"enter": "sparkling:find",
+		"shift-enter": "sparkling:replace",
+		"ctrl-escape": "sparkling:hide",
+		"escape": "sparkling:hide"
+	},
+	".platform-win32 .sparkling .sparkling-input": {
+		"ctrl-l ctrl-s": "sparkling:lsUp",
+		"escape": "sparkling:hide",
+		"ctrl-k": "sparkling:next",
+		"up": "sparkling:next",
+		"ctrl-j": "sparkling:previous",
+		"down": "sparkling:previous",
+		"ctrl-escape": "sparkling:hide",
+		"enter": "sparkling:accept"
+	},
+
+	".platform-linux atom-workspace": {
+		"ctrl-l ctrl-s": "sparkling:ls",
+		"ctrl-shift-a": "sparkling:findToggle"
+	},
+	".platform-linux .sparkling-files": {
+		"ctrl-p": "sparkling:files"
+	},
+	".platform-linux .sparkling-gitFiles": {
+		"ctrl-g ctrl-p": "sparkling:gitFiles",
+		"ctrl-g ctrl-s": "sparkling:gitStage"
+	},
+	".platform-linux .sparkling-gitBranches": {
+		"ctrl-b": "sparkling:gitBranches"
+	},
+	".platform-linux .sparkling-lines atom-text-editor": {
+		"ctrl-l ctrl-l": "sparkling:lines"
+	},
+	".platform-linux .sparkling-allLines": {
+		"ctrl-l ctrl-L": "sparkling:allLines"
+	},
+	".platform-linux .sparkling-autocompleteLines atom-text-editor": {
+		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
+	},
+	".platform-linux .sparking-find.sparkling-input": {
+		"enter": "sparkling:find",
+		"shift-enter": "sparkling:replace",
+		"ctrl-escape": "sparkling:hide",
+		"escape": "sparkling:hide"
+	},
+	".platform-linux .sparkling .sparkling-input": {
+		"ctrl-l ctrl-s": "sparkling:lsUp",
+		"escape": "sparkling:hide",
+		"ctrl-k": "sparkling:next",
+		"up": "sparkling:next",
+		"ctrl-j": "sparkling:previous",
+		"down": "sparkling:previous",
+		"ctrl-escape": "sparkling:hide",
 		"enter": "sparkling:accept"
 	}
 }
