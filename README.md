@@ -25,6 +25,46 @@ https://github.com/BurntSushi/ripgrep
 
 `cmd-p` defaults to disabled since you need `ripgrep` in your path and I do not want to make it look like the plugin is broken.
 
+## Find files
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/findFiles.gif)
+
+## Find pattern
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/find.gif)
+
+## Replace pattern
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/replace.gif)
+
+## Find project lines
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/findProjectLines.gif)
+
+## ls navigation
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/ls.gif)
+
+## Find lines in buffer
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/findLine.gif)
+
+## Autocomplete lines
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/autocompleteLines.gif)
+
+## git status
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/gitFiles.gif)
+
+## git stage
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/gitStage.gif)
+
+## git branches
+
+![](https://raw.githubusercontent.com/germtb/gifs/master/gitBranches.gif)
+
 ## Plugin service interface
 
 You can build a plugin with your own sources, just like I show in this example project: https://github.com/germtb/sparkling-extras
