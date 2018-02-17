@@ -3270,10 +3270,6 @@ var SparklingInput$1 = connect(function (state) {
 	};
 })(SparklingInput);
 
-var RG_RESULT = 'RG_RESULT';
-var SLICE_LENGTH = 15;
-var ROWS = 5;
-
 var SparklingResults = function SparklingResults(_ref) {
 	var options$$1 = _ref.options,
 	    selectedValue = _ref.selectedValue,
@@ -3284,12 +3280,13 @@ var SparklingResults = function SparklingResults(_ref) {
 	var preview = options$$1.preview,
 	    renderer = options$$1.renderer,
 	    accept = options$$1.accept,
-	    columns = options$$1.columns;
+	    columns = options$$1.columns,
+	    sliceLength = options$$1.sliceLength;
 
-	var style = columns ? {
-		'grid-auto-columns': 'minmax(33.3%, 100%)',
+	var style = columns > 1 ? {
+		'grid-auto-columns': 'minmax(' + 100 / columns + '%, 100%)',
 		'grid-auto-flow': 'column',
-		'grid-template-rows': 'repeat(' + SLICE_LENGTH / columns + ', 1fr)'
+		'grid-template-rows': 'repeat(' + sliceLength / columns + ', 1fr)'
 	} : {
 		'grid-auto-flow': 'row'
 	};
@@ -3300,7 +3297,7 @@ var SparklingResults = function SparklingResults(_ref) {
 		h(
 			'div',
 			{ className: 'sparkling-results', style: style },
-			data.slice(offset, offset + SLICE_LENGTH).map(function (item, index$$1) {
+			data.slice(offset, offset + sliceLength).map(function (item, index$$1) {
 				return renderer({
 					item: item,
 					index: index$$1,
@@ -4575,6 +4572,9 @@ function storeFactory(reducers$$1) {
 
 var store = storeFactory(reducers);
 
+var RG_RESULT = 'RG_RESULT';
+var DEFAULT_SLICE_LENGTH = 12;
+
 var scorer = createCommonjsModule(function (module, exports) {
 (function() {
   var AcronymResult, computeScore, emptyAcronymResult, isAcronymFullWord, isMatch, isSeparator, isWordEnd, isWordStart, miss_coeff, pos_bonus, scoreAcronyms, scoreCharacter, scoreConsecutives, scoreExact, scoreExactMatch, scorePattern, scorePosition, scoreSize, tau_size, wm;
@@ -5518,17 +5518,23 @@ var commandFactory = (function (optionsFactory) {
 	    renderer = _optionsFactory$rende === undefined ? defaultRenderer : _optionsFactory$rende,
 	    _optionsFactory$previ = _optionsFactory.preview,
 	    preview = _optionsFactory$previ === undefined ? null : _optionsFactory$previ,
-	    extraOptions = objectWithoutProperties$1(_optionsFactory, ['loadData', 'accept', 'renderer', 'preview']);
+	    _optionsFactory$slice = _optionsFactory.sliceLength,
+	    sliceLength = _optionsFactory$slice === undefined ? DEFAULT_SLICE_LENGTH : _optionsFactory$slice,
+	    _optionsFactory$colum = _optionsFactory.columns,
+	    columns = _optionsFactory$colum === undefined ? 1 : _optionsFactory$colum,
+	    extraOptions = objectWithoutProperties$1(_optionsFactory, ['loadData', 'accept', 'renderer', 'preview', 'sliceLength', 'columns']);
 
 	var options$$1 = _extends$2({
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		preview: preview
+		preview: preview,
+		sliceLength: sliceLength,
+		columns: columns
 	}, extraOptions);
 
-	return function (extras) {
-		options$$1 = extras ? _extends$2({}, options$$1, extras) : options$$1;
+	return function (extraOptions) {
+		options$$1 = extraOptions ? _extends$2({}, options$$1, extraOptions) : options$$1;
 
 		var state = store.getState();
 
@@ -5645,7 +5651,8 @@ var filesFactory = function filesFactory(h, store) {
 		loadData: loadData$1,
 		accept: accept,
 		renderer: renderer,
-		columns: 3,
+		sliceLength: 20,
+		columns: 4,
 		description: 'Find files in project',
 		id: 'sparkling-files'
 	};
@@ -5880,7 +5887,8 @@ var linesFactory = function linesFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		description: 'Find lines in current buffer',
-		id: 'sparkling-buffer-lines'
+		id: 'sparkling-buffer-lines',
+		sliceLength: 10
 	};
 };
 
@@ -6006,7 +6014,8 @@ var findFactory = function findFactory(h, store) {
 		accept: accept,
 		renderer: renderer$2,
 		description: 'Find pattern in project',
-		id: 'sparkling-project-find'
+		id: 'sparkling-project-find',
+		sliceLength: 10
 	};
 };
 
@@ -6191,6 +6200,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		renderer: renderer$3,
 		description: 'Replace pattern in project',
 		id: 'sparkling-project-replace',
+		sliceLength: 10,
 		childrenRenderer: function childrenRenderer() {
 			return h$$1(ReplaceInputContainer, null);
 		}
@@ -6432,13 +6442,16 @@ var next = function next() {
 	var state = store.getState();
 	var index = getIndex(state);
 	var sparklingData = getSparklingData(state);
+	var options = getOptions(state);
+	var sliceLength = options.sliceLength;
 
-	if (index === SLICE_LENGTH - 1) {
+
+	if (index === sliceLength - 1) {
 		var offset = getOffset(state);
-		var value = Math.min(offset + 1, sparklingData.length - SLICE_LENGTH);
+		var value = Math.min(offset + 1, sparklingData.length - sliceLength);
 		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
 	} else {
-		var _value = Math.min(index + 1, sparklingData.length - 1, SLICE_LENGTH - 1);
+		var _value = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
 		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
 	}
 };
@@ -6460,13 +6473,18 @@ var previous = function previous() {
 var left = function left() {
 	var state = store.getState();
 	var index = getIndex(state);
+	var options = getOptions(state);
+	var columns = options.columns,
+	    sliceLength = options.sliceLength;
+
+	var rows = sliceLength / columns;
 
 	if (index === 0) {
 		var offset = getOffset(state);
-		var value = Math.max(offset - ROWS, 0);
+		var value = Math.max(offset - rows, 0);
 		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
 	} else {
-		var _value3 = Math.max(index - ROWS, 0);
+		var _value3 = Math.max(index - rows, 0);
 		store.dispatch({ type: 'SET_INDEX', payload: { value: _value3 } });
 	}
 };
@@ -6475,13 +6493,18 @@ var right = function right() {
 	var state = store.getState();
 	var index = getIndex(state);
 	var sparklingData = getSparklingData(state);
+	var options = getOptions(state);
+	var sliceLength = options.sliceLength,
+	    columns = options.columns;
 
-	if (index === SLICE_LENGTH - 1) {
+	var rows = sliceLength / columns;
+
+	if (index === sliceLength - 1) {
 		var offset = getOffset(state);
-		var value = Math.min(offset + ROWS, sparklingData.length - SLICE_LENGTH);
+		var value = Math.min(offset + rows, sparklingData.length - sliceLength);
 		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
 	} else {
-		var _value4 = Math.min(index + ROWS, sparklingData.length - 1, SLICE_LENGTH - 1);
+		var _value4 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
 		store.dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
 	}
 };
