@@ -11,7 +11,7 @@
 		"cmd-g cmd-s": "sparkling:gitStage"
 	},
 	".platform-darwin .sparkling-gitBranches": {
-		"cmd-b": "sparkling:gitBranches"
+		"cmd-g cmd-b": "sparkling:gitBranches"
 	},
 	".platform-darwin .sparkling-lines atom-text-editor": {
 		"cmd-l cmd-l": "sparkling:lines"
@@ -51,7 +51,7 @@
 		"ctrl-g ctrl-s": "sparkling:gitStage"
 	},
 	".platform-win32 .sparkling-gitBranches": {
-		"ctrl-b": "sparkling:gitBranches"
+		"ctrl-g ctrl-b": "sparkling:gitBranches"
 	},
 	".platform-win32 .sparkling-lines atom-text-editor": {
 		"ctrl-l ctrl-l": "sparkling:lines"
@@ -91,7 +91,7 @@
 		"ctrl-g ctrl-s": "sparkling:gitStage"
 	},
 	".platform-linux .sparkling-gitBranches": {
-		"ctrl-b": "sparkling:gitBranches"
+		"ctrl-g ctrl-b": "sparkling:gitBranches"
 	},
 	".platform-linux .sparkling-lines atom-text-editor": {
 		"ctrl-l ctrl-l": "sparkling:lines"
