@@ -5,9 +5,7 @@
 
 .sparkling-results {
 	flex: 1;
-	display: flex;
-	flex-direction: column-reverse;
-	overflow: auto;
+	display: grid;
 }
 
 .sparkling-preview {
@@ -21,15 +19,15 @@
 	font-size: 14px;
 	line-height: 1.5em;
 	cursor: pointer;
-	font-weight: normal;
 	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .sparkling-row .highlight {
 	font-weight: normal;
 	background-color: inherit;
 	color: #73c990;
-	border-radius: none;
 	padding: 0;
 }
 

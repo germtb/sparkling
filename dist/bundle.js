@@ -3270,6 +3270,10 @@ var SparklingInput$1 = connect(function (state) {
 	};
 })(SparklingInput);
 
+var RG_RESULT = 'RG_RESULT';
+var SLICE_LENGTH = 15;
+var ROWS = 5;
+
 var SparklingResults = function SparklingResults(_ref) {
 	var options$$1 = _ref.options,
 	    selectedValue = _ref.selectedValue,
@@ -3279,16 +3283,24 @@ var SparklingResults = function SparklingResults(_ref) {
 	    pattern = _ref.pattern;
 	var preview = options$$1.preview,
 	    renderer = options$$1.renderer,
-	    accept = options$$1.accept;
+	    accept = options$$1.accept,
+	    columns = options$$1.columns;
 
+	var style = columns ? {
+		'grid-auto-columns': 'minmax(33.3%, 100%)',
+		'grid-auto-flow': 'column',
+		'grid-template-rows': 'repeat(' + SLICE_LENGTH / columns + ', 1fr)'
+	} : {
+		'grid-auto-flow': 'row'
+	};
 
 	return h(
 		'div',
 		{ className: 'sparkling-results-container' },
 		h(
 			'div',
-			{ className: 'sparkling-results' },
-			data.slice(offset, offset + 10).map(function (item, index$$1) {
+			{ className: 'sparkling-results', style: style },
+			data.slice(offset, offset + SLICE_LENGTH).map(function (item, index$$1) {
 				return renderer({
 					item: item,
 					index: index$$1,
@@ -5580,6 +5592,7 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
+		columns: 3,
 		description: 'Checkout git branches',
 		id: 'sparkling-git-branches'
 	};
@@ -5632,6 +5645,7 @@ var filesFactory = function filesFactory(h, store) {
 		loadData: loadData$1,
 		accept: accept,
 		renderer: renderer,
+		columns: 3,
 		description: 'Find files in project',
 		id: 'sparkling-files'
 	};
@@ -5792,6 +5806,7 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$1,
+		columns: 3,
 		description: 'Find git status files',
 		id: 'sparkling-git-files'
 	};
@@ -5832,6 +5847,7 @@ var gitStageFactory = function gitStageFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$1,
+		columns: 3,
 		description: 'Stage and unstage git files',
 		id: 'sparkling-git-stage'
 	};
@@ -5851,7 +5867,7 @@ var linesFactory = function linesFactory(h, store) {
 		}).filter(function (_ref) {
 			var value = _ref.value;
 			return value.trim().length > 1;
-		}).reverse();
+		});
 		onData(lines);
 	};
 
@@ -5873,12 +5889,9 @@ var linesFactory = function linesFactory(h, store) {
 
 var lines = commandFactory(linesFactory);
 
-var RG_RESULT = 'RG_RESULT';
-
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var find = getFind(store.getState());
-		var replace = getReplace(store.getState());
 
 		var cwd = atom.project.getPaths()[0];
 		var cmdProcess = child_process.spawn('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'], {
@@ -5909,12 +5922,11 @@ var loadDataFactory$1 = (function (store) {
 						}, '');
 
 						acc.push({
-							value: value.split(':', 2).concat([line]).join(''),
+							value: value.split(':', 2).concat([line]).join(' : '),
 							find: find,
 							line: line,
 							path: path$$1,
-							lineNumber: lineNumber,
-							replace: replace
+							lineNumber: lineNumber
 						});
 					});
 				}
@@ -6002,6 +6014,67 @@ var findFactory = function findFactory(h, store) {
 };
 
 var find$1 = commandFactory(findFactory);
+
+var loadDataFactory$2 = (function (store) {
+	return function (onData) {
+		var find = getFind(store.getState());
+
+		var cwd = atom.project.getPaths()[0];
+		var cmdProcess = child_process.spawn('ag', [find, '--no-break', '--no-group'], {
+			cwd: cwd
+		});
+		cmdProcess.stdout.on('data', function (data) {
+			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
+				console.log('value: ', value);
+
+				var _value$split = value.split(':', 3),
+				    _value$split2 = slicedToArray(_value$split, 3),
+				    path$$1 = _value$split2[0],
+				    lineNumber = _value$split2[1],
+				    line = _value$split2[2];
+
+				console.log('line: ', line);
+				console.log('lineNumber: ', lineNumber);
+				console.log('path: ', path$$1);
+				console.log('--------------');
+				acc.push({
+					value: value.split(':', 2).concat([line]).join(''),
+					find: find,
+					line: line,
+					path: path$$1,
+					lineNumber: lineNumber
+				});
+
+				return acc;
+			}, []));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var findFactory$1 = function findFactory(h, store) {
+	var loadData = loadDataFactory$2(store);
+
+	var accept = function accept(line) {
+		atom.workspace.open(line.path, {
+			initialLine: line.lineNumber - 1
+		});
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$2,
+		description: 'Find pattern in project',
+		id: 'sparkling-project-ag-find'
+	};
+};
+
+var agFind = commandFactory(findFactory$1);
 
 var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
@@ -6246,7 +6319,13 @@ var config = {
 	},
 	find: {
 		title: 'Find pattern with ripgrep',
-		description: 'Enable autocomplete find with ripgrep',
+		description: 'Enable find with ripgrep',
+		type: 'boolean',
+		default: true
+	},
+	agFind: {
+		title: 'Find pattern with ag',
+		description: 'Enable find with ag',
 		type: 'boolean',
 		default: true
 	},
@@ -6258,7 +6337,7 @@ var config = {
 	}
 };
 
-var loadDataFactory$2 = (function (store) {
+var loadDataFactory$3 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
 		var path$$1 = options.path;
@@ -6322,7 +6401,7 @@ var renderer$5 = (function (props) {
 });
 
 var lsFactory = function lsFactory(h, store) {
-	var loadData = loadDataFactory$2(store);
+	var loadData = loadDataFactory$3(store);
 
 	var accept = function accept(_ref) {
 		var absolutePath = _ref.absolutePath;
@@ -6339,6 +6418,7 @@ var lsFactory = function lsFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$5,
+		columns: 3,
 		description: 'Project navigation',
 		id: 'sparkling-ls'
 	};
@@ -6351,12 +6431,12 @@ var next = function next() {
 	var index = getIndex(state);
 	var sparklingData = getSparklingData(state);
 
-	if (index === 9) {
+	if (index === SLICE_LENGTH - 1) {
 		var offset = getOffset(state);
-		var value = Math.min(offset + 1, sparklingData.length - 10);
+		var value = Math.min(offset + 1, sparklingData.length - SLICE_LENGTH);
 		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
 	} else {
-		var _value = Math.min(index + 1, sparklingData.length - 1, 9);
+		var _value = Math.min(index + 1, sparklingData.length - 1, SLICE_LENGTH - 1);
 		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
 	}
 };
@@ -6372,6 +6452,35 @@ var previous = function previous() {
 	} else {
 		var _value2 = Math.max(index - 1, 0);
 		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+	}
+};
+
+var left = function left() {
+	var state = store.getState();
+	var index = getIndex(state);
+
+	if (index === 0) {
+		var offset = getOffset(state);
+		var value = Math.max(offset - ROWS, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value3 = Math.max(index - ROWS, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value3 } });
+	}
+};
+
+var right = function right() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var sparklingData = getSparklingData(state);
+
+	if (index === SLICE_LENGTH - 1) {
+		var offset = getOffset(state);
+		var value = Math.min(offset + ROWS, sparklingData.length - SLICE_LENGTH);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value4 = Math.min(index + ROWS, sparklingData.length - 1, SLICE_LENGTH - 1);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
 	}
 };
 
@@ -8245,7 +8354,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }, { id: 'agFind', command: agFind }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
@@ -8271,6 +8380,8 @@ module.exports = {
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:next': next,
 			'sparkling:previous': previous,
+			'sparkling:left': left,
+			'sparkling:right': right,
 			'sparkling:accept': accept,
 			'sparkling:hide': hide
 		}));
