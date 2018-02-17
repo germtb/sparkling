@@ -5861,12 +5861,9 @@ var linesFactory = function linesFactory(h, store) {
 		var buffer = editor.getBuffer();
 		var lines = buffer.getLines().map(function (value, lineNumber) {
 			return {
-				value: value,
+				value: lineNumber + 1 + ' : ' + value,
 				lineNumber: lineNumber
 			};
-		}).filter(function (_ref) {
-			var value = _ref.value;
-			return value.trim().length > 1;
 		});
 		onData(lines);
 	};
@@ -6216,7 +6213,12 @@ var loadData$2 = (function (onData) {
 			    line = _value$split2[2];
 
 			if (line && line.length > 1) {
-				acc.push({ value: value, path: path$$1, line: line, lineNumber: lineNumber });
+				acc.push({
+					value: value.split(':', 3).join(' : '),
+					path: path$$1,
+					line: line,
+					lineNumber: lineNumber
+				});
 			}
 			return acc;
 		}, []));
