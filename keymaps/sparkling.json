@@ -26,7 +26,6 @@
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
 	".platform-darwin .sparkling-input": {
-		"cmd-l cmd-s": "sparkling:lsUp",
 		"ctrl-k": "sparkling:previous",
 		"ctrl-l": "sparkling:right",
 		"ctrl-h": "sparkling:left",
@@ -48,6 +47,9 @@
 	},
 	"#sparking-rename-file-confirm .sparkling-input": {
 		"enter": "sparkling:renameFilesConfirm"
+	},
+	"#sparkling-ls .sparkling-input": {
+		"cmd-l cmd-s": "sparkling:lsUp"
 	},
 
 	".platform-win32 atom-workspace, .platform-linux .sparkling-input": {

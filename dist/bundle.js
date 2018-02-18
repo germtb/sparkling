@@ -6642,7 +6642,7 @@ var findToggle = function findToggle() {
 var lsShow = function lsShow() {
 	var activeTextEditor = atom.workspace.getActiveTextEditor();
 	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
-	ls({ path: finalPath });
+	ls({ path: finalPath, description: finalPath });
 };
 
 var lsShowUp = function lsShowUp() {
@@ -6650,7 +6650,7 @@ var lsShowUp = function lsShowUp() {
 	    optionsPath = _getOptions2.path;
 
 	var finalPath = path.resolve(optionsPath, '..');
-	ls({ path: finalPath });
+	ls({ path: finalPath, description: finalPath });
 };
 
 var duplicateFilesConfirm = function duplicateFilesConfirm() {
