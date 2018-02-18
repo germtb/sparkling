@@ -6,6 +6,7 @@
 .sparkling-results {
 	flex: 1;
 	display: grid;
+	max-width: 100%;
 }
 
 .sparkling-preview {
@@ -143,6 +144,6 @@
 
 .sparkling-line-number {
 	display: inline-block;
-	color: #73c990;
-	width: 100px;
+	color: white;
+	width: 50px;
 }

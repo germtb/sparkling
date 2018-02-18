@@ -3284,7 +3284,7 @@ var SparklingResults = function SparklingResults(_ref) {
 	    sliceLength = options$$1.sliceLength;
 
 	var style = columns > 1 ? {
-		'grid-auto-columns': 'minmax(' + 100 / columns + '%, 100%)',
+		'grid-auto-columns': 'minmax(' + 100.0 / columns + '%, 100%)',
 		'grid-auto-flow': 'column',
 		'grid-template-rows': 'repeat(' + sliceLength / columns + ', 1fr)'
 	} : {
@@ -4491,7 +4491,7 @@ var reducers = combineReducers({
 var fromSelectorFactory = function fromSelectorFactory(store) {
 	return function (selector) {
 		return Observable_2.create(function (observer) {
-			store.subscribe(function () {
+			return store.subscribe(function () {
 				var state = store.getState();
 				var selectedState = selector(state);
 				observer.next(selectedState);
@@ -4552,7 +4552,7 @@ var fromActionFactory = function fromActionFactory(store) {
 
 	return function (actionType) {
 		return Observable_2.create(function (observer) {
-			subscribe({ actionType: actionType, observer: observer });
+			return subscribe({ actionType: actionType, observer: observer });
 		});
 	};
 };
@@ -6428,7 +6428,8 @@ var lsFactory = function lsFactory(h, store) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer$5,
-		columns: 3,
+		sliceLength: 20,
+		columns: 4,
 		description: 'Project navigation',
 		id: 'sparkling-ls'
 	};
