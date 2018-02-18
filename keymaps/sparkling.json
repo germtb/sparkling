@@ -1,7 +1,8 @@
 {
 	".platform-darwin atom-workspace": {
 		"cmd-l cmd-s": "sparkling:ls",
-		"cmd-shift-a": "sparkling:findToggle"
+		"cmd-shift-a": "sparkling:findToggle",
+		"cmd-r cmd-p": "sparking:removeFiles"
 	},
 	".platform-darwin .sparkling-files": {
 		"cmd-p": "sparkling:files"

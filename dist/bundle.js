@@ -5580,51 +5580,6 @@ var loadData = (function (onData) {
 	});
 });
 
-var gitBranchesFactory = function gitBranchesFactory(h, store) {
-	var accept = function accept(branch) {
-		var cwd = atom.project.getPaths()[0];
-		var value = branch.value.trim(0);
-
-		if (/^\*/.test(value)) {
-			return;
-		}
-
-		var cmdProcess = child_process.spawn('git', ['checkout', value], { cwd: cwd });
-		cmdProcess.stdout.on('data', function () {
-			store.dispatch({
-				type: 'HIDE'
-			});
-		});
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		columns: 3,
-		description: 'Checkout git branches',
-		id: 'sparkling-git-branches'
-	};
-};
-
-var gitBranches = commandFactory(gitBranchesFactory);
-
-var loadData$1 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-
-	return function () {
-		cmdProcess.stdin.pause();
-		cmdProcess.kill();
-	};
-});
-
 var fileIconsService = null;
 
 var setFileIconsService = function setFileIconsService(service) {
@@ -5670,6 +5625,57 @@ var wrap = function wrap(str, pattern, start, end, className) {
 	return wrappedStr;
 };
 
+var spawnInProject = function spawnInProject(cmd, args) {
+	var cwd = atom.project.getPaths()[0];
+	return child_process.spawn(cmd, args, {
+		cwd: cwd
+	});
+};
+
+var gitBranchesFactory = function gitBranchesFactory(h, store) {
+	var accept = function accept(branch) {
+		var value = branch.value.trim(0);
+
+		if (/^\*/.test(value)) {
+			return;
+		}
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.stdout.on('data', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		columns: 3,
+		description: 'Checkout git branches',
+		id: 'sparkling-git-branches'
+	};
+};
+
+var gitBranches = commandFactory(gitBranchesFactory);
+
+var loadData$1 = (function (onData) {
+	var cwd = atom.project.getPaths()[0];
+	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+
+	return function () {
+		cmdProcess.stdin.pause();
+		cmdProcess.kill();
+	};
+});
+
 var renderer = (function (props) {
 	return defaultRenderer(_extends$2({}, props, {
 		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
@@ -5696,6 +5702,29 @@ var filesFactory = function filesFactory(h, store) {
 };
 
 var files = commandFactory(filesFactory);
+
+var removeFiles = function removeFiles(h, store) {
+	var accept = function accept(file) {
+		spawnInProject('rm', [file.value]);
+
+		store.dispatch({
+			type: 'REMOVE_ITEM',
+			payload: file
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Remove files in project',
+		id: 'sparkling-files'
+	};
+};
+
+var removeFiles$1 = commandFactory(removeFiles);
 
 var loadDataFactory = (function (_ref) {
 	var hideDeletedFiles = _ref.hideDeletedFiles;
@@ -5865,19 +5894,13 @@ var gitStageFactory = function gitStageFactory(h, store) {
 		var path$$1 = _ref.path,
 		    status = _ref.status;
 
-		var cwd = atom.project.getPaths()[0];
-
 		var cmdProcess = void 0;
 		var unstaged = [' M', 'MM', '??', ' D', 'AD', 'DD', ' A'];
 
 		if (unstaged.includes(status)) {
-			cmdProcess = child_process.spawn('git', ['add', path$$1], {
-				cwd: cwd
-			});
+			cmdProcess = spawnInProject('git', ['add', path$$1]);
 		} else {
-			cmdProcess = child_process.spawn('git', ['reset', path$$1], {
-				cwd: cwd
-			});
+			cmdProcess = spawnInProject('git', ['reset', path$$1]);
 		}
 
 		cmdProcess.on('exit', function () {
@@ -8289,7 +8312,8 @@ module.exports = {
 			'sparkling:left': left,
 			'sparkling:right': right,
 			'sparkling:accept': accept,
-			'sparkling:hide': hide
+			'sparkling:hide': hide,
+			'sparking:removeFiles': removeFiles$1
 		}));
 
 		var workspaceView = atom.views.getView(atom.workspace);
