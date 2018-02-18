@@ -2,7 +2,8 @@
 	".platform-darwin atom-workspace": {
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-shift-a": "sparkling:findToggle",
-		"cmd-r cmd-p": "sparking:removeFiles"
+		"cmd-r cmd-p": "sparkling:removeFiles",
+		"cmd-d cmd-p": "sparkling:duplicateFiles"
 	},
 	".platform-darwin .sparkling-files": {
 		"cmd-p": "sparkling:files"
@@ -23,14 +24,7 @@
 	".platform-darwin .sparkling-autocompleteLines atom-text-editor": {
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
-	".platform-darwin .sparking-find.sparkling-input": {
-		"enter": "sparkling:find",
-		"cmd-shift-enter": "sparkling:agFind",
-		"shift-enter": "sparkling:replace",
-		"cmd-escape": "sparkling:hide",
-		"escape": "sparkling:hide"
-	},
-	".platform-darwin .sparkling .sparkling-input": {
+	".platform-darwin .sparkling-input": {
 		"cmd-l cmd-s": "sparkling:lsUp",
 		"ctrl-k": "sparkling:previous",
 		"ctrl-l": "sparkling:right",
@@ -44,81 +38,40 @@
 		"cmd-escape": "sparkling:hide",
 		"enter": "sparkling:accept"
 	},
-
-	".platform-win32 atom-workspace": {
-		"ctrl-l ctrl-s": "sparkling:ls",
-		"ctrl-shift-a": "sparkling:findToggle"
+	".sparkling-find.sparkling-input": {
+		"enter": "sparkling:find",
+		"shift-enter": "sparkling:replace"
 	},
-	".platform-win32 .sparkling-files": {
+	"#sparking-duplicate-file-confirm .sparkling-input": {
+		"enter": "sparkling:duplicateFilesConfirm"
+	},
+
+	".platform-win32 atom-workspace, .platform-linux .sparkling-input": {
+		"ctrl-l ctrl-s": "sparkling:ls",
+		"ctrl-shift-a": "sparkling:findToggle",
+		"ctrl-r ctrl-p": "sparkling:removeFiles",
+		"ctrl-d ctrl-p": "sparkling:duplicateFiles"
+	},
+	".platform-win32 .sparkling-files, .platform-linux .sparkling-input": {
 		"ctrl-p": "sparkling:files"
 	},
-	".platform-win32 .sparkling-gitFiles": {
+	".platform-win32 .sparkling-gitFiles, .platform-linux .sparkling-input": {
 		"ctrl-g ctrl-p": "sparkling:gitFiles",
 		"ctrl-g ctrl-s": "sparkling:gitStage"
 	},
-	".platform-win32 .sparkling-gitBranches": {
+	".platform-win32 .sparkling-gitBranches, .platform-linux .sparkling-input": {
 		"ctrl-g ctrl-b": "sparkling:gitBranches"
 	},
-	".platform-win32 .sparkling-lines atom-text-editor": {
+	".platform-win32 .sparkling-lines atom-text-editor, .platform-linux .sparkling-input": {
 		"ctrl-l ctrl-l": "sparkling:lines"
 	},
-	".platform-win32 .sparkling-allLines": {
+	".platform-win32 .sparkling-allLines, .platform-linux .sparkling-input": {
 		"ctrl-l ctrl-L": "sparkling:allLines"
 	},
-	".platform-win32 .sparkling-autocompleteLines atom-text-editor": {
+	".platform-win32 .sparkling-autocompleteLines atom-text-editor, .platform-linux .sparkling-input": {
 		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
 	},
-	".platform-win32 .sparking-find.sparkling-input": {
-		"enter": "sparkling:find",
-		"shift-enter": "sparkling:replace",
-		"ctrl-escape": "sparkling:hide",
-		"escape": "sparkling:hide"
-	},
-	".platform-win32 .sparkling .sparkling-input": {
-		"ctrl-l ctrl-s": "sparkling:lsUp",
-		"ctrl-k": "sparkling:previous",
-		"ctrl-l": "sparkling:right",
-		"ctrl-h": "sparkling:left",
-		"ctrl-j": "sparkling:next",
-		"up": "sparkling:previous",
-		"right": "sparkling:right",
-		"left": "sparkling:left",
-		"down": "sparkling:next",
-		"escape": "sparkling:hide",
-		"ctrl-escape": "sparkling:hide",
-		"enter": "sparkling:accept"
-	},
-
-	".platform-linux atom-workspace": {
-		"ctrl-l ctrl-s": "sparkling:ls",
-		"ctrl-shift-a": "sparkling:findToggle"
-	},
-	".platform-linux .sparkling-files": {
-		"ctrl-p": "sparkling:files"
-	},
-	".platform-linux .sparkling-gitFiles": {
-		"ctrl-g ctrl-p": "sparkling:gitFiles",
-		"ctrl-g ctrl-s": "sparkling:gitStage"
-	},
-	".platform-linux .sparkling-gitBranches": {
-		"ctrl-g ctrl-b": "sparkling:gitBranches"
-	},
-	".platform-linux .sparkling-lines atom-text-editor": {
-		"ctrl-l ctrl-l": "sparkling:lines"
-	},
-	".platform-linux .sparkling-allLines": {
-		"ctrl-l ctrl-L": "sparkling:allLines"
-	},
-	".platform-linux .sparkling-autocompleteLines atom-text-editor": {
-		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
-	},
-	".platform-linux .sparking-find.sparkling-input": {
-		"enter": "sparkling:find",
-		"shift-enter": "sparkling:replace",
-		"ctrl-escape": "sparkling:hide",
-		"escape": "sparkling:hide"
-	},
-	".platform-linux .sparkling .sparkling-input": {
+	".platform-win32 .sparkling-input, .platform-linux .sparkling-input": {
 		"ctrl-l ctrl-s": "sparkling:lsUp",
 		"ctrl-k": "sparkling:previous",
 		"ctrl-l": "sparkling:right",

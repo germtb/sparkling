@@ -8,3 +8,4 @@
 * [ ] Add smartcase
 * [ ] Add common operations: remove, rename, duplicate
 * [ ] Fix regex handling (foo.\*)
+* [ ] Fix lsUP being called on any sparkling-input

@@ -2937,6 +2937,10 @@ var getReplace = function getReplace(state) {
 	return state.replace;
 };
 
+var getExtraInput = function getExtraInput(state) {
+	return state.extraInput;
+};
+
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 
@@ -3372,7 +3376,7 @@ var FindContainer = function FindContainer(_ref) {
 		'div',
 		{ className: 'sparkling-input-container' },
 		h(Input, {
-			className: 'sparking-find',
+			className: 'sparkling-find',
 			autoFocus: true,
 			value: value,
 			setValue: setValue,
@@ -3393,6 +3397,42 @@ var FindContainer$1 = connect(function (state) {
 		}
 	};
 })(FindContainer);
+
+var ExtraInputContainer = function ExtraInputContainer(_ref) {
+	var extraInput = _ref.extraInput,
+	    setValue = _ref.setValue;
+	var value = extraInput.value,
+	    id = extraInput.id,
+	    _extraInput$placehold = extraInput.placeholder,
+	    placeholder = _extraInput$placehold === undefined ? '' : _extraInput$placehold;
+
+	if (!id) {
+		return null;
+	}
+
+	return h(
+		'div',
+		{ id: id, className: 'sparkling-input-container' },
+		h(Input, {
+			autoFocus: true,
+			value: value,
+			setValue: setValue,
+			placeholder: placeholder
+		})
+	);
+};
+
+var ExtraInputContainer$1 = connect(function (state) {
+	return {
+		extraInput: getExtraInput(state)
+	};
+}, function (dispatch) {
+	return {
+		setValue: function setValue(value) {
+			return dispatch({ type: 'SET_EXTRA_INPUT_VALUE', payload: { value: value } });
+		}
+	};
+})(ExtraInputContainer);
 
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
@@ -4389,7 +4429,8 @@ var visible = reducerCreator({
 	SHOW: true,
 	HIDE: false,
 	SHOW_SEARCH: false,
-	HIDE_SEARCH: false
+	HIDE_SEARCH: false,
+	SHOW_EXTRA_INPUT: false
 })(false);
 
 var findVisible = reducerCreator({
@@ -4450,16 +4491,6 @@ var pattern = reducerCreator({
 	SHOW: function SHOW(state) {
 		return _extends$2({}, state, { value: '' });
 	}
-	// SHOW: (state, { id }) => {
-	// 	if (state.id === id) {
-	// 		return state
-	// 	}
-	//
-	// 	return {
-	// 		value: '',
-	// 		id
-	// 	}
-	// }
 })({ value: '', id: '' });
 
 var index$2 = reducerCreator({
@@ -4477,6 +4508,15 @@ var offset = reducerCreator({
 	SHOW: 0
 })(0);
 
+var extraInput = reducerCreator({
+	SHOW_EXTRA_INPUT: returnPayload(),
+	SET_EXTRA_INPUT_VALUE: function SET_EXTRA_INPUT_VALUE(state, _ref4) {
+		var value = _ref4.value;
+		return _extends$2({}, state, { value: value });
+	},
+	HIDE: { value: '', id: null }
+})({ value: '', id: null });
+
 var reducers = combineReducers({
 	visible: visible,
 	options: options$1,
@@ -4487,7 +4527,8 @@ var reducers = combineReducers({
 	pattern: pattern,
 	findVisible: findVisible,
 	find: find,
-	replace: replace
+	replace: replace,
+	extraInput: extraInput
 });
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -5568,18 +5609,6 @@ var commandFactory = (function (optionsFactory) {
 	};
 });
 
-var loadData = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('git', ['branch'], { cwd: cwd });
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-});
-
 var fileIconsService = null;
 
 var setFileIconsService = function setFileIconsService(service) {
@@ -5632,6 +5661,17 @@ var spawnInProject = function spawnInProject(cmd, args) {
 	});
 };
 
+var loadData = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['branch']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
 var gitBranchesFactory = function gitBranchesFactory(h, store) {
 	var accept = function accept(branch) {
 		var value = branch.value.trim(0);
@@ -5660,8 +5700,7 @@ var gitBranchesFactory = function gitBranchesFactory(h, store) {
 var gitBranches = commandFactory(gitBranchesFactory);
 
 var loadData$1 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['--files'], { cwd: cwd });
+	var cmdProcess = spawnInProject('rg', ['--files']);
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').filter(function (s) {
 			return s.length > 1;
@@ -5703,6 +5742,31 @@ var filesFactory = function filesFactory(h, store) {
 
 var files = commandFactory(filesFactory);
 
+var duplicateFiles = function duplicateFiles(h, store) {
+	var accept = function accept(file) {
+		store.dispatch({
+			type: 'SHOW_EXTRA_INPUT',
+			payload: {
+				id: 'sparking-duplicate-file-confirm',
+				originPath: file.value,
+				value: file.value
+			}
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Duplicate files in project',
+		id: 'sparkling-duplicate-files'
+	};
+};
+
+var duplicateFiles$1 = commandFactory(duplicateFiles);
+
 var removeFiles = function removeFiles(h, store) {
 	var accept = function accept(file) {
 		spawnInProject('rm', [file.value]);
@@ -5729,8 +5793,7 @@ var removeFiles$1 = commandFactory(removeFiles);
 var loadDataFactory = (function (_ref) {
 	var hideDeletedFiles = _ref.hideDeletedFiles;
 	return function (onData) {
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('git', ['status', '-s'], { cwd: cwd });
+		var cmdProcess = spawnInProject('git', ['status', '-s']);
 
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').filter(function (value) {
@@ -5984,10 +6047,7 @@ var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var find = getFind(store.getState());
 
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'], {
-			cwd: cwd
-		});
+		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K']);
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':', 3),
@@ -6210,12 +6270,9 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		    path$$1 = item.path,
 		    find = item.find;
 
-		var cwd = atom.project.getPaths()[0];
 
 		var sedRegex = lineNumber + ',' + lineNumber + 's/' + find + '/' + replace + '/';
-		child_process.spawn('sed', ['-i', '', '-e', sedRegex, path$$1], {
-			cwd: cwd
-		});
+		spawnInProject('sed', ['-i', '', '-e', sedRegex, path$$1]);
 		store.dispatch({
 			type: 'REMOVE_ITEM',
 			payload: item
@@ -6238,10 +6295,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 var replace$1 = commandFactory(replaceFactory);
 
 var loadData$2 = (function (onData) {
-	var cwd = atom.project.getPaths()[0];
-	var cmdProcess = child_process.spawn('rg', ['^.*$', '-n', '--max-filesize', '100K'], {
-		cwd: cwd
-	});
+	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 			var _value$split = value.split(':', 3),
@@ -6373,10 +6427,7 @@ var loadDataFactory$3 = (function (store) {
 		var path$$1 = options.path;
 
 
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ls', ['-a', path$$1], {
-			cwd: cwd
-		});
+		var cmdProcess = spawnInProject('ls', ['-a', path$$1]);
 
 		cmdProcess.stdout.on('data', function (data) {
 			var options = getOptions(store.getState());
@@ -6575,6 +6626,12 @@ var lsShowUp = function lsShowUp() {
 
 	var finalPath = path.resolve(optionsPath, '..');
 	ls({ path: finalPath });
+};
+
+var duplicateFilesConfirm = function duplicateFilesConfirm() {
+	var extraInput = getExtraInput(store.getState());
+	spawnInProject('cp', [extraInput.originPath, extraInput.value]);
+	store.dispatch({ type: 'HIDE' });
 };
 
 function isScheduler(value) {
@@ -8298,7 +8355,8 @@ module.exports = {
 				'div',
 				null,
 				h(SparklingContainer$1, null),
-				h(FindContainer$1, null)
+				h(FindContainer$1, null),
+				h(ExtraInputContainer$1, null)
 			)
 		), reactRoot);
 
@@ -8313,7 +8371,9 @@ module.exports = {
 			'sparkling:right': right,
 			'sparkling:accept': accept,
 			'sparkling:hide': hide,
-			'sparking:removeFiles': removeFiles$1
+			'sparkling:removeFiles': removeFiles$1,
+			'sparkling:duplicateFiles': duplicateFiles$1,
+			'sparkling:duplicateFilesConfirm': duplicateFilesConfirm
 		}));
 
 		var workspaceView = atom.views.getView(atom.workspace);
