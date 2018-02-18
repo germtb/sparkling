@@ -5633,6 +5633,41 @@ var iconClassForPath = function iconClassForPath(path$$1) {
 	return fileIconsService.iconClassForPath(path$$1);
 };
 
+var wrap = function wrap(str, start, end, className) {
+	var replace = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+
+	var fuzzyMatches = fuzzaldrin.match(str);
+	var styleHash = fuzzyMatches.reduce(function (acc, x) {
+		acc[x] = 'fuzzy';
+		return acc;
+	}, {});
+
+	styleHash[start] = styleHash[start] ? 'styledAndFuzzy' : 'styled';
+	styleHash[end] = styleHash[end] ? 'closeStyledAndFuzzy' : 'closeStyled';
+
+	var wrappedStr = '';
+
+	for (var i = 0; i < str.length; i++) {
+		var c = str[i];
+
+		if (styleHash[i] === 'fuzzy') {
+			wrappedStr += '<span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'styledAndFuzzy') {
+			wrappedStr += '<span class="' + className + '"><span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'styled') {
+			wrappedStr += '<span class="' + className + '">' + c;
+		} else if (styleHash[i] === 'closeStyled') {
+			wrappedStr += c + '</span>' + replace;
+		} else if (styleHash[i] === 'closeStyledAndFuzzy') {
+			wrappedStr += '<span class="highlight">' + c + '</span></span>' + replace;
+		} else {
+			wrappedStr += c;
+		}
+	}
+
+	return wrappedStr;
+};
+
 var renderer = (function (props) {
 	return defaultRenderer(_extends$2({}, props, {
 		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
@@ -5948,7 +5983,6 @@ var loadDataFactory$1 = (function (store) {
 
 var renderer$2 = (function (_ref) {
 	var item = _ref.item,
-	    pattern = _ref.pattern,
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
@@ -5957,36 +5991,10 @@ var renderer$2 = (function (_ref) {
 	    path$$1 = item.path;
 
 
-	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(value.replace(RG_RESULT, find), pattern) : [];
-
-	var styleHash = fuzzyMatches.reduce(function (acc, x) {
-		acc[x] = 'fuzzy';
-		return acc;
-	}, {});
-
-	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = styleHash[value.indexOf(RG_RESULT) + find.length - 1] ? 'findCloseAndFuzzy' : 'findClose';
-
-	var rawValue = value.replace(new RegExp(RG_RESULT, 'g'), find);
-	var wrappedValue = '';
-
-	for (var i = 0; i < rawValue.length; i++) {
-		var c = rawValue[i];
-
-		if (styleHash[i] === 'fuzzy') {
-			wrappedValue += '<span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'findOpenAndFuzzy') {
-			wrappedValue += '<span class="find-highlight"><span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'findOpen') {
-			wrappedValue += '<span class="find-highlight">' + c;
-		} else if (styleHash[i] === 'findClose') {
-			wrappedValue += c + '</span>';
-		} else if (styleHash[i] === 'findCloseAndFuzzy') {
-			wrappedValue += '<span class="highlight">' + c + '</span></span>';
-		} else {
-			wrappedValue += c;
-		}
-	}
+	var start = value.indexOf(RG_RESULT);
+	var end = value.indexOf(RG_RESULT) + find.length - 1;
+	var str = value.replace(RG_RESULT, find);
+	var wrappedValue = wrap(str, start, end, 'find-highlight');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
@@ -6084,7 +6092,6 @@ var agFind = commandFactory(findFactory$1);
 
 var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
-	    pattern = _ref.pattern,
 	    index$$1 = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept,
@@ -6094,37 +6101,10 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	    path$$1 = item.path;
 
 
-	var rawValue = value.replace(RG_RESULT, find);
-
-	var fuzzyMatches = pattern && pattern.length ? fuzzaldrin.match(rawValue, pattern) : [];
-
-	var styleHash = fuzzyMatches.reduce(function (acc, x) {
-		acc[x] = 'fuzzy';
-		return acc;
-	}, {});
-
-	styleHash[value.indexOf(RG_RESULT)] = styleHash[value.indexOf(RG_RESULT)] ? 'findOpenAndFuzzy' : 'findOpen';
-	styleHash[value.indexOf(RG_RESULT) + find.length - 1] = styleHash[value.indexOf(RG_RESULT) + find.length - 1] ? 'findCloseAndFuzzy' : 'findClose';
-
-	var wrappedValue = '';
-
-	for (var i = 0; i < rawValue.length; i++) {
-		var c = rawValue[i];
-
-		if (styleHash[i] === 'fuzzy') {
-			wrappedValue += '<span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'findOpenAndFuzzy') {
-			wrappedValue += '<span class="replace-downlight"><span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'findOpen') {
-			wrappedValue += '<span class="replace-downlight">' + c;
-		} else if (styleHash[i] === 'findClose') {
-			wrappedValue += c + '</span><span class="replace-highlight">' + replace + '</span>';
-		} else if (styleHash[i] === 'findCloseAndFuzzy') {
-			wrappedValue += '<span class="highlight">' + c + '</span></span><span class="replace-highlight">' + replace + '</span>';
-		} else {
-			wrappedValue += c;
-		}
-	}
+	var start = value.indexOf(RG_RESULT);
+	var end = value.indexOf(RG_RESULT) + find.length - 1;
+	var str = value.replace(RG_RESULT, find);
+	var wrappedValue = wrap(str, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
