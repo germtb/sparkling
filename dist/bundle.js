@@ -2940,6 +2940,9 @@ var getReplace = function getReplace(state) {
 var getExtraInput = function getExtraInput(state) {
 	return state.extraInput;
 };
+var isSmartCase = function isSmartCase(state) {
+	return state.smartCase;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3366,7 +3369,9 @@ var SparklingContainer$1 = connect(function (state) {
 var FindContainer = function FindContainer(_ref) {
 	var visible = _ref.visible,
 	    value = _ref.value,
-	    setValue = _ref.setValue;
+	    setValue = _ref.setValue,
+	    toggleSmartCase = _ref.toggleSmartCase,
+	    smartCase = _ref.smartCase;
 
 	if (!visible) {
 		return null;
@@ -3375,6 +3380,18 @@ var FindContainer = function FindContainer(_ref) {
 	return h(
 		'div',
 		{ className: 'sparkling-input-container' },
+		h(
+			'div',
+			{ className: 'sparkling-find-options' },
+			h(
+				'button',
+				{
+					onClick: toggleSmartCase,
+					className: classnames('sparkling-toggle', defineProperty({}, 'sparking-toggle-active', smartCase))
+				},
+				'Smart case'
+			)
+		),
 		h(Input, {
 			className: 'sparkling-find',
 			autoFocus: true,
@@ -3388,12 +3405,16 @@ var FindContainer = function FindContainer(_ref) {
 var FindContainer$1 = connect(function (state) {
 	return {
 		visible: isFindVisible(state),
-		value: getFind(state)
+		value: getFind(state),
+		smartCase: isSmartCase(state)
 	};
 }, function (dispatch) {
 	return {
 		setValue: function setValue(find) {
 			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
+		},
+		toggleSmartCase: function toggleSmartCase() {
+			return dispatch({ type: 'TOGGLE_SMART_CASE' });
 		}
 	};
 })(FindContainer);
@@ -4517,6 +4538,12 @@ var extraInput = reducerCreator({
 	HIDE: { value: '', id: null }
 })({ value: '', id: null });
 
+var smartCase = reducerCreator({
+	TOGGLE_SMART_CASE: function TOGGLE_SMART_CASE(state) {
+		return !state;
+	}
+})(true);
+
 var reducers = combineReducers({
 	visible: visible,
 	options: options$1,
@@ -4528,7 +4555,8 @@ var reducers = combineReducers({
 	findVisible: findVisible,
 	find: find,
 	replace: replace,
-	extraInput: extraInput
+	extraInput: extraInput,
+	smartCase: smartCase
 });
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -6070,9 +6098,12 @@ var lines = commandFactory(linesFactory);
 
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
-		var find = getFind(store.getState());
+		var state = store.getState();
+		var find = getFind(state);
+		var smartCase = isSmartCase(state);
 
-		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K']);
+		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : [])));
+
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':', 3),

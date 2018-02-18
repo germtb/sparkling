@@ -147,3 +147,20 @@
 	color: white;
 	width: 50px;
 }
+
+.sparkling-find-options {
+	padding-bottom: 0.75em;
+}
+
+.sparkling-toggle {
+	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
+	color: #9ea1b3;
+	background-color: #3a3d4a;
+	padding: 4px;
+	border: none;
+}
+
+.sparking-toggle-active {
+	color: white;
+	background-color: #4f65d1;
+}
