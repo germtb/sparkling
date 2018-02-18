@@ -5767,6 +5767,31 @@ var duplicateFiles = function duplicateFiles(h, store) {
 
 var duplicateFiles$1 = commandFactory(duplicateFiles);
 
+var renameFiles = function renameFiles(h, store) {
+	var accept = function accept(file) {
+		store.dispatch({
+			type: 'SHOW_EXTRA_INPUT',
+			payload: {
+				id: 'sparking-rename-file-confirm',
+				originPath: file.value,
+				value: file.value
+			}
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Rename files in project',
+		id: 'sparkling-rename-files'
+	};
+};
+
+var renameFiles$1 = commandFactory(renameFiles);
+
 var removeFiles = function removeFiles(h, store) {
 	var accept = function accept(file) {
 		spawnInProject('rm', [file.value]);
@@ -6630,7 +6655,19 @@ var lsShowUp = function lsShowUp() {
 
 var duplicateFilesConfirm = function duplicateFilesConfirm() {
 	var extraInput = getExtraInput(store.getState());
-	spawnInProject('cp', [extraInput.originPath, extraInput.value]);
+	var cmdProcess = spawnInProject('cp', [extraInput.originPath, extraInput.value]);
+	cmdProcess.on('exit', function () {
+		atom.workspace.open(extraInput.value);
+	});
+	store.dispatch({ type: 'HIDE' });
+};
+
+var renameFilesConfirm = function renameFilesConfirm() {
+	var extraInput = getExtraInput(store.getState());
+	var cmdProcess = spawnInProject('mv', [extraInput.originPath, extraInput.value]);
+	cmdProcess.on('exit', function () {
+		atom.workspace.open(extraInput.value);
+	});
 	store.dispatch({ type: 'HIDE' });
 };
 
@@ -8373,7 +8410,9 @@ module.exports = {
 			'sparkling:hide': hide,
 			'sparkling:removeFiles': removeFiles$1,
 			'sparkling:duplicateFiles': duplicateFiles$1,
-			'sparkling:duplicateFilesConfirm': duplicateFilesConfirm
+			'sparkling:duplicateFilesConfirm': duplicateFilesConfirm,
+			'sparkling:renameFiles': renameFiles$1,
+			'sparkling:renameFilesConfirm': renameFilesConfirm
 		}));
 
 		var workspaceView = atom.views.getView(atom.workspace);

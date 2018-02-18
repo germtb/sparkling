@@ -3,7 +3,8 @@
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-shift-a": "sparkling:findToggle",
 		"cmd-r cmd-p": "sparkling:removeFiles",
-		"cmd-d cmd-p": "sparkling:duplicateFiles"
+		"cmd-d cmd-p": "sparkling:duplicateFiles",
+		"cmd-r cmd-r": "sparkling:renameFiles"
 	},
 	".platform-darwin .sparkling-files": {
 		"cmd-p": "sparkling:files"
@@ -44,6 +45,9 @@
 	},
 	"#sparking-duplicate-file-confirm .sparkling-input": {
 		"enter": "sparkling:duplicateFilesConfirm"
+	},
+	"#sparking-rename-file-confirm .sparkling-input": {
+		"enter": "sparkling:renameFilesConfirm"
 	},
 
 	".platform-win32 atom-workspace, .platform-linux .sparkling-input": {
