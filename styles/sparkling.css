@@ -140,3 +140,9 @@
 .sparkling-replace {
 	margin-top: 0.75em;
 }
+
+.sparkling-line-number {
+	display: inline-block;
+	color: #73c990;
+	width: 100px;
+}

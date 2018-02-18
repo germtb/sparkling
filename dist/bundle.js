@@ -5633,10 +5633,10 @@ var iconClassForPath = function iconClassForPath(path$$1) {
 	return fileIconsService.iconClassForPath(path$$1);
 };
 
-var wrap = function wrap(str, start, end, className) {
-	var replace = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+var wrap = function wrap(str, pattern, start, end, className) {
+	var replace = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
 
-	var fuzzyMatches = fuzzaldrin.match(str);
+	var fuzzyMatches = fuzzaldrin.match(str, pattern);
 	var styleHash = fuzzyMatches.reduce(function (acc, x) {
 		acc[x] = 'fuzzy';
 		return acc;
@@ -5897,6 +5897,31 @@ var gitStageFactory = function gitStageFactory(h, store) {
 
 var gitStage = commandFactory(gitStageFactory);
 
+var renderer$2 = (function (_ref) {
+	var item = _ref.item,
+	    pattern = _ref.pattern,
+	    className = _ref.className,
+	    index = _ref.index,
+	    selectedIndex = _ref.selectedIndex,
+	    accept = _ref.accept;
+	var value = item.value;
+
+	var start = 0;
+	var end = value.indexOf(':');
+	var wrappedValue = wrap(value.replace(':', ''), pattern, start, end, 'sparkling-line-number');
+
+	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+
+	return h('div', {
+		className: finalClassName,
+		'aria-role': 'button',
+		onClick: function onClick() {
+			return accept(item);
+		},
+		dangerouslySetInnerHTML: { __html: wrappedValue }
+	});
+});
+
 var linesFactory = function linesFactory(h, store) {
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
@@ -5923,7 +5948,8 @@ var linesFactory = function linesFactory(h, store) {
 		accept: accept,
 		description: 'Find lines in current buffer',
 		id: 'sparkling-buffer-lines',
-		sliceLength: 10
+		sliceLength: 10,
+		renderer: renderer$2
 	};
 };
 
@@ -5981,8 +6007,9 @@ var loadDataFactory$1 = (function (store) {
 	};
 });
 
-var renderer$2 = (function (_ref) {
+var renderer$3 = (function (_ref) {
 	var item = _ref.item,
+	    pattern = _ref.pattern,
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
@@ -5993,8 +6020,8 @@ var renderer$2 = (function (_ref) {
 
 	var start = value.indexOf(RG_RESULT);
 	var end = value.indexOf(RG_RESULT) + find.length - 1;
-	var str = value.replace(RG_RESULT, find);
-	var wrappedValue = wrap(str, start, end, 'find-highlight');
+	var foundValue = value.replace(RG_RESULT, find);
+	var wrappedValue = wrap(foundValue, pattern, start, end, 'find-highlight');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
@@ -6020,7 +6047,7 @@ var findFactory = function findFactory(h, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$2,
+		renderer: renderer$3,
 		description: 'Find pattern in project',
 		id: 'sparkling-project-find',
 		sliceLength: 10
@@ -6082,7 +6109,7 @@ var findFactory$1 = function findFactory(h, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$2,
+		renderer: renderer$3,
 		description: 'Find pattern in project',
 		id: 'sparkling-project-ag-find'
 	};
@@ -6092,6 +6119,7 @@ var agFind = commandFactory(findFactory$1);
 
 var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
+	    pattern = _ref.pattern,
 	    index$$1 = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept,
@@ -6103,8 +6131,8 @@ var replaceRenderer = function replaceRenderer(_ref) {
 
 	var start = value.indexOf(RG_RESULT);
 	var end = value.indexOf(RG_RESULT) + find.length - 1;
-	var str = value.replace(RG_RESULT, find);
-	var wrappedValue = wrap(str, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
+	var replacedValue = value.replace(RG_RESULT, find);
+	var wrappedValue = wrap(replacedValue, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
@@ -6124,7 +6152,7 @@ var Replace = connect(function (state) {
 	};
 })(replaceRenderer);
 
-var renderer$3 = (function (props) {
+var renderer$4 = (function (props) {
 	return h(Replace, props);
 });
 
@@ -6177,7 +6205,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$3,
+		renderer: renderer$4,
 		description: 'Replace pattern in project',
 		id: 'sparkling-project-replace',
 		sliceLength: 10,
@@ -6238,16 +6266,6 @@ var allLinesFactory = function allLinesFactory(h, store) {
 
 var allLines = commandFactory(allLinesFactory);
 
-var renderer$4 = (function (_ref) {
-	var item = _ref.item,
-	    props = objectWithoutProperties$1(_ref, ['item']);
-	return defaultRenderer(_extends$2({}, props, {
-		item: _extends$2({}, item, {
-			value: item.line
-		})
-	}));
-});
-
 var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	var accept = function accept(item) {
 		store.dispatch({ type: 'HIDE' });
@@ -6258,7 +6276,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		renderer: renderer$4,
+		renderer: renderer$2,
 		description: 'Autocomplete lines from project',
 		id: 'sparkling-autocomplete-lines'
 	};
