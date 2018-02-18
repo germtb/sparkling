@@ -3151,7 +3151,9 @@ var slicedToArray = function () {
 
 
 
-
+var toArray = function (arr) {
+  return Array.isArray(arr) ? arr : Array.from(arr);
+};
 
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
@@ -6066,20 +6068,15 @@ var loadDataFactory$2 = (function (store) {
 		});
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-				console.log('value: ', value);
-
-				var _value$split = value.split(':', 3),
-				    _value$split2 = slicedToArray(_value$split, 3),
+				var _value$split = value.split(':'),
+				    _value$split2 = toArray(_value$split),
 				    path$$1 = _value$split2[0],
 				    lineNumber = _value$split2[1],
-				    line = _value$split2[2];
+				    splitLine = _value$split2.slice(2);
 
-				console.log('line: ', line);
-				console.log('lineNumber: ', lineNumber);
-				console.log('path: ', path$$1);
-				console.log('--------------');
+				var line = splitLine.join(':');
 				acc.push({
-					value: value.split(':', 2).concat([line]).join(''),
+					value: value.split(':', 2).concat(line).join(''),
 					find: find,
 					line: line,
 					path: path$$1,
@@ -8057,113 +8054,6 @@ var __extends$14 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, 
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * Applies a given `project` function to each value emitted by the source
- * Observable, and emits the resulting values as an Observable.
- *
- * <span class="informal">Like [Array.prototype.map()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map),
- * it passes each source value through a transformation function to get
- * corresponding output values.</span>
- *
- * <img src="./img/map.png" width="100%">
- *
- * Similar to the well known `Array.prototype.map` function, this operator
- * applies a projection to each value and emits that projection in the output
- * Observable.
- *
- * @example <caption>Map every click to the clientX position of that click</caption>
- * var clicks = Rx.Observable.fromEvent(document, 'click');
- * var positions = clicks.map(ev => ev.clientX);
- * positions.subscribe(x => console.log(x));
- *
- * @see {@link mapTo}
- * @see {@link pluck}
- *
- * @param {function(value: T, index: number): R} project The function to apply
- * to each `value` emitted by the source Observable. The `index` parameter is
- * the number `i` for the i-th emission that has happened since the
- * subscription, starting from the number `0`.
- * @param {any} [thisArg] An optional argument to define what `this` is in the
- * `project` function.
- * @return {Observable<R>} An Observable that emits the values from the source
- * Observable transformed by the given `project` function.
- * @method map
- * @owner Observable
- */
-function map(project, thisArg) {
-    return function mapOperation(source) {
-        if (typeof project !== 'function') {
-            throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
-        }
-        return source.lift(new MapOperator(project, thisArg));
-    };
-}
-var map_2 = map;
-var MapOperator = (function () {
-    function MapOperator(project, thisArg) {
-        this.project = project;
-        this.thisArg = thisArg;
-    }
-    MapOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new MapSubscriber(subscriber, this.project, this.thisArg));
-    };
-    return MapOperator;
-}());
-var MapOperator_1 = MapOperator;
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-var MapSubscriber = (function (_super) {
-    __extends$14(MapSubscriber, _super);
-    function MapSubscriber(destination, project, thisArg) {
-        _super.call(this, destination);
-        this.project = project;
-        this.count = 0;
-        this.thisArg = thisArg || this;
-    }
-    // NOTE: This looks unoptimized, but it's actually purposefully NOT
-    // using try/catch optimizations.
-    MapSubscriber.prototype._next = function (value) {
-        var result;
-        try {
-            result = this.project.call(this.thisArg, value, this.count++);
-        }
-        catch (err) {
-            this.destination.error(err);
-            return;
-        }
-        this.destination.next(result);
-    };
-    return MapSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=map.js.map
-
-var map_1 = {
-	map: map_2,
-	MapOperator: MapOperator_1
-};
-
-function map$1(project, thisArg) {
-    return map_1.map(project, thisArg)(this);
-}
-var map_3 = map$1;
-//# sourceMappingURL=map.js.map
-
-var map_2$1 = {
-	map: map_3
-};
-
-Observable_1.Observable.prototype.map = map_2$1.map;
-//# sourceMappingURL=map.js.map
-
-var __extends$15 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
 
 
 /* tslint:enable:max-line-length */
@@ -8226,7 +8116,7 @@ var DistinctUntilChangedOperator = (function () {
  * @extends {Ignored}
  */
 var DistinctUntilChangedSubscriber = (function (_super) {
-    __extends$15(DistinctUntilChangedSubscriber, _super);
+    __extends$14(DistinctUntilChangedSubscriber, _super);
     function DistinctUntilChangedSubscriber(destination, compare, keySelector) {
         _super.call(this, destination);
         this.keySelector = keySelector;
@@ -8317,16 +8207,8 @@ var setupObservables = (function () {
 		}
 	});
 
-	Observable_2.merge(fromAction('RELOAD'), fromAction('SHOW')).map(function () {
-		return [isVisible(store.getState()), getOptions(store.getState())];
-	}).subscribe(function (_ref3) {
-		var _ref4 = slicedToArray(_ref3, 2),
-		    visible = _ref4[0],
-		    options = _ref4[1];
-
-		if (!visible) {
-			return;
-		}
+	Observable_2.merge(fromAction('RELOAD'), fromAction('SHOW')).subscribe(function () {
+		var options = getOptions(store.getState());
 
 		var loadData = options.loadData;
 
