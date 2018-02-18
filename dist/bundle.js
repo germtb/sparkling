@@ -6192,7 +6192,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 
 		var cwd = atom.project.getPaths()[0];
 
-		var sedRegex = lineNumber + ',' + (lineNumber + 1) + 's/' + find + '/' + replace + '/';
+		var sedRegex = lineNumber + ',' + lineNumber + 's/' + find + '/' + replace + '/';
 		child_process.spawn('sed', ['-i', '', '-e', sedRegex, path$$1], {
 			cwd: cwd
 		});
