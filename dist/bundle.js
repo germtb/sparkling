@@ -3,8 +3,8 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var child_process = require('child_process');
-var path = _interopDefault(require('path'));
 var fs = _interopDefault(require('fs'));
+var path = _interopDefault(require('path'));
 var atom$1 = require('atom');
 
 /** Virtual DOM Node */
@@ -6204,9 +6204,16 @@ var renderer$3 = (function (_ref) {
 var findFactory = function findFactory(h, store) {
 	var loadData = loadDataFactory$1(store);
 
-	var accept = function accept(line) {
-		atom.workspace.open(line.path, {
-			initialLine: line.lineNumber - 1
+	var accept = function accept(value) {
+		var scope = getScope(store.getState());
+		var cwd = atom.project.getPaths()[0];
+		var absolutePath = path.resolve(cwd, '.' + scope);
+		if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
+			store.dispatch({ type: 'HIDE' });
+		}
+
+		atom.workspace.open(value.path, {
+			initialLine: value.lineNumber - 1
 		});
 	};
 
@@ -6216,7 +6223,18 @@ var findFactory = function findFactory(h, store) {
 		renderer: renderer$3,
 		description: 'Find pattern in project',
 		id: 'sparkling-project-find',
-		sliceLength: 10
+		sliceLength: 10,
+		onValue: function onValue(value) {
+			var scope = getScope(store.getState());
+			var cwd = atom.project.getPaths()[0];
+			var absolutePath = path.resolve(cwd, '.' + scope);
+			if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
+				var editor = atom.workspace.getActiveTextEditor();
+				editor.setCursorBufferPosition([value.lineNumber - 1, 0]);
+				var cursor = editor.cursors[0];
+				cursor.moveToFirstCharacterOfLine();
+			}
+		}
 	};
 };
 
@@ -6379,15 +6397,17 @@ var loadData$2 = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-			var _value$split = value.split(':', 3),
-			    _value$split2 = slicedToArray(_value$split, 3),
+			var _value$split = value.split(':'),
+			    _value$split2 = toArray(_value$split),
 			    path$$1 = _value$split2[0],
 			    lineNumber = _value$split2[1],
-			    line = _value$split2[2];
+			    splitLine = _value$split2.slice(2);
+
+			var line = splitLine.join(':');
 
 			if (line && line.length > 1) {
 				acc.push({
-					value: value.split(':', 3).join(' : '),
+					value: [path$$1, lineNumber, splitLine].join(' : '),
 					path: path$$1,
 					line: line,
 					lineNumber: lineNumber
@@ -8234,6 +8254,140 @@ var __extends$14 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, 
 };
 
 
+/**
+ * Emits a value from the source Observable only after a particular time span
+ * has passed without another source emission.
+ *
+ * <span class="informal">It's like {@link delay}, but passes only the most
+ * recent value from each burst of emissions.</span>
+ *
+ * <img src="./img/debounceTime.png" width="100%">
+ *
+ * `debounceTime` delays values emitted by the source Observable, but drops
+ * previous pending delayed emissions if a new value arrives on the source
+ * Observable. This operator keeps track of the most recent value from the
+ * source Observable, and emits that only when `dueTime` enough time has passed
+ * without any other value appearing on the source Observable. If a new value
+ * appears before `dueTime` silence occurs, the previous value will be dropped
+ * and will not be emitted on the output Observable.
+ *
+ * This is a rate-limiting operator, because it is impossible for more than one
+ * value to be emitted in any time window of duration `dueTime`, but it is also
+ * a delay-like operator since output emissions do not occur at the same time as
+ * they did on the source Observable. Optionally takes a {@link IScheduler} for
+ * managing timers.
+ *
+ * @example <caption>Emit the most recent click after a burst of clicks</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.debounceTime(1000);
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link auditTime}
+ * @see {@link debounce}
+ * @see {@link delay}
+ * @see {@link sampleTime}
+ * @see {@link throttleTime}
+ *
+ * @param {number} dueTime The timeout duration in milliseconds (or the time
+ * unit determined internally by the optional `scheduler`) for the window of
+ * time required to wait for emission silence before emitting the most recent
+ * source value.
+ * @param {Scheduler} [scheduler=async] The {@link IScheduler} to use for
+ * managing the timers that handle the timeout for each value.
+ * @return {Observable} An Observable that delays the emissions of the source
+ * Observable by the specified `dueTime`, and may drop some values if they occur
+ * too frequently.
+ * @method debounceTime
+ * @owner Observable
+ */
+function debounceTime(dueTime, scheduler) {
+    if (scheduler === void 0) { scheduler = async.async; }
+    return function (source) { return source.lift(new DebounceTimeOperator(dueTime, scheduler)); };
+}
+var debounceTime_2 = debounceTime;
+var DebounceTimeOperator = (function () {
+    function DebounceTimeOperator(dueTime, scheduler) {
+        this.dueTime = dueTime;
+        this.scheduler = scheduler;
+    }
+    DebounceTimeOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new DebounceTimeSubscriber(subscriber, this.dueTime, this.scheduler));
+    };
+    return DebounceTimeOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var DebounceTimeSubscriber = (function (_super) {
+    __extends$14(DebounceTimeSubscriber, _super);
+    function DebounceTimeSubscriber(destination, dueTime, scheduler) {
+        _super.call(this, destination);
+        this.dueTime = dueTime;
+        this.scheduler = scheduler;
+        this.debouncedSubscription = null;
+        this.lastValue = null;
+        this.hasValue = false;
+    }
+    DebounceTimeSubscriber.prototype._next = function (value) {
+        this.clearDebounce();
+        this.lastValue = value;
+        this.hasValue = true;
+        this.add(this.debouncedSubscription = this.scheduler.schedule(dispatchNext, this.dueTime, this));
+    };
+    DebounceTimeSubscriber.prototype._complete = function () {
+        this.debouncedNext();
+        this.destination.complete();
+    };
+    DebounceTimeSubscriber.prototype.debouncedNext = function () {
+        this.clearDebounce();
+        if (this.hasValue) {
+            this.destination.next(this.lastValue);
+            this.lastValue = null;
+            this.hasValue = false;
+        }
+    };
+    DebounceTimeSubscriber.prototype.clearDebounce = function () {
+        var debouncedSubscription = this.debouncedSubscription;
+        if (debouncedSubscription !== null) {
+            this.remove(debouncedSubscription);
+            debouncedSubscription.unsubscribe();
+            this.debouncedSubscription = null;
+        }
+    };
+    return DebounceTimeSubscriber;
+}(Subscriber_1.Subscriber));
+function dispatchNext(subscriber) {
+    subscriber.debouncedNext();
+}
+//# sourceMappingURL=debounceTime.js.map
+
+var debounceTime_1 = {
+	debounceTime: debounceTime_2
+};
+
+function debounceTime$1(dueTime, scheduler) {
+    if (scheduler === void 0) { scheduler = async.async; }
+    return debounceTime_1.debounceTime(dueTime, scheduler)(this);
+}
+var debounceTime_3 = debounceTime$1;
+//# sourceMappingURL=debounceTime.js.map
+
+var debounceTime_2$1 = {
+	debounceTime: debounceTime_3
+};
+
+Observable_1.Observable.prototype.debounceTime = debounceTime_2$1.debounceTime;
+//# sourceMappingURL=debounceTime.js.map
+
+var __extends$15 = (commonjsGlobal && commonjsGlobal.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
 
 /* tslint:enable:max-line-length */
 /**
@@ -8295,7 +8449,7 @@ var DistinctUntilChangedOperator = (function () {
  * @extends {Ignored}
  */
 var DistinctUntilChangedSubscriber = (function (_super) {
-    __extends$14(DistinctUntilChangedSubscriber, _super);
+    __extends$15(DistinctUntilChangedSubscriber, _super);
     function DistinctUntilChangedSubscriber(destination, compare, keySelector) {
         _super.call(this, destination);
         this.keySelector = keySelector;
@@ -8359,6 +8513,13 @@ var fromAction = store.fromAction;
 var setupObservables = (function () {
 	// let fuzzysortPromise = null
 	var cancelLoadData = null;
+
+	fromSelector(getSelectedValue).debounceTime(100).subscribe(function (selectedValue) {
+		var options = getOptions(store.getState());
+		var onValue = options.onValue;
+
+		onValue && onValue(selectedValue);
+	});
 
 	Observable_2.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref) {
 		var _ref2 = slicedToArray(_ref, 2),
@@ -8482,6 +8643,9 @@ module.exports = {
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:findToggle': function sparklingFindToggle() {
 				return findToggle();
+			},
+			'sparkling:findInBufferToggle': function sparklingFindInBufferToggle() {
+				return findToggle({ inBuffer: true });
 			}
 		}));
 

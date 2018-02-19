@@ -3,7 +3,7 @@
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-shift-a": "sparkling:findToggle",
 		"cmd-r cmd-p": "sparkling:removeFiles",
-		"cmd-d cmd-p": "sparkling:duplicateFiles",
+		"cmd-u cmd-p": "sparkling:duplicateFiles",
 		"cmd-r cmd-r": "sparkling:renameFiles"
 	},
 	".platform-darwin .sparkling-files": {
