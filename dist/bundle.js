@@ -6125,19 +6125,18 @@ var loadDataFactory$1 = (function (store) {
 		var find = getFind(state);
 		var smartCase = isSmartCase(state);
 		var scope = getScope(state);
-		var cwd = atom.project.getPaths()[0];
-		var projectRelativeScope = scope.replace(cwd, '');
 
-		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-g', projectRelativeScope])));
+		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-g', scope])));
 
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-				var _value$split = value.split(':', 3),
-				    _value$split2 = slicedToArray(_value$split, 3),
+				var _value$split = value.split(':'),
+				    _value$split2 = toArray(_value$split),
 				    path$$1 = _value$split2[0],
 				    lineNumber = _value$split2[1],
-				    line = _value$split2[2];
+				    splitLine = _value$split2.slice(2);
 
+				var line = splitLine.join(':');
 				if (line && line.length > 1) {
 					line.split(RG_RESULT).forEach(function (_, index, splitLine) {
 						if (index === splitLine.length - 1) {
@@ -6695,7 +6694,9 @@ var findToggle = function findToggle() {
 	} else {
 		var editor = atom.workspace.getActiveTextEditor();
 		var find = editor ? editor.getSelectedText() : '';
-		var scope = inBuffer && editor ? editor.getPath() : '';
+		var cwd = atom.project.getPaths()[0];
+		var scope = inBuffer && editor ? editor.getPath().replace(cwd, '') : '';
+
 		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find, scope: scope } });
 	}
 };
