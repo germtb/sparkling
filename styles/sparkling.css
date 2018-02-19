@@ -138,10 +138,6 @@
 	margin-left: 10px;
 }
 
-.sparkling-replace {
-	margin-top: 0.75em;
-}
-
 .sparkling-line-number {
 	display: inline-block;
 	color: white;
@@ -163,4 +159,8 @@
 .sparking-toggle-active {
 	color: white;
 	background-color: #4f65d1;
+}
+
+.sparkling-input + .sparkling-input {
+	margin-top: 0.75em;
 }

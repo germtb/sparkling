@@ -2943,6 +2943,9 @@ var getExtraInput = function getExtraInput(state) {
 var isSmartCase = function isSmartCase(state) {
 	return state.smartCase;
 };
+var getScope = function getScope(state) {
+	return state.scope;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3371,7 +3374,9 @@ var FindContainer = function FindContainer(_ref) {
 	    value = _ref.value,
 	    setValue = _ref.setValue,
 	    toggleSmartCase = _ref.toggleSmartCase,
-	    smartCase = _ref.smartCase;
+	    smartCase = _ref.smartCase,
+	    scope = _ref.scope,
+	    setScope = _ref.setScope;
 
 	if (!visible) {
 		return null;
@@ -3393,11 +3398,19 @@ var FindContainer = function FindContainer(_ref) {
 			)
 		),
 		h(Input, {
+			tabIndex: 0,
 			className: 'sparkling-find',
 			autoFocus: true,
 			value: value,
 			setValue: setValue,
 			placeholder: 'Enter to find, shift Enter to replace'
+		}),
+		h(Input, {
+			tabIndex: 1,
+			className: 'sparkling-scope',
+			value: scope,
+			setValue: setScope,
+			placeholder: 'Scope. Leave empty to search whole project'
 		})
 	);
 };
@@ -3406,7 +3419,8 @@ var FindContainer$1 = connect(function (state) {
 	return {
 		visible: isFindVisible(state),
 		value: getFind(state),
-		smartCase: isSmartCase(state)
+		smartCase: isSmartCase(state),
+		scope: getScope(state)
 	};
 }, function (dispatch) {
 	return {
@@ -3415,6 +3429,9 @@ var FindContainer$1 = connect(function (state) {
 		},
 		toggleSmartCase: function toggleSmartCase() {
 			return dispatch({ type: 'TOGGLE_SMART_CASE' });
+		},
+		setScope: function setScope(scope) {
+			return dispatch({ type: 'SET_SCOPE', payload: { scope: scope } });
 		}
 	};
 })(FindContainer);
@@ -4544,6 +4561,11 @@ var smartCase = reducerCreator({
 	}
 })(true);
 
+var scope = reducerCreator({
+	SHOW_SEARCH: returnPayload('scope'),
+	SET_SCOPE: returnPayload('scope')
+})('');
+
 var reducers = combineReducers({
 	visible: visible,
 	options: options$1,
@@ -4556,7 +4578,8 @@ var reducers = combineReducers({
 	find: find,
 	replace: replace,
 	extraInput: extraInput,
-	smartCase: smartCase
+	smartCase: smartCase,
+	scope: scope
 });
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -6101,8 +6124,11 @@ var loadDataFactory$1 = (function (store) {
 		var state = store.getState();
 		var find = getFind(state);
 		var smartCase = isSmartCase(state);
+		var scope = getScope(state);
+		var cwd = atom.project.getPaths()[0];
+		var projectRelativeScope = scope.replace(cwd, '');
 
-		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : [])));
+		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-g', projectRelativeScope])));
 
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
@@ -6654,6 +6680,9 @@ var accept = function accept() {
 };
 
 var findToggle = function findToggle() {
+	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+	    inBuffer = _ref.inBuffer;
+
 	var findInput = document.querySelector('#sparkling-project-find #sparkling-input');
 	var replaceInput = document.querySelector('#sparkling-project-replace #sparkling-input');
 
@@ -6666,7 +6695,8 @@ var findToggle = function findToggle() {
 	} else {
 		var editor = atom.workspace.getActiveTextEditor();
 		var find = editor ? editor.getSelectedText() : '';
-		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find } });
+		var scope = inBuffer && editor ? editor.getPath() : '';
+		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find, scope: scope } });
 	}
 };
 
@@ -8449,7 +8479,9 @@ module.exports = {
 		var workspaceView = atom.views.getView(atom.workspace);
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
-			'sparkling:findToggle': findToggle
+			'sparkling:findToggle': function sparklingFindToggle() {
+				return findToggle();
+			}
 		}));
 
 		atom.commands.add('atom-workspace', {
