@@ -49,6 +49,8 @@
     "module": true,
     "atom": true,
     "describe": true,
+    "require": true,
+    "expect": true,
     "it": true,
     "context": true,
     "document": true

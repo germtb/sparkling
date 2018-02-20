@@ -2946,6 +2946,9 @@ var isSmartCase = function isSmartCase(state) {
 var getScope = function getScope(state) {
 	return state.scope;
 };
+var isLiteralSearch = function isLiteralSearch(state) {
+	return state.literalSearch;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3376,7 +3379,9 @@ var FindContainer = function FindContainer(_ref) {
 	    toggleSmartCase = _ref.toggleSmartCase,
 	    smartCase = _ref.smartCase,
 	    scope = _ref.scope,
-	    setScope = _ref.setScope;
+	    setScope = _ref.setScope,
+	    toggleLiteralSearch = _ref.toggleLiteralSearch,
+	    literalSearch = _ref.literalSearch;
 
 	if (!visible) {
 		return null;
@@ -3395,6 +3400,14 @@ var FindContainer = function FindContainer(_ref) {
 					className: classnames('sparkling-toggle', defineProperty({}, 'sparking-toggle-active', smartCase))
 				},
 				'Smart case'
+			),
+			h(
+				'button',
+				{
+					onClick: toggleLiteralSearch,
+					className: classnames('sparkling-toggle', defineProperty({}, 'sparking-toggle-active', literalSearch))
+				},
+				'Literal search'
 			)
 		),
 		h(Input, {
@@ -3420,6 +3433,7 @@ var FindContainer$1 = connect(function (state) {
 		visible: isFindVisible(state),
 		value: getFind(state),
 		smartCase: isSmartCase(state),
+		literalSearch: isLiteralSearch(state),
 		scope: getScope(state)
 	};
 }, function (dispatch) {
@@ -3429,6 +3443,9 @@ var FindContainer$1 = connect(function (state) {
 		},
 		toggleSmartCase: function toggleSmartCase() {
 			return dispatch({ type: 'TOGGLE_SMART_CASE' });
+		},
+		toggleLiteralSearch: function toggleLiteralSearch() {
+			return dispatch({ type: 'TOGGLE_LITERAL_SEARCH' });
 		},
 		setScope: function setScope(scope) {
 			return dispatch({ type: 'SET_SCOPE', payload: { scope: scope } });
@@ -4561,6 +4578,12 @@ var smartCase = reducerCreator({
 	}
 })(true);
 
+var literalSearch = reducerCreator({
+	TOGGLE_LITERAL_SEARCH: function TOGGLE_LITERAL_SEARCH(state) {
+		return !state;
+	}
+})(false);
+
 var scope = reducerCreator({
 	SHOW_SEARCH: returnPayload('scope'),
 	SET_SCOPE: returnPayload('scope')
@@ -4579,6 +4602,7 @@ var reducers = combineReducers({
 	replace: replace,
 	extraInput: extraInput,
 	smartCase: smartCase,
+	literalSearch: literalSearch,
 	scope: scope
 });
 
@@ -4666,7 +4690,6 @@ function storeFactory(reducers$$1) {
 
 var store = storeFactory(reducers);
 
-var RG_RESULT = 'RG_RESULT';
 var DEFAULT_SLICE_LENGTH = 12;
 
 var scorer = createCommonjsModule(function (module, exports) {
@@ -6125,45 +6148,89 @@ var loadDataFactory$1 = (function (store) {
 		var find = getFind(state);
 		var smartCase = isSmartCase(state);
 		var scope = getScope(state);
+		var literalSearch = isLiteralSearch(state);
 
-		var cmdProcess = spawnInProject('rg', [find, '-n', '--replace', RG_RESULT, '--max-filesize', '100K'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-g', scope])));
+		var cmdProcess = spawnInProject('ag', [find, '--ackmate'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(literalSearch === '' ? [] : ['--literal'])));
 
 		cmdProcess.stdout.on('data', function (data) {
-			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-				var _value$split = value.split(':'),
-				    _value$split2 = toArray(_value$split),
-				    path$$1 = _value$split2[0],
-				    lineNumber = _value$split2[1],
-				    splitLine = _value$split2.slice(2);
+			var dataLines = data.toString('utf-8').split('\n');
+			var processedData = [];
 
-				var line = splitLine.join(':');
-				if (line && line.length > 1) {
-					line.split(RG_RESULT).forEach(function (_, index, splitLine) {
-						if (index === splitLine.length - 1) {
-							return;
+			var path$$1 = '';
+			var i = 0;
+
+			while (i < dataLines.length) {
+				var dataLine = dataLines[i];
+
+				if (!dataLine || !dataLine.length) {
+					i++;
+					continue;
+				} else if (dataLine[0] === ':') {
+					path$$1 = dataLine.slice(1);
+				} else {
+					var _dataLine$split = dataLine.split(';'),
+					    _dataLine$split2 = toArray(_dataLine$split),
+					    lineNumberStr = _dataLine$split2[0],
+					    splitRestDataLine = _dataLine$split2.slice(1);
+
+					var restDataLine = splitRestDataLine.join(';');
+
+					var _restDataLine$split = restDataLine.split(':'),
+					    _restDataLine$split2 = toArray(_restDataLine$split),
+					    matches = _restDataLine$split2[0],
+					    splitLine = _restDataLine$split2.slice(1);
+
+					var line = splitLine.join(':');
+					var lineNumber = parseInt(lineNumberStr);
+					var splitMatches = matches.split(',');
+					var preValue = [path$$1, lineNumber].join(':');
+
+					var _iteratorNormalCompletion = true;
+					var _didIteratorError = false;
+					var _iteratorError = undefined;
+
+					try {
+						for (var _iterator = splitMatches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+							var match = _step.value;
+
+							var _match$split = match.split(' '),
+							    _match$split2 = slicedToArray(_match$split, 2),
+							    startStr = _match$split2[0],
+							    lengthStr = _match$split2[1];
+
+							var start = preValue.length + 3 + parseInt(startStr);
+							var end = parseInt(lengthStr) + start - 1;
+
+							processedData.push({
+								value: preValue + ' : ' + line,
+								match: line.slice(start, end),
+								path: path$$1,
+								lineNumber: lineNumber,
+								column: parseInt(startStr),
+								start: start,
+								end: end
+							});
 						}
-
-						var line = splitLine.reduce(function (s, substr, i) {
-							if (i === index) {
-								return s + substr + RG_RESULT;
-							} else if (i < splitLine.length - 1) {
-								return s + substr + find;
+					} catch (err) {
+						_didIteratorError = true;
+						_iteratorError = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
 							}
-
-							return s + substr;
-						}, '');
-
-						acc.push({
-							value: value.split(':', 2).concat([line]).join(' : '),
-							find: find,
-							line: line,
-							path: path$$1,
-							lineNumber: lineNumber
-						});
-					});
+						} finally {
+							if (_didIteratorError) {
+								throw _iteratorError;
+							}
+						}
+					}
 				}
-				return acc;
-			}, []));
+
+				i++;
+			}
+
+			onData(processedData);
 		});
 
 		return function () {
@@ -6179,15 +6246,13 @@ var renderer$3 = (function (_ref) {
 	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept;
-	var find = item.find,
+	var start = item.start,
+	    end = item.end,
 	    value = item.value,
 	    path$$1 = item.path;
 
 
-	var start = value.indexOf(RG_RESULT);
-	var end = value.indexOf(RG_RESULT) + find.length - 1;
-	var foundValue = value.replace(RG_RESULT, find);
-	var wrappedValue = wrap(foundValue, pattern, start, end, 'find-highlight');
+	var wrappedValue = wrap(value, pattern, start, end, 'find-highlight');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
@@ -6208,12 +6273,14 @@ var findFactory = function findFactory(h, store) {
 		var scope = getScope(store.getState());
 		var cwd = atom.project.getPaths()[0];
 		var absolutePath = path.resolve(cwd, '.' + scope);
+
 		if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
 			store.dispatch({ type: 'HIDE' });
 		}
 
 		atom.workspace.open(value.path, {
-			initialLine: value.lineNumber - 1
+			initialLine: value.lineNumber - 1,
+			initialColumn: value.column
 		});
 	};
 
@@ -6228,9 +6295,10 @@ var findFactory = function findFactory(h, store) {
 			var scope = getScope(store.getState());
 			var cwd = atom.project.getPaths()[0];
 			var absolutePath = path.resolve(cwd, '.' + scope);
+
 			if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
 				var editor = atom.workspace.getActiveTextEditor();
-				editor.setCursorBufferPosition([value.lineNumber - 1, 0]);
+				editor.setCursorBufferPosition([value.lineNumber - 1, value.column]);
 				var cursor = editor.cursors[0];
 				cursor.moveToFirstCharacterOfLine();
 			}
@@ -6244,10 +6312,8 @@ var loadDataFactory$2 = (function (store) {
 	return function (onData) {
 		var find = getFind(store.getState());
 
-		var cwd = atom.project.getPaths()[0];
-		var cmdProcess = child_process.spawn('ag', [find, '--no-break', '--no-group'], {
-			cwd: cwd
-		});
+		var cmdProcess = spawnInProject('ag', [find, '--no-break', '--no-group']);
+
 		cmdProcess.stdout.on('data', function (data) {
 			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 				var _value$split = value.split(':'),
@@ -6303,15 +6369,13 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept,
 	    replace = _ref.replace;
-	var find = item.find,
+	var start = item.start,
+	    end = item.end,
 	    value = item.value,
 	    path$$1 = item.path;
 
 
-	var start = value.indexOf(RG_RESULT);
-	var end = value.indexOf(RG_RESULT) + find.length - 1;
-	var replacedValue = value.replace(RG_RESULT, find);
-	var wrappedValue = wrap(replacedValue, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
+	var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 

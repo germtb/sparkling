@@ -13,7 +13,13 @@ module.exports = {
 	external: ['fs', 'path', 'child_process', 'atom', 'os'],
 	plugins: [
 		babel({
-			exclude: ['node_modules/**', '**/*.json']
+			babelrc: false,
+			presets: ['es2015-rollup'],
+			exclude: ['node_modules/**', '**/*.json'],
+			plugins: [
+				'transform-object-rest-spread',
+				['transform-react-jsx', { pragma: 'h' }]
+			]
 		}),
 		resolve({
 			jsnext: true

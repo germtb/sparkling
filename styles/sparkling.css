@@ -156,6 +156,10 @@
 	border: none;
 }
 
+.sparkling-toggle + .sparkling-toggle {
+	border-left: 1px solid #262831;
+}
+
 .sparking-toggle-active {
 	color: white;
 	background-color: #4f65d1;
