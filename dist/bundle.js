@@ -2949,6 +2949,9 @@ var getScope = function getScope(state) {
 var isLiteralSearch = function isLiteralSearch(state) {
 	return state.literalSearch;
 };
+var isWholeWord = function isWholeWord(state) {
+	return state.wholeWord;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3381,7 +3384,9 @@ var FindContainer = function FindContainer(_ref) {
 	    scope = _ref.scope,
 	    setScope = _ref.setScope,
 	    toggleLiteralSearch = _ref.toggleLiteralSearch,
-	    literalSearch = _ref.literalSearch;
+	    literalSearch = _ref.literalSearch,
+	    toggleWholeWord = _ref.toggleWholeWord,
+	    wholeWord = _ref.wholeWord;
 
 	if (!visible) {
 		return null;
@@ -3408,6 +3413,14 @@ var FindContainer = function FindContainer(_ref) {
 					className: classnames('sparkling-toggle', defineProperty({}, 'sparking-toggle-active', literalSearch))
 				},
 				'Literal search'
+			),
+			h(
+				'button',
+				{
+					onClick: toggleWholeWord,
+					className: classnames('sparkling-toggle', defineProperty({}, 'sparking-toggle-active', wholeWord))
+				},
+				'Whole word'
 			)
 		),
 		h(Input, {
@@ -3434,7 +3447,8 @@ var FindContainer$1 = connect(function (state) {
 		value: getFind(state),
 		smartCase: isSmartCase(state),
 		literalSearch: isLiteralSearch(state),
-		scope: getScope(state)
+		scope: getScope(state),
+		wholeWord: isWholeWord(state)
 	};
 }, function (dispatch) {
 	return {
@@ -3449,6 +3463,9 @@ var FindContainer$1 = connect(function (state) {
 		},
 		setScope: function setScope(scope) {
 			return dispatch({ type: 'SET_SCOPE', payload: { scope: scope } });
+		},
+		toggleWholeWord: function toggleWholeWord() {
+			return dispatch({ type: 'TOGGLE_WHOLE_WORD ' });
 		}
 	};
 })(FindContainer);
@@ -4584,6 +4601,12 @@ var literalSearch = reducerCreator({
 	}
 })(false);
 
+var wholeWord = reducerCreator({
+	TOGGLE_WHOLE_WORD: function TOGGLE_WHOLE_WORD(state) {
+		return !state;
+	}
+})(false);
+
 var scope = reducerCreator({
 	SHOW_SEARCH: returnPayload('scope'),
 	SET_SCOPE: returnPayload('scope')
@@ -4603,7 +4626,8 @@ var reducers = combineReducers({
 	extraInput: extraInput,
 	smartCase: smartCase,
 	literalSearch: literalSearch,
-	scope: scope
+	scope: scope,
+	wholeWord: wholeWord
 });
 
 var fromSelectorFactory = function fromSelectorFactory(store) {
@@ -6149,8 +6173,9 @@ var loadDataFactory$1 = (function (store) {
 		var smartCase = isSmartCase(state);
 		var scope = getScope(state);
 		var literalSearch = isLiteralSearch(state);
+		var wholeWord = isWholeWord(state);
 
-		var cmdProcess = spawnInProject('ag', [find, '--ackmate'].concat(toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(literalSearch === '' ? [] : ['--literal'])));
+		var cmdProcess = spawnInProject('ag', [find, '--ackmate'].concat(toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(literalSearch ? ['--literal'] : []), toConsumableArray(wholeWord ? ['--word-regexp'] : [])));
 
 		cmdProcess.stdout.on('data', function (data) {
 			var dataLines = data.toString('utf-8').split('\n');
@@ -6307,60 +6332,6 @@ var findFactory = function findFactory(h, store) {
 };
 
 var find$1 = commandFactory(findFactory);
-
-var loadDataFactory$2 = (function (store) {
-	return function (onData) {
-		var find = getFind(store.getState());
-
-		var cmdProcess = spawnInProject('ag', [find, '--no-break', '--no-group']);
-
-		cmdProcess.stdout.on('data', function (data) {
-			onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
-				var _value$split = value.split(':'),
-				    _value$split2 = toArray(_value$split),
-				    path$$1 = _value$split2[0],
-				    lineNumber = _value$split2[1],
-				    splitLine = _value$split2.slice(2);
-
-				var line = splitLine.join(':');
-				acc.push({
-					value: value.split(':', 2).concat(line).join(''),
-					find: find,
-					line: line,
-					path: path$$1,
-					lineNumber: lineNumber
-				});
-
-				return acc;
-			}, []));
-		});
-
-		return function () {
-			cmdProcess.stdin.pause();
-			cmdProcess.kill();
-		};
-	};
-});
-
-var findFactory$1 = function findFactory(h, store) {
-	var loadData = loadDataFactory$2(store);
-
-	var accept = function accept(line) {
-		atom.workspace.open(line.path, {
-			initialLine: line.lineNumber - 1
-		});
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer$3,
-		description: 'Find pattern in project',
-		id: 'sparkling-project-ag-find'
-	};
-};
-
-var agFind = commandFactory(findFactory$1);
 
 var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
@@ -6586,7 +6557,7 @@ var config = {
 	}
 };
 
-var loadDataFactory$3 = (function (store) {
+var loadDataFactory$2 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
 		var path$$1 = options.path;
@@ -6647,7 +6618,7 @@ var renderer$5 = (function (props) {
 });
 
 var lsFactory = function lsFactory(h, store) {
-	var loadData = loadDataFactory$3(store);
+	var loadData = loadDataFactory$2(store);
 
 	var accept = function accept(_ref) {
 		var absolutePath = _ref.absolutePath;
@@ -8664,7 +8635,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }, { id: 'agFind', command: agFind }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
