@@ -2955,7 +2955,9 @@ var isWholeWord = function isWholeWord(state) {
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
 
 
 
@@ -4716,916 +4718,644 @@ var store = storeFactory(reducers);
 
 var DEFAULT_SLICE_LENGTH = 12;
 
-var scorer = createCommonjsModule(function (module, exports) {
-(function() {
-  var AcronymResult, computeScore, emptyAcronymResult, isAcronymFullWord, isMatch, isSeparator, isWordEnd, isWordStart, miss_coeff, pos_bonus, scoreAcronyms, scoreCharacter, scoreConsecutives, scoreExact, scoreExactMatch, scorePattern, scorePosition, scoreSize, tau_size, wm;
+var fuzzysort = createCommonjsModule(function (module) {
+/*
+WHAT: SublimeText-like Fuzzy Search
 
-  wm = 150;
+USAGE:
+  require('fuzzysort').single('fs', 'Fuzzy Search')
+  // {score: -16}
 
-  pos_bonus = 20;
+  require('fuzzysort').single('test', 'test')
+  // {score: 0}
 
-  tau_size = 150;
+  require('fuzzysort').single('doesnt exist', 'target')
+  // null
+*/
 
-  miss_coeff = 0.75;
+// UMD (Universal Module Definition) for fuzzysort
+(function(root, UMD) {
+  if(typeof undefined === 'function' && undefined.amd) undefined([], UMD);
+  else if('object' === 'object' && module.exports) module.exports = UMD();
+  else root.fuzzysort = UMD();
+})(commonjsGlobal, function UMD() { function fuzzysortNew(instanceOptions) {
 
-  exports.score = function(string, query, options) {
-    var allowErrors, preparedQuery, score, string_lw;
-    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return 0;
-    }
-    string_lw = string.toLowerCase();
-    score = computeScore(string, string_lw, preparedQuery);
-    return Math.ceil(score);
-  };
+  var fuzzysort = {
 
-  exports.isMatch = isMatch = function(subject, query_lw, query_up) {
-    var i, j, m, n, qj_lw, qj_up, si;
-    m = subject.length;
-    n = query_lw.length;
-    if (!m || n > m) {
-      return false;
-    }
-    i = -1;
-    j = -1;
-    while (++j < n) {
-      qj_lw = query_lw.charCodeAt(j);
-      qj_up = query_up.charCodeAt(j);
-      while (++i < m) {
-        si = subject.charCodeAt(i);
-        if (si === qj_lw || si === qj_up) {
-          break;
+    single: function(search, target) {
+      // search = fuzzysort.ensurePreparedSearch(search)
+        if(typeof search !== 'object') {
+          var searchPrepared = preparedSearchCache.get(search);
+          if(searchPrepared !== undefined) search = searchPrepared;
+          else preparedSearchCache.set(search, search = fuzzysort.prepareSearch(search));
         }
-      }
-      if (i === m) {
-        return false;
-      }
-    }
-    return true;
-  };
+      if(search.length === 0) return null
 
-  exports.computeScore = computeScore = function(subject, subject_lw, preparedQuery) {
-    var acro, acro_score, align, csc_diag, csc_row, csc_score, csc_should_rebuild, i, j, m, miss_budget, miss_left, n, pos, query, query_lw, record_miss, score, score_diag, score_row, score_up, si_lw, start, sz;
-    query = preparedQuery.query;
-    query_lw = preparedQuery.query_lw;
-    m = subject.length;
-    n = query.length;
-    acro = scoreAcronyms(subject, subject_lw, query, query_lw);
-    acro_score = acro.score;
-    if (acro.count === n) {
-      return scoreExact(n, m, acro_score, acro.pos);
-    }
-    pos = subject_lw.indexOf(query_lw);
-    if (pos > -1) {
-      return scoreExactMatch(subject, subject_lw, query, query_lw, pos, n, m);
-    }
-    score_row = new Array(n);
-    csc_row = new Array(n);
-    sz = scoreSize(n, m);
-    miss_budget = Math.ceil(miss_coeff * n) + 5;
-    miss_left = miss_budget;
-    csc_should_rebuild = true;
-    j = -1;
-    while (++j < n) {
-      score_row[j] = 0;
-      csc_row[j] = 0;
-    }
-    i = -1;
-    while (++i < m) {
-      si_lw = subject_lw[i];
-      if (!si_lw.charCodeAt(0) in preparedQuery.charCodes) {
-        if (csc_should_rebuild) {
-          j = -1;
-          while (++j < n) {
-            csc_row[j] = 0;
+      // target = fuzzysort.ensurePrepared(target)
+        if(typeof target !== 'object') {
+          var targetPrepared = preparedCache.get(target);
+          if(targetPrepared !== undefined) target = targetPrepared;
+          else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+        }
+      if(target._targetLowerCodes.length === 0) return null
+
+      return fuzzysort.algorithm(search, target, search[0])
+    },
+
+    go: function(search, targets, options) {
+      // search = fuzzysort.ensurePreparedSearch(search)
+        if(typeof search !== 'object') {
+          var searchPrepared = preparedSearchCache.get(search);
+          if(searchPrepared !== undefined) search = searchPrepared;
+          else preparedSearchCache.set(search, search = fuzzysort.prepareSearch(search));
+        }
+      if(search.length === 0) return noResults
+      var searchLowerCode = search[0];
+
+      var threshold = options && options.threshold || instanceOptions && instanceOptions.threshold || -Infinity;
+      var limit = options && options.limit || instanceOptions && instanceOptions.limit || Infinity;
+      var resultsLen = 0; var limitedCount = 0;
+
+      // This code is copy/pasted 3 times for performance reasons [options.keys, options.key, no keys]
+
+      // options.keys
+      if(options && options.keys) {
+        var scoreFn = options.scoreFn || defaultScoreFn;
+        var keys = options.keys;
+        var keysLen = keys.length;
+        for(var i = targets.length - 1; i >= 0; --i) { var obj = targets[i];
+          var objResults = new Array(keysLen);
+          for (var keyI = keysLen - 1; keyI >= 0; --keyI) {
+            var key = keys[keyI];
+            var target = getValue(obj, key);
+            if(target === undefined) { objResults[keyI] = null; continue }
+
+            // target = fuzzysort.ensurePrepared(target)
+              if(typeof target !== 'object') {
+                var targetPrepared = preparedCache.get(target);
+                if(targetPrepared !== undefined) target = targetPrepared;
+                else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+              }
+            if(target._targetLowerCodes.length === 0) { objResults[keyI] = null; continue }
+
+            objResults[keyI] = fuzzysort.algorithm(search, target, searchLowerCode);
           }
-          csc_should_rebuild = false;
+          objResults.obj = obj; // before scoreFn so scoreFn can use it
+          var score = scoreFn(objResults);
+          if(score === null) continue
+          if(score < threshold) continue
+          objResults.score = score;
+          if(resultsLen < limit) { q.add(objResults); ++resultsLen; }
+          else {
+            ++limitedCount;
+            if(score > q.peek().score) q.replaceTop(objResults);
+          }
         }
-        continue;
-      }
-      score = 0;
-      score_diag = 0;
-      csc_diag = 0;
-      record_miss = true;
-      csc_should_rebuild = true;
-      j = -1;
-      while (++j < n) {
-        score_up = score_row[j];
-        if (score_up > score) {
-          score = score_up;
-        }
-        csc_score = 0;
-        if (query_lw[j] === si_lw) {
-          start = isWordStart(i, subject, subject_lw);
-          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
-          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
-          if (align > score) {
-            score = align;
-            miss_left = miss_budget;
-          } else {
-            if (record_miss && --miss_left <= 0) {
-              return Math.max(score, score_row[n - 1]) * sz;
+
+      // options.key
+      } else if(options && options.key) {
+        var key = options.key;
+        for(var i = targets.length - 1; i >= 0; --i) { var obj = targets[i];
+          var target = getValue(obj, key);
+          if(target === undefined) continue
+
+          // target = fuzzysort.ensurePrepared(target)
+            if(typeof target !== 'object') {
+              var targetPrepared = preparedCache.get(target);
+              if(targetPrepared !== undefined) target = targetPrepared;
+              else preparedCache.set(target, target = fuzzysort.prepareFast(target));
             }
-            record_miss = false;
+          if(target._targetLowerCodes.length === 0) continue
+
+          var result = fuzzysort.algorithm(search, target, searchLowerCode);
+          if(result === null) continue
+          if(result.score < threshold) continue
+
+          // have to clone result so duplicate targets from different obj can each reference the correct obj
+          result = {target:result.target, _targetLowerCodes:null, _nextBeginningIndexes:null, score:result.score, indexes:result.indexes, obj:obj}; // hidden
+
+          if(resultsLen < limit) { q.add(result); ++resultsLen; }
+          else {
+            ++limitedCount;
+            if(result.score > q.peek().score) q.replaceTop(result);
           }
         }
-        score_diag = score_up;
-        csc_diag = csc_row[j];
-        csc_row[j] = csc_score;
-        score_row[j] = score;
-      }
-    }
-    score = score_row[n - 1];
-    return score * sz;
-  };
 
-  exports.isWordStart = isWordStart = function(pos, subject, subject_lw) {
-    var curr_s, prev_s;
-    if (pos === 0) {
-      return true;
-    }
-    curr_s = subject[pos];
-    prev_s = subject[pos - 1];
-    return isSeparator(prev_s) || (curr_s !== subject_lw[pos] && prev_s === subject_lw[pos - 1]);
-  };
-
-  exports.isWordEnd = isWordEnd = function(pos, subject, subject_lw, len) {
-    var curr_s, next_s;
-    if (pos === len - 1) {
-      return true;
-    }
-    curr_s = subject[pos];
-    next_s = subject[pos + 1];
-    return isSeparator(next_s) || (curr_s === subject_lw[pos] && next_s !== subject_lw[pos + 1]);
-  };
-
-  isSeparator = function(c) {
-    return c === ' ' || c === '.' || c === '-' || c === '_' || c === '/' || c === '\\';
-  };
-
-  scorePosition = function(pos) {
-    var sc;
-    if (pos < pos_bonus) {
-      sc = pos_bonus - pos;
-      return 100 + sc * sc;
-    } else {
-      return Math.max(100 + pos_bonus - pos, 0);
-    }
-  };
-
-  exports.scoreSize = scoreSize = function(n, m) {
-    return tau_size / (tau_size + Math.abs(m - n));
-  };
-
-  scoreExact = function(n, m, quality, pos) {
-    return 2 * n * (wm * quality + scorePosition(pos)) * scoreSize(n, m);
-  };
-
-  exports.scorePattern = scorePattern = function(count, len, sameCase, start, end) {
-    var bonus, sz;
-    sz = count;
-    bonus = 6;
-    if (sameCase === count) {
-      bonus += 2;
-    }
-    if (start) {
-      bonus += 3;
-    }
-    if (end) {
-      bonus += 1;
-    }
-    if (count === len) {
-      if (start) {
-        if (sameCase === len) {
-          sz += 2;
-        } else {
-          sz += 1;
-        }
-      }
-      if (end) {
-        bonus += 1;
-      }
-    }
-    return sameCase + sz * (sz + bonus);
-  };
-
-  exports.scoreCharacter = scoreCharacter = function(i, j, start, acro_score, csc_score) {
-    var posBonus;
-    posBonus = scorePosition(i);
-    if (start) {
-      return posBonus + wm * ((acro_score > csc_score ? acro_score : csc_score) + 10);
-    }
-    return posBonus + wm * csc_score;
-  };
-
-  exports.scoreConsecutives = scoreConsecutives = function(subject, subject_lw, query, query_lw, i, j, startOfWord) {
-    var k, m, mi, n, nj, sameCase, sz;
-    m = subject.length;
-    n = query.length;
-    mi = m - i;
-    nj = n - j;
-    k = mi < nj ? mi : nj;
-    sameCase = 0;
-    sz = 0;
-    if (query[j] === subject[i]) {
-      sameCase++;
-    }
-    while (++sz < k && query_lw[++j] === subject_lw[++i]) {
-      if (query[j] === subject[i]) {
-        sameCase++;
-      }
-    }
-    if (sz < k) {
-      i--;
-    }
-    if (sz === 1) {
-      return 1 + 2 * sameCase;
-    }
-    return scorePattern(sz, n, sameCase, startOfWord, isWordEnd(i, subject, subject_lw, m));
-  };
-
-  exports.scoreExactMatch = scoreExactMatch = function(subject, subject_lw, query, query_lw, pos, n, m) {
-    var end, i, pos2, sameCase, start;
-    start = isWordStart(pos, subject, subject_lw);
-    if (!start) {
-      pos2 = subject_lw.indexOf(query_lw, pos + 1);
-      if (pos2 > -1) {
-        start = isWordStart(pos2, subject, subject_lw);
-        if (start) {
-          pos = pos2;
-        }
-      }
-    }
-    i = -1;
-    sameCase = 0;
-    while (++i < n) {
-      if (query[pos + i] === subject[i]) {
-        sameCase++;
-      }
-    }
-    end = isWordEnd(pos + n - 1, subject, subject_lw, m);
-    return scoreExact(n, m, scorePattern(n, n, sameCase, start, end), pos);
-  };
-
-  AcronymResult = (function() {
-    function AcronymResult(score, pos, count) {
-      this.score = score;
-      this.pos = pos;
-      this.count = count;
-    }
-
-    return AcronymResult;
-
-  })();
-
-  emptyAcronymResult = new AcronymResult(0, 0.1, 0);
-
-  exports.scoreAcronyms = scoreAcronyms = function(subject, subject_lw, query, query_lw) {
-    var count, fullWord, i, j, m, n, qj_lw, sameCase, score, sepCount, sumPos;
-    m = subject.length;
-    n = query.length;
-    if (!(m > 1 && n > 1)) {
-      return emptyAcronymResult;
-    }
-    count = 0;
-    sepCount = 0;
-    sumPos = 0;
-    sameCase = 0;
-    i = -1;
-    j = -1;
-    while (++j < n) {
-      qj_lw = query_lw[j];
-      if (isSeparator(qj_lw)) {
-        i = subject_lw.indexOf(qj_lw, i + 1);
-        if (i > -1) {
-          sepCount++;
-          continue;
-        } else {
-          break;
-        }
-      }
-      while (++i < m) {
-        if (qj_lw === subject_lw[i] && isWordStart(i, subject, subject_lw)) {
-          if (query[j] === subject[i]) {
-            sameCase++;
-          }
-          sumPos += i;
-          count++;
-          break;
-        }
-      }
-      if (i === m) {
-        break;
-      }
-    }
-    if (count < 2) {
-      return emptyAcronymResult;
-    }
-    fullWord = count === n ? isAcronymFullWord(subject, subject_lw, query, count) : false;
-    score = scorePattern(count, n, sameCase, true, fullWord);
-    return new AcronymResult(score, sumPos / count, count + sepCount);
-  };
-
-  isAcronymFullWord = function(subject, subject_lw, query, nbAcronymInQuery) {
-    var count, i, m, n;
-    m = subject.length;
-    n = query.length;
-    count = 0;
-    if (m > 12 * n) {
-      return false;
-    }
-    i = -1;
-    while (++i < m) {
-      if (isWordStart(i, subject, subject_lw) && ++count > nbAcronymInQuery) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var scorer_1 = scorer.score;
-var scorer_2 = scorer.isMatch;
-var scorer_3 = scorer.computeScore;
-var scorer_4 = scorer.isWordStart;
-var scorer_5 = scorer.isWordEnd;
-var scorer_6 = scorer.scoreSize;
-var scorer_7 = scorer.scorePattern;
-var scorer_8 = scorer.scoreCharacter;
-var scorer_9 = scorer.scoreConsecutives;
-var scorer_10 = scorer.scoreExactMatch;
-var scorer_11 = scorer.scoreAcronyms;
-
-var pathScorer = createCommonjsModule(function (module, exports) {
-(function() {
-  var computeScore, countDir, file_coeff, getExtension, getExtensionScore, isMatch, scorePath, scoreSize, tau_depth, _ref;
-
-  _ref = scorer, isMatch = _ref.isMatch, computeScore = _ref.computeScore, scoreSize = _ref.scoreSize;
-
-  tau_depth = 20;
-
-  file_coeff = 2.5;
-
-  exports.score = function(string, query, options) {
-    var allowErrors, preparedQuery, score, string_lw;
-    preparedQuery = options.preparedQuery, allowErrors = options.allowErrors;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return 0;
-    }
-    string_lw = string.toLowerCase();
-    score = computeScore(string, string_lw, preparedQuery);
-    score = scorePath(string, string_lw, score, options);
-    return Math.ceil(score);
-  };
-
-  scorePath = function(subject, subject_lw, fullPathScore, options) {
-    var alpha, basePathScore, basePos, depth, end, extAdjust, fileLength, pathSeparator, preparedQuery, useExtensionBonus;
-    if (fullPathScore === 0) {
-      return 0;
-    }
-    preparedQuery = options.preparedQuery, useExtensionBonus = options.useExtensionBonus, pathSeparator = options.pathSeparator;
-    end = subject.length - 1;
-    while (subject[end] === pathSeparator) {
-      end--;
-    }
-    basePos = subject.lastIndexOf(pathSeparator, end);
-    fileLength = end - basePos;
-    extAdjust = 1.0;
-    if (useExtensionBonus) {
-      extAdjust += getExtensionScore(subject_lw, preparedQuery.ext, basePos, end, 2);
-      fullPathScore *= extAdjust;
-    }
-    if (basePos === -1) {
-      return fullPathScore;
-    }
-    depth = preparedQuery.depth;
-    while (basePos > -1 && depth-- > 0) {
-      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
-    }
-    basePathScore = basePos === -1 ? fullPathScore : extAdjust * computeScore(subject.slice(basePos + 1, end + 1), subject_lw.slice(basePos + 1, end + 1), preparedQuery);
-    alpha = 0.5 * tau_depth / (tau_depth + countDir(subject, end + 1, pathSeparator));
-    return alpha * basePathScore + (1 - alpha) * fullPathScore * scoreSize(0, file_coeff * fileLength);
-  };
-
-  exports.countDir = countDir = function(path$$1, end, pathSeparator) {
-    var count, i;
-    if (end < 1) {
-      return 0;
-    }
-    count = 0;
-    i = -1;
-    while (++i < end && path$$1[i] === pathSeparator) {
-      continue;
-    }
-    while (++i < end) {
-      if (path$$1[i] === pathSeparator) {
-        count++;
-        while (++i < end && path$$1[i] === pathSeparator) {
-          continue;
-        }
-      }
-    }
-    return count;
-  };
-
-  exports.getExtension = getExtension = function(str) {
-    var pos;
-    pos = str.lastIndexOf(".");
-    if (pos < 0) {
-      return "";
-    } else {
-      return str.substr(pos + 1);
-    }
-  };
-
-  getExtensionScore = function(candidate, ext, startPos, endPos, maxDepth) {
-    var m, matched, n, pos;
-    if (!ext.length) {
-      return 0;
-    }
-    pos = candidate.lastIndexOf(".", endPos);
-    if (!(pos > startPos)) {
-      return 0;
-    }
-    n = ext.length;
-    m = endPos - pos;
-    if (m < n) {
-      n = m;
-      m = ext.length;
-    }
-    pos++;
-    matched = -1;
-    while (++matched < n) {
-      if (candidate[pos + matched] !== ext[matched]) {
-        break;
-      }
-    }
-    if (matched === 0 && maxDepth > 0) {
-      return 0.9 * getExtensionScore(candidate, ext, startPos, pos - 2, maxDepth - 1);
-    }
-    return matched / m;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var pathScorer_1 = pathScorer.score;
-var pathScorer_2 = pathScorer.countDir;
-var pathScorer_3 = pathScorer.getExtension;
-
-var query = createCommonjsModule(function (module) {
-(function() {
-  var Query, coreChars, countDir, getCharCodes, getExtension, opt_char_re, truncatedUpperCase, _ref;
-
-  _ref = pathScorer, countDir = _ref.countDir, getExtension = _ref.getExtension;
-
-  module.exports = Query = (function() {
-    function Query(query, _arg) {
-      var optCharRegEx, pathSeparator, _ref1;
-      _ref1 = _arg != null ? _arg : {}, optCharRegEx = _ref1.optCharRegEx, pathSeparator = _ref1.pathSeparator;
-      if (!(query && query.length)) {
-        return null;
-      }
-      this.query = query;
-      this.query_lw = query.toLowerCase();
-      this.core = coreChars(query, optCharRegEx);
-      this.core_lw = this.core.toLowerCase();
-      this.core_up = truncatedUpperCase(this.core);
-      this.depth = countDir(query, query.length, pathSeparator);
-      this.ext = getExtension(this.query_lw);
-      this.charCodes = getCharCodes(this.query_lw);
-    }
-
-    return Query;
-
-  })();
-
-  opt_char_re = /[ _\-:\/\\]/g;
-
-  coreChars = function(query, optCharRegEx) {
-    if (optCharRegEx == null) {
-      optCharRegEx = opt_char_re;
-    }
-    return query.replace(optCharRegEx, '');
-  };
-
-  truncatedUpperCase = function(str) {
-    var char, upper, _i, _len;
-    upper = "";
-    for (_i = 0, _len = str.length; _i < _len; _i++) {
-      char = str[_i];
-      upper += char.toUpperCase()[0];
-    }
-    return upper;
-  };
-
-  getCharCodes = function(str) {
-    var charCodes, i, len;
-    len = str.length;
-    i = -1;
-    charCodes = [];
-    while (++i < len) {
-      charCodes[str.charCodeAt(i)] = true;
-    }
-    return charCodes;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var filter = createCommonjsModule(function (module) {
-(function() {
-  var Query, pathScorer$$1, pluckCandidates, scorer$$1, sortCandidates;
-
-  scorer$$1 = scorer;
-
-  pathScorer$$1 = pathScorer;
-
-  pluckCandidates = function(a) {
-    return a.candidate;
-  };
-
-  sortCandidates = function(a, b) {
-    return b.score - a.score;
-  };
-
-  module.exports = function(candidates, query$$1, options) {
-    var bKey, candidate, key, maxInners, maxResults, score, scoreProvider, scoredCandidates, spotLeft, string, usePathScoring, _i, _len;
-    scoredCandidates = [];
-    key = options.key, maxResults = options.maxResults, maxInners = options.maxInners, usePathScoring = options.usePathScoring;
-    spotLeft = (maxInners != null) && maxInners > 0 ? maxInners : candidates.length + 1;
-    bKey = key != null;
-    scoreProvider = usePathScoring ? pathScorer$$1 : scorer$$1;
-    for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-      candidate = candidates[_i];
-      string = bKey ? candidate[key] : candidate;
-      if (!string) {
-        continue;
-      }
-      score = scoreProvider.score(string, query$$1, options);
-      if (score > 0) {
-        scoredCandidates.push({
-          candidate: candidate,
-          score: score
-        });
-        if (!--spotLeft) {
-          break;
-        }
-      }
-    }
-    scoredCandidates.sort(sortCandidates);
-    candidates = scoredCandidates.map(pluckCandidates);
-    if (maxResults != null) {
-      candidates = candidates.slice(0, maxResults);
-    }
-    return candidates;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var matcher = createCommonjsModule(function (module, exports) {
-(function() {
-  var basenameMatch, computeMatch, isMatch, isWordStart, match, mergeMatches, scoreAcronyms, scoreCharacter, scoreConsecutives, _ref;
-
-  _ref = scorer, isMatch = _ref.isMatch, isWordStart = _ref.isWordStart, scoreConsecutives = _ref.scoreConsecutives, scoreCharacter = _ref.scoreCharacter, scoreAcronyms = _ref.scoreAcronyms;
-
-  exports.match = match = function(string, query, options) {
-    var allowErrors, baseMatches, matches, pathSeparator, preparedQuery, string_lw;
-    allowErrors = options.allowErrors, preparedQuery = options.preparedQuery, pathSeparator = options.pathSeparator;
-    if (!(allowErrors || isMatch(string, preparedQuery.core_lw, preparedQuery.core_up))) {
-      return [];
-    }
-    string_lw = string.toLowerCase();
-    matches = computeMatch(string, string_lw, preparedQuery);
-    if (matches.length === 0) {
-      return matches;
-    }
-    if (string.indexOf(pathSeparator) > -1) {
-      baseMatches = basenameMatch(string, string_lw, preparedQuery, pathSeparator);
-      matches = mergeMatches(matches, baseMatches);
-    }
-    return matches;
-  };
-
-  exports.wrap = function(string, query, options) {
-    var matchIndex, matchPos, matchPositions, output, strPos, tagClass, tagClose, tagOpen, _ref1;
-    if ((options.wrap != null)) {
-      _ref1 = options.wrap, tagClass = _ref1.tagClass, tagOpen = _ref1.tagOpen, tagClose = _ref1.tagClose;
-    }
-    if (tagClass == null) {
-      tagClass = 'highlight';
-    }
-    if (tagOpen == null) {
-      tagOpen = '<strong class="' + tagClass + '">';
-    }
-    if (tagClose == null) {
-      tagClose = '</strong>';
-    }
-    if (string === query) {
-      return tagOpen + string + tagClose;
-    }
-    matchPositions = match(string, query, options);
-    if (matchPositions.length === 0) {
-      return string;
-    }
-    output = '';
-    matchIndex = -1;
-    strPos = 0;
-    while (++matchIndex < matchPositions.length) {
-      matchPos = matchPositions[matchIndex];
-      if (matchPos > strPos) {
-        output += string.substring(strPos, matchPos);
-        strPos = matchPos;
-      }
-      while (++matchIndex < matchPositions.length) {
-        if (matchPositions[matchIndex] === matchPos + 1) {
-          matchPos++;
-        } else {
-          matchIndex--;
-          break;
-        }
-      }
-      matchPos++;
-      if (matchPos > strPos) {
-        output += tagOpen;
-        output += string.substring(strPos, matchPos);
-        output += tagClose;
-        strPos = matchPos;
-      }
-    }
-    if (strPos <= string.length - 1) {
-      output += string.substring(strPos);
-    }
-    return output;
-  };
-
-  basenameMatch = function(subject, subject_lw, preparedQuery, pathSeparator) {
-    var basePos, depth, end;
-    end = subject.length - 1;
-    while (subject[end] === pathSeparator) {
-      end--;
-    }
-    basePos = subject.lastIndexOf(pathSeparator, end);
-    if (basePos === -1) {
-      return [];
-    }
-    depth = preparedQuery.depth;
-    while (depth-- > 0) {
-      basePos = subject.lastIndexOf(pathSeparator, basePos - 1);
-      if (basePos === -1) {
-        return [];
-      }
-    }
-    basePos++;
-    end++;
-    return computeMatch(subject.slice(basePos, end), subject_lw.slice(basePos, end), preparedQuery, basePos);
-  };
-
-  mergeMatches = function(a, b) {
-    var ai, bj, i, j, m, n, out;
-    m = a.length;
-    n = b.length;
-    if (n === 0) {
-      return a.slice();
-    }
-    if (m === 0) {
-      return b.slice();
-    }
-    i = -1;
-    j = 0;
-    bj = b[j];
-    out = [];
-    while (++i < m) {
-      ai = a[i];
-      while (bj <= ai && ++j < n) {
-        if (bj < ai) {
-          out.push(bj);
-        }
-        bj = b[j];
-      }
-      out.push(ai);
-    }
-    while (j < n) {
-      out.push(b[j++]);
-    }
-    return out;
-  };
-
-  computeMatch = function(subject, subject_lw, preparedQuery, offset) {
-    var DIAGONAL, LEFT, STOP, UP, acro_score, align, backtrack, csc_diag, csc_row, csc_score, i, j, m, matches, move, n, pos, query, query_lw, score, score_diag, score_row, score_up, si_lw, start, trace;
-    if (offset == null) {
-      offset = 0;
-    }
-    query = preparedQuery.query;
-    query_lw = preparedQuery.query_lw;
-    m = subject.length;
-    n = query.length;
-    acro_score = scoreAcronyms(subject, subject_lw, query, query_lw).score;
-    score_row = new Array(n);
-    csc_row = new Array(n);
-    STOP = 0;
-    UP = 1;
-    LEFT = 2;
-    DIAGONAL = 3;
-    trace = new Array(m * n);
-    pos = -1;
-    j = -1;
-    while (++j < n) {
-      score_row[j] = 0;
-      csc_row[j] = 0;
-    }
-    i = -1;
-    while (++i < m) {
-      score = 0;
-      score_up = 0;
-      csc_diag = 0;
-      si_lw = subject_lw[i];
-      j = -1;
-      while (++j < n) {
-        csc_score = 0;
-        align = 0;
-        score_diag = score_up;
-        if (query_lw[j] === si_lw) {
-          start = isWordStart(i, subject, subject_lw);
-          csc_score = csc_diag > 0 ? csc_diag : scoreConsecutives(subject, subject_lw, query, query_lw, i, j, start);
-          align = score_diag + scoreCharacter(i, j, start, acro_score, csc_score);
-        }
-        score_up = score_row[j];
-        csc_diag = csc_row[j];
-        if (score > score_up) {
-          move = LEFT;
-        } else {
-          score = score_up;
-          move = UP;
-        }
-        if (align > score) {
-          score = align;
-          move = DIAGONAL;
-        } else {
-          csc_score = 0;
-        }
-        score_row[j] = score;
-        csc_row[j] = csc_score;
-        trace[++pos] = score > 0 ? move : STOP;
-      }
-    }
-    i = m - 1;
-    j = n - 1;
-    pos = i * n + j;
-    backtrack = true;
-    matches = [];
-    while (backtrack && i >= 0 && j >= 0) {
-      switch (trace[pos]) {
-        case UP:
-          i--;
-          pos -= n;
-          break;
-        case LEFT:
-          j--;
-          pos--;
-          break;
-        case DIAGONAL:
-          matches.push(i + offset);
-          j--;
-          i--;
-          pos -= n + 1;
-          break;
-        default:
-          backtrack = false;
-      }
-    }
-    matches.reverse();
-    return matches;
-  };
-
-}).call(commonjsGlobal);
-});
-
-var matcher_1 = matcher.match;
-var matcher_2 = matcher.wrap;
-
-var fuzzaldrin = createCommonjsModule(function (module) {
-(function() {
-  var Query, defaultPathSeparator, filter$$1, matcher$$1, parseOptions, pathScorer$$1, preparedQueryCache, scorer$$1;
-
-  filter$$1 = filter;
-
-  matcher$$1 = matcher;
-
-  scorer$$1 = scorer;
-
-  pathScorer$$1 = pathScorer;
-
-  Query = query;
-
-  preparedQueryCache = null;
-
-  defaultPathSeparator = (typeof process !== "undefined" && process !== null ? process.platform : void 0) === "win32" ? '\\' : '/';
-
-  module.exports = {
-    filter: function(candidates, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!((query$$1 != null ? query$$1.length : void 0) && (candidates != null ? candidates.length : void 0))) {
-        return [];
-      }
-      options = parseOptions(options, query$$1);
-      return filter$$1(candidates, query$$1, options);
-    },
-    score: function(string, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!((string != null ? string.length : void 0) && (query$$1 != null ? query$$1.length : void 0))) {
-        return 0;
-      }
-      options = parseOptions(options, query$$1);
-      if (options.usePathScoring) {
-        return pathScorer$$1.score(string, query$$1, options);
+      // no keys
       } else {
-        return scorer$$1.score(string, query$$1, options);
-      }
-    },
-    match: function(string, query$$1, options) {
-      var _i, _ref, _results;
-      if (options == null) {
-        options = {};
-      }
-      if (!string) {
-        return [];
-      }
-      if (!query$$1) {
-        return [];
-      }
-      if (string === query$$1) {
-        return (function() {
-          _results = [];
-          for (var _i = 0, _ref = string.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i++ : _i--){ _results.push(_i); }
-          return _results;
-        }).apply(this);
-      }
-      options = parseOptions(options, query$$1);
-      return matcher$$1.match(string, query$$1, options);
-    },
-    wrap: function(string, query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (!string) {
-        return [];
-      }
-      if (!query$$1) {
-        return [];
-      }
-      options = parseOptions(options, query$$1);
-      return matcher$$1.wrap(string, query$$1, options);
-    },
-    prepareQuery: function(query$$1, options) {
-      if (options == null) {
-        options = {};
-      }
-      options = parseOptions(options, query$$1);
-      return options.preparedQuery;
-    }
-  };
+        for(var i = targets.length - 1; i >= 0; --i) { var target = targets[i];
+          // target = fuzzysort.ensurePrepared(target)
+            if(typeof target !== 'object') {
+              var targetPrepared = preparedCache.get(target);
+              if(targetPrepared !== undefined) target = targetPrepared;
+              else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+            }
+          if(target._targetLowerCodes.length === 0) continue
 
-  parseOptions = function(options, query$$1) {
-    if (options.allowErrors == null) {
-      options.allowErrors = false;
-    }
-    if (options.usePathScoring == null) {
-      options.usePathScoring = true;
-    }
-    if (options.useExtensionBonus == null) {
-      options.useExtensionBonus = false;
-    }
-    if (options.pathSeparator == null) {
-      options.pathSeparator = defaultPathSeparator;
-    }
-    if (options.optCharRegEx == null) {
-      options.optCharRegEx = null;
-    }
-    if (options.wrap == null) {
-      options.wrap = null;
-    }
-    if (options.preparedQuery == null) {
-      options.preparedQuery = preparedQueryCache && preparedQueryCache.query === query$$1 ? preparedQueryCache : (preparedQueryCache = new Query(query$$1, options));
-    }
-    return options;
-  };
+          var result = fuzzysort.algorithm(search, target, searchLowerCode);
+          if(result === null) continue
+          if(result.score < threshold) continue
+          if(resultsLen < limit) { q.add(result); ++resultsLen; }
+          else {
+            ++limitedCount;
+            if(result.score > q.peek().score) q.replaceTop(result);
+          }
+        }
+      }
 
-}).call(commonjsGlobal);
+      if(resultsLen === 0) return noResults
+      var results = new Array(resultsLen);
+      for(var i = resultsLen - 1; i >= 0; --i) results[i] = q.poll();
+      results.total = resultsLen + limitedCount;
+      return results
+    },
+
+    goAsync: function(search, targets, options) {
+      var canceled = false;
+      var p = new Promise(function(resolve, reject) {
+        // search = fuzzysort.ensurePreparedSearch(search)
+          if(typeof search !== 'object') {
+            var searchPrepared = preparedSearchCache.get(search);
+            if(searchPrepared !== undefined) search = searchPrepared;
+            else preparedSearchCache.set(search, search = fuzzysort.prepareSearch(search));
+          }
+        if(search.length === 0) return resolve(noResults)
+        var searchLowerCode = search[0];
+
+        var itemsPerCheck = 1000;
+        var q = fastpriorityqueue();
+        var iCurrent = targets.length - 1;
+        var threshold = options && options.threshold || instanceOptions && instanceOptions.threshold || -Infinity;
+        var limit = options && options.limit || instanceOptions && instanceOptions.limit || Infinity;
+        var resultsLen = 0; var limitedCount = 0;
+        function step() {
+          if(canceled) return reject('canceled')
+
+          var startMs = Date.now();
+
+          // This code is copy/pasted 3 times for performance reasons [options.keys, options.key, no keys]
+
+          // options.keys
+          if(options && options.keys) {
+            var scoreFn = options.scoreFn || defaultScoreFn;
+            var keys = options.keys;
+            var keysLen = keys.length;
+            for(var i = targets.length - 1; i >= 0; --i) { var obj = targets[i];
+              var objResults = new Array(keysLen);
+              for (var keyI = keysLen - 1; keyI >= 0; --keyI) {
+                var key = keys[keyI];
+                var target = getValue(obj, key);
+                if(target === undefined) { objResults[keyI] = null; continue }
+
+                // target = fuzzysort.ensurePrepared(target)
+                  if(typeof target !== 'object') {
+                    var targetPrepared = preparedCache.get(target);
+                    if(targetPrepared !== undefined) target = targetPrepared;
+                    else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+                  }
+                if(target._targetLowerCodes.length === 0) { objResults[keyI] = null; continue }
+
+                objResults[keyI] = fuzzysort.algorithm(search, target, searchLowerCode);
+              }
+              objResults.obj = obj; // before scoreFn so scoreFn can use it
+              var score = scoreFn(objResults);
+              if(score === null) continue
+              if(score < threshold) continue
+              objResults.score = score;
+              if(resultsLen < limit) { q.add(objResults); ++resultsLen; }
+              else {
+                ++limitedCount;
+                if(score > q.peek().score) q.replaceTop(objResults);
+              }
+
+              if(iCurrent%itemsPerCheck === 0) {
+                if(Date.now() - startMs >= asyncInterval) {
+                  isNode?setImmediate(step):setTimeout(step);
+                  return
+                }
+              }
+            }
+
+          // options.key
+          } else if(options && options.key) {
+            var key = options.key;
+            for(; iCurrent >= 0; --iCurrent) { var obj = targets[iCurrent];
+              var target = getValue(obj, key);
+              if(target === undefined) continue
+
+              // target = fuzzysort.ensurePrepared(target)
+                if(typeof target !== 'object') {
+                  var targetPrepared = preparedCache.get(target);
+                  if(targetPrepared !== undefined) target = targetPrepared;
+                  else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+                }
+              if(target._targetLowerCodes.length === 0) continue
+
+              var result = fuzzysort.algorithm(search, target, searchLowerCode);
+              if(result === null) continue
+              if(result.score < threshold) continue
+
+              // have to clone result so duplicate targets from different obj can each reference the correct obj
+              result = {target:result.target, _targetLowerCodes:null, _nextBeginningIndexes:null, score:result.score, indexes:result.indexes, obj:obj}; // hidden
+
+              if(resultsLen < limit) { q.add(result); ++resultsLen; }
+              else {
+                ++limitedCount;
+                if(result.score > q.peek().score) q.replaceTop(result);
+              }
+
+              if(iCurrent%itemsPerCheck === 0) {
+                if(Date.now() - startMs >= asyncInterval) {
+                  isNode?setImmediate(step):setTimeout(step);
+                  return
+                }
+              }
+            }
+
+          // no keys
+          } else {
+            for(; iCurrent >= 0; --iCurrent) { var target = targets[iCurrent];
+              // target = fuzzysort.ensurePrepared(target)
+                if(typeof target !== 'object') {
+                  var targetPrepared = preparedCache.get(target);
+                  if(targetPrepared !== undefined) target = targetPrepared;
+                  else preparedCache.set(target, target = fuzzysort.prepareFast(target));
+                }
+              if(target._targetLowerCodes.length === 0) continue
+
+              var result = fuzzysort.algorithm(search, target, searchLowerCode);
+              if(result === null) continue
+              if(result.score < threshold) continue
+              if(resultsLen < limit) { q.add(result); ++resultsLen; }
+              else {
+                ++limitedCount;
+                if(result.score > q.peek().score) q.replaceTop(result);
+              }
+
+              if(iCurrent%itemsPerCheck === 0) {
+                if(Date.now() - startMs >= asyncInterval) {
+                  isNode?setImmediate(step):setTimeout(step);
+                  return
+                }
+              }
+            }
+          }
+
+          if(resultsLen === 0) return resolve(noResults)
+          var results = new Array(resultsLen);
+          for(var i = resultsLen - 1; i >= 0; --i) results[i] = q.poll();
+          results.total = resultsLen + limitedCount;
+          resolve(results);
+        }
+
+        isNode?setImmediate(step):step();
+      });
+      p.cancel = function() { canceled = true; };
+      return p
+    },
+
+    highlight: function(result, hOpen, hClose) {
+      if(result === null) return null
+      if(hOpen === undefined) hOpen = '<b>';
+      if(hClose === undefined) hClose = '</b>';
+      var highlighted = '';
+      var matchesIndex = 0;
+      var opened = false;
+      var target = result.target;
+      var targetLen = target.length;
+      var matchesBest = result.indexes;
+      for(var i = 0; i < targetLen; ++i) { var char = target[i];
+        if(matchesBest[matchesIndex] === i) {
+          ++matchesIndex;
+          if(!opened) { opened = true;
+            highlighted += hOpen;
+          }
+
+          if(matchesIndex === matchesBest.length) {
+            highlighted += char + hClose + target.substr(i+1);
+            break
+          }
+        } else {
+          if(opened) { opened = false;
+            highlighted += hClose;
+          }
+        }
+        highlighted += char;
+      }
+
+      return highlighted
+    },
+
+    prepare: function(target) {
+      return {target:target, _targetLowerCodes:fuzzysort.prepareLowerCodes(target), _nextBeginningIndexes:fuzzysort.prepareNextBeginningIndexes(target), score:null, indexes:null, obj:null} // hidden
+    },
+    prepareSearch: function(search) {
+      return fuzzysort.prepareLowerCodes(search)
+    },
+
+
+
+    // Below this point is only internal code
+    // Below this point is only internal code
+    // Below this point is only internal code
+    // Below this point is only internal code
+
+
+
+    algorithm: function(searchLowerCodes, prepared, searchLowerCode) {
+      var targetLowerCodes = prepared._targetLowerCodes;
+      var searchLen = searchLowerCodes.length;
+      var targetLen = targetLowerCodes.length;
+      var searchI = 0; // where we at
+      var targetI = 0; // where you at
+      var typoSimpleI = 0;
+      var matchesSimpleLen = 0;
+
+      // very basic fuzzy match; to remove non-matching targets ASAP!
+      // walk through target. find sequential matches.
+      // if all chars aren't found then exit
+      for(;;) {
+        var isMatch = searchLowerCode === targetLowerCodes[targetI];
+        if(isMatch) {
+          matchesSimple[matchesSimpleLen++] = targetI;
+          ++searchI; if(searchI === searchLen) break
+          searchLowerCode = searchLowerCodes[typoSimpleI===0?searchI : (typoSimpleI===searchI?searchI+1 : (typoSimpleI===searchI-1?searchI-1 : searchI))];
+        }
+
+        ++targetI; if(targetI >= targetLen) { // Failed to find searchI
+          // Check for typo or exit
+          // we go as far as possible before trying to transpose
+          // then we transpose backwards until we reach the beginning
+          for(;;) {
+            if(searchI <= 1) return null // not allowed to transpose first char
+            if(typoSimpleI === 0) { // we haven't tried to transpose yet
+              --searchI;
+              var searchLowerCodeNew = searchLowerCodes[searchI];
+              if(searchLowerCode === searchLowerCodeNew) continue // doesn't make sense to transpose a repeat char
+              typoSimpleI = searchI;
+            } else {
+              if(typoSimpleI === 1) return null // reached the end of the line for transposing
+              --typoSimpleI;
+              searchI = typoSimpleI;
+              searchLowerCode = searchLowerCodes[searchI + 1];
+              var searchLowerCodeNew = searchLowerCodes[searchI];
+              if(searchLowerCode === searchLowerCodeNew) continue // doesn't make sense to transpose a repeat char
+            }
+            matchesSimpleLen = searchI;
+            targetI = matchesSimple[matchesSimpleLen - 1] + 1;
+            break
+          }
+        }
+      }
+
+      var searchI = 0;
+      var typoStrictI = 0;
+      var successStrict = false;
+      var matchesStrictLen = 0;
+
+      var nextBeginningIndexes = prepared._nextBeginningIndexes;
+      if(nextBeginningIndexes === null) nextBeginningIndexes = prepared._nextBeginningIndexes = fuzzysort.prepareNextBeginningIndexes(prepared.target);
+      var firstPossibleI = targetI = matchesSimple[0]===0 ? 0 : nextBeginningIndexes[matchesSimple[0]-1];
+
+      // Our target string successfully matched all characters in sequence!
+      // Let's try a more advanced and strict test to improve the score
+      // only count it as a match if it's consecutive or a beginning character!
+      if(targetI !== targetLen) for(;;) {
+        if(targetI >= targetLen) {
+          // We failed to find a good spot for this search char, go back to the previous search char and force it forward
+          if(searchI <= 0) { // We failed to push chars forward for a better match
+            // transpose, starting from the beginning
+            ++typoStrictI; if(typoStrictI > searchLen-2) break
+            if(searchLowerCodes[typoStrictI] === searchLowerCodes[typoStrictI+1]) continue // doesn't make sense to transpose a repeat char
+            targetI = firstPossibleI;
+            continue
+          }
+
+          --searchI;
+          var lastMatch = matchesStrict[--matchesStrictLen];
+          targetI = nextBeginningIndexes[lastMatch];
+
+        } else {
+          var isMatch = searchLowerCodes[typoStrictI===0?searchI : (typoStrictI===searchI?searchI+1 : (typoStrictI===searchI-1?searchI-1 : searchI))] === targetLowerCodes[targetI];
+          if(isMatch) {
+            matchesStrict[matchesStrictLen++] = targetI;
+            ++searchI; if(searchI === searchLen) { successStrict = true; break }
+            ++targetI;
+          } else {
+            targetI = nextBeginningIndexes[targetI];
+          }
+        }
+      }
+
+      { // tally up the score & keep track of matches for highlighting later
+        if(successStrict) { var matchesBest = matchesStrict; var matchesBestLen = matchesStrictLen; }
+        else { var matchesBest = matchesSimple; var matchesBestLen = matchesSimpleLen; }
+        var score = 0;
+        var lastTargetI = -1;
+        for(var i = 0; i < searchLen; ++i) { var targetI = matchesBest[i];
+          // score only goes down if they're not consecutive
+          if(lastTargetI !== targetI - 1) score -= targetI;
+          lastTargetI = targetI;
+        }
+        if(!successStrict) {
+          score *= 1000;
+          if(typoSimpleI !== 0) score += typoPenalty;
+        } else {
+          if(typoStrictI !== 0) score += typoPenalty;
+        }
+        score -= targetLen - searchLen;
+        prepared.score = score;
+        prepared.indexes = new Array(matchesBestLen); for(var i = matchesBestLen - 1; i >= 0; --i) prepared.indexes[i] = matchesBest[i];
+
+        return prepared
+      }
+    },
+
+    prepareFast: function(target) {
+      return {target:target, _targetLowerCodes:fuzzysort.prepareLowerCodes(target), _nextBeginningIndexes:null, score:null, indexes:null, obj:null} // hidden
+    },
+
+    prepareLowerCodes: function(str) {
+      var lowerCodes = new Array(str.length);
+      var lower = str.toLowerCase();
+      var strLen = str.length;
+      for(var i = 0; i < strLen; ++i) lowerCodes[i] = lower.charCodeAt(i);
+      return lowerCodes
+    },
+    prepareBeginningIndexes: function(target) {
+      var targetLen = target.length;
+      var beginningIndexes = []; var beginningIndexesLen = 0;
+      var wasUpper = false;
+      var wasAlphanum = false;
+      for(var i = 0; i < targetLen; ++i) {
+        var targetCode = target.charCodeAt(i);
+        var isUpper = targetCode>=65&&targetCode<=90;
+        var isAlphanum = isUpper || targetCode>=97&&targetCode<=122 || targetCode>=48&&targetCode<=57;
+        var isBeginning = isUpper && !wasUpper || !wasAlphanum || !isAlphanum;
+        wasUpper = isUpper;
+        wasAlphanum = isAlphanum;
+        if(isBeginning) beginningIndexes[beginningIndexesLen++] = i;
+      }
+      return beginningIndexes
+    },
+    prepareNextBeginningIndexes: function(target) {
+      var targetLen = target.length;
+      var beginningIndexes = fuzzysort.prepareBeginningIndexes(target);
+      var nextBeginningIndexes = new Array(targetLen);
+      var lastIsBeginning = beginningIndexes[0];
+      var lastIsBeginningI = 0;
+      for(var i = 0; i < targetLen; ++i) {
+        if(lastIsBeginning > i) {
+          nextBeginningIndexes[i] = lastIsBeginning;
+        } else {
+          lastIsBeginning = beginningIndexes[++lastIsBeginningI];
+          nextBeginningIndexes[i] = lastIsBeginning===undefined ? targetLen : lastIsBeginning;
+        }
+      }
+      return nextBeginningIndexes
+    },
+
+    // ensurePrepared: function(target) {
+    //   if(typeof target === 'object') return target
+    //   var targetPrepared = preparedCache.get(target)
+    //   if(targetPrepared !== undefined) return targetPrepared
+    //   preparedCache.set(target, targetPrepared = fuzzysort.prepareFast(target))
+    //   return targetPrepared
+    // },
+    // ensurePreparedSearch: function(search) {
+    //   if(typeof search === 'object') return search
+    //   var searchPrepared = preparedSearchCache.get(search)
+    //   if(searchPrepared !== undefined) return searchPrepared
+    //   preparedSearchCache.set(search, searchPrepared = fuzzysort.prepareSearch(search))
+    //   return searchPrepared
+    // },
+
+    cleanup: cleanup,
+    new: fuzzysortNew,
+  };
+  return fuzzysort
+} // fuzzysortNew
+
+// This stuff is outside fuzzysortNew, because it's shared with instances of fuzzysort.new()
+var isNode = typeof commonjsRequire !== 'undefined' && typeof window === 'undefined';
+// var MAX_INT = Number.MAX_SAFE_INTEGER
+// var MIN_INT = Number.MIN_VALUE
+var typoPenalty = -20;
+var asyncInterval = 32;
+var preparedCache = new Map();
+var preparedSearchCache = new Map();
+var noResults = []; noResults.total = 0;
+var matchesSimple = []; var matchesStrict = [];
+function cleanup() { preparedCache.clear(); preparedSearchCache.clear(); matchesSimple = []; matchesStrict = []; }
+function defaultScoreFn(a) {
+  var max = -Infinity;
+  for (var i = a.length - 1; i >= 0; --i) {
+    var result = a[i]; if(result === null) continue
+    var score = result.score;
+    if(score > max) max = score;
+  }
+  if(max === -Infinity) return null
+  return max
+}
+
+// prop = 'key'              25ms
+// prop = 'key1.key2         100ms
+// prop = ['key1', 'key'2]   270ms
+function getValue(obj, prop) {
+  var tmp = obj[prop]; if(tmp !== undefined) return tmp
+  var segs = prop;
+  if(!Array.isArray(prop)) segs = prop.split('.');
+  var len = segs.length;
+  var i = -1;
+  while (obj && (++i < len)) obj = obj[segs[i]];
+  return obj
+}
+
+// Hacked version of https://github.com/lemire/FastPriorityQueue.js
+var fastpriorityqueue=function(){var r=[],o=0,e={};function n(){for(var e=0,n=r[e],c=1;c<o;){var f=c+1;e=c, f<o&&r[f].score<r[c].score&&(e=f), r[e-1>>1]=r[e], c=1+(e<<1);}for(var a=e-1>>1;e>0&&n.score<r[a].score;a=(e=a)-1>>1)r[e]=r[a];r[e]=n;}return e.add=function(e){var n=o;r[o++]=e;for(var c=n-1>>1;n>0&&e.score<r[c].score;c=(n=c)-1>>1)r[n]=r[c];r[n]=e;}, e.poll=function(){if(0!==o){var e=r[0];return r[0]=r[--o], n(), e}}, e.peek=function(e){if(0!==o)return r[0]}, e.replaceTop=function(o){r[0]=o, n();}, e};
+var q = fastpriorityqueue();
+
+return fuzzysortNew()
+}); // UMD
+
+// TODO: (performance) layout memory in an optimal way to go fast by avoiding cache misses
+
+// TODO: (performance) preparedCache is a memory leak
+
+// TODO: (like sublime) backslash === forwardslash
+
+// TODO: (performance) i have no idea how well optizmied the allowing typos algorithm is
+
+// TODO: (performance) search could assume to be lowercase?
 });
 
-var fuzzaldrin_1 = fuzzaldrin.filter;
-var fuzzaldrin_2 = fuzzaldrin.score;
-var fuzzaldrin_3 = fuzzaldrin.match;
-var fuzzaldrin_4 = fuzzaldrin.wrap;
-var fuzzaldrin_5 = fuzzaldrin.prepareQuery;
+var fileIconsService = null;
+var promise = null;
+
+var fuzzyFilter = function fuzzyFilter(pattern, data) {
+	promise && promise.cancel();
+	promise = fuzzysort.goAsync(pattern, data, { key: 'value' });
+	return promise.then(function (filteredData) {
+		return filteredData.map(function (x) {
+			return x.obj;
+		});
+	});
+};
+
+var setFileIconsService = function setFileIconsService(service) {
+	fileIconsService = service;
+};
+
+var iconClassForPath = function iconClassForPath(path$$1) {
+	return fileIconsService.iconClassForPath(path$$1);
+};
+
+var wrap = function wrap(str) {
+	var pattern = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+	var start = arguments[2];
+	var end = arguments[3];
+	var className = arguments[4];
+	var replace = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
+
+	var match = fuzzysort.single(pattern, str);
+	var indexes = match && match.indexes ? match.indexes : [];
+	var styleHash = indexes.reduce(function (acc, x) {
+		acc[x] = 'fuzzy';
+		return acc;
+	}, {});
+
+	styleHash[start] = styleHash[start] ? 'styledAndFuzzy' : 'styled';
+	styleHash[end] = styleHash[end] ? 'closeStyledAndFuzzy' : 'closeStyled';
+
+	var wrappedStr = '';
+
+	for (var i = 0; i < str.length; i++) {
+		var c = str[i];
+
+		if (styleHash[i] === 'fuzzy') {
+			wrappedStr += '<span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'styledAndFuzzy') {
+			wrappedStr += '<span class="' + className + '"><span class="highlight">' + c + '</span>';
+		} else if (styleHash[i] === 'styled') {
+			wrappedStr += '<span class="' + className + '">' + c;
+		} else if (styleHash[i] === 'closeStyled') {
+			wrappedStr += c + '</span>' + replace;
+		} else if (styleHash[i] === 'closeStyledAndFuzzy') {
+			wrappedStr += '<span class="highlight">' + c + '</span></span>' + replace;
+		} else {
+			wrappedStr += c;
+		}
+	}
+
+	return wrappedStr;
+};
+
+var spawnInProject = function spawnInProject(cmd, args) {
+	var cwd = atom.project.getPaths()[0];
+	return child_process.spawn(cmd, args, {
+		cwd: cwd
+	});
+};
 
 var defaultRenderer = function defaultRenderer(_ref) {
 	var item = _ref.item,
@@ -5639,7 +5369,7 @@ var defaultRenderer = function defaultRenderer(_ref) {
 
 	var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
-	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+	var wrappedValue = wrap(value, pattern);
 
 	return h('div', {
 		className: finalClassName,
@@ -5706,58 +5436,6 @@ var commandFactory = (function (optionsFactory) {
 		}
 	};
 });
-
-var fileIconsService = null;
-
-var setFileIconsService = function setFileIconsService(service) {
-	fileIconsService = service;
-};
-
-var iconClassForPath = function iconClassForPath(path$$1) {
-	return fileIconsService.iconClassForPath(path$$1);
-};
-
-var wrap = function wrap(str, pattern, start, end, className) {
-	var replace = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
-
-	var fuzzyMatches = fuzzaldrin.match(str, pattern);
-	var styleHash = fuzzyMatches.reduce(function (acc, x) {
-		acc[x] = 'fuzzy';
-		return acc;
-	}, {});
-
-	styleHash[start] = styleHash[start] ? 'styledAndFuzzy' : 'styled';
-	styleHash[end] = styleHash[end] ? 'closeStyledAndFuzzy' : 'closeStyled';
-
-	var wrappedStr = '';
-
-	for (var i = 0; i < str.length; i++) {
-		var c = str[i];
-
-		if (styleHash[i] === 'fuzzy') {
-			wrappedStr += '<span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'styledAndFuzzy') {
-			wrappedStr += '<span class="' + className + '"><span class="highlight">' + c + '</span>';
-		} else if (styleHash[i] === 'styled') {
-			wrappedStr += '<span class="' + className + '">' + c;
-		} else if (styleHash[i] === 'closeStyled') {
-			wrappedStr += c + '</span>' + replace;
-		} else if (styleHash[i] === 'closeStyledAndFuzzy') {
-			wrappedStr += '<span class="highlight">' + c + '</span></span>' + replace;
-		} else {
-			wrappedStr += c;
-		}
-	}
-
-	return wrappedStr;
-};
-
-var spawnInProject = function spawnInProject(cmd, args) {
-	var cwd = atom.project.getPaths()[0];
-	return child_process.spawn(cmd, args, {
-		cwd: cwd
-	});
-};
 
 var loadData = (function (onData) {
 	var cmdProcess = spawnInProject('git', ['branch']);
@@ -5949,7 +5627,7 @@ var renderer$1 = (function (_ref) {
 
 	var finalClassName = classnames(className, ['icon'].concat(toConsumableArray(iconClassForPath(value))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
-	var wrappedValue = pattern && pattern.length ? fuzzaldrin.wrap(value, pattern) : value;
+	var wrappedValue = wrap(value, pattern);
 
 	var statusLabel = void 0;
 
@@ -6179,6 +5857,8 @@ var loadDataFactory$1 = (function (store) {
 
 		cmdProcess.stdout.on('data', function (data) {
 			var dataLines = data.toString('utf-8').split('\n');
+			// console.log('data.toString("utf-8"): ', data.toString('utf-8'))
+			// console.log('dataLines: ', dataLines)
 			var processedData = [];
 
 			var path$$1 = '';
@@ -6223,11 +5903,11 @@ var loadDataFactory$1 = (function (store) {
 							    startStr = _match$split2[0],
 							    lengthStr = _match$split2[1];
 
-							var start = preValue.length + 3 + parseInt(startStr);
+							var start = preValue.length + 1 + parseInt(startStr);
 							var end = parseInt(lengthStr) + start - 1;
 
 							processedData.push({
-								value: preValue + ' : ' + line,
+								value: preValue + ' ' + line,
 								match: line.slice(start, end),
 								path: path$$1,
 								lineNumber: lineNumber,
@@ -6430,6 +6110,7 @@ var replace$1 = commandFactory(replaceFactory);
 
 var loadData$2 = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
+
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {
 			var _value$split = value.split(':'),
@@ -6440,7 +6121,7 @@ var loadData$2 = (function (onData) {
 
 			var line = splitLine.join(':');
 
-			if (line && line.length > 1) {
+			if (line && line.length > 1 && line.length < 500) {
 				acc.push({
 					value: [path$$1, lineNumber, splitLine].join(' : '),
 					path: path$$1,
@@ -8546,7 +8227,6 @@ var fromAction = store.fromAction;
 
 
 var setupObservables = (function () {
-	// let fuzzysortPromise = null
 	var cancelLoadData = null;
 
 	fromSelector(getSelectedValue).debounceTime(100).subscribe(function (selectedValue) {
@@ -8571,13 +8251,11 @@ var setupObservables = (function () {
 				payload: { data: data }
 			});
 		} else {
-			var filteredData = fuzzaldrin.filter(data, pattern, {
-				key: 'value'
-			});
-
-			store.dispatch({
-				type: 'SET_FILTERED_DATA',
-				payload: { data: filteredData }
+			fuzzyFilter(pattern, data).then(function (filteredData) {
+				store.dispatch({
+					type: 'SET_FILTERED_DATA',
+					payload: { data: filteredData }
+				});
 			});
 		}
 	});
