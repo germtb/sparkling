@@ -53,6 +53,7 @@
     "expect": true,
     "it": true,
     "context": true,
-    "document": true
+    "document": true,
+    "Set": true
   }
 }
