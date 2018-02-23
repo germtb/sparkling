@@ -34,6 +34,48 @@
 		"cmd-escape": "sparkling:hide",
 		"enter": "sparkling:accept"
 	},
+	".platform-darwin #sparkling-ls .sparkling-input": {
+		"cmd-l cmd-s": "sparkling:lsUp"
+	},
+
+	".platform-win32 atom-workspace, .platform-linux atom-workspace": {
+		"ctrl-p ctrl-p": "sparkling:files",
+		"ctrl-g ctrl-f": "sparkling:gitFiles",
+		"ctrl-g ctrl-s": "sparkling:gitStage",
+		"ctrl-g ctrl-b": "sparkling:gitBranches",
+		"ctrl-g ctrl-c": "sparkling:gitCommits",
+		"ctrl-g ctrl-l": "sparkling:gitLog",
+		"ctrl-l ctrl-L": "sparkling:allLines",
+		"ctrl-l ctrl-s": "sparkling:ls",
+		"ctrl-p ctrl-D": "sparkling:removeFiles",
+		"ctrl-p ctrl-c": "sparkling:copyFiles",
+		"ctrl-p ctrl-r": "sparkling:renameFiles",
+		"ctrl-p ctrl-m": "sparkling:moveFiles",
+		"ctrl-p ctrl-f": "sparkling:findToggle",
+		"ctrl-b ctrl-f": "sparkling:findInBufferToggle"
+	},
+	".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
+		"ctrl-l ctrl-l": "sparkling:lines",
+		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
+	},
+	".platform-win32 .sparkling-input, .platform-linux .sparkling-input": {
+		"alt-k": "sparkling:previous",
+		"alt-l": "sparkling:right",
+		"alt-h": "sparkling:left",
+		"alt-j": "sparkling:next",
+		"ctrl-k": "sparkling:previous",
+		"ctrl-l": "sparkling:right",
+		"ctrl-h": "sparkling:left",
+		"ctrl-j": "sparkling:next",
+		"up": "sparkling:previous",
+		"down": "sparkling:next",
+		"escape": "sparkling:hide",
+		"ctrl-escape": "sparkling:hide",
+		"enter": "sparkling:accept"
+	},
+	".platform-win32 #sparkling-ls .sparkling-input, .platform-linux #sparkling-ls .sparkling-input": {
+		"ctrl-l ctrl-s": "sparkling:lsUp"
+	},
 
 	".sparkling-find.sparkling-input": {
 		"enter": "sparkling:find",
@@ -47,8 +89,5 @@
 	},
 	"#sparkling-move-file-confirm .sparkling-input": {
 		"enter": "sparkling:moveFilesConfirm"
-	},
-	"#sparkling-ls .sparkling-input": {
-		"cmd-l cmd-s": "sparkling:lsUp"
 	}
 }
