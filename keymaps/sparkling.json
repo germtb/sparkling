@@ -10,7 +10,9 @@
 		"cmd-p": "sparkling:files"
 	},
 	".platform-darwin .sparkling-gitFiles": {
-		"cmd-g cmd-p": "sparkling:gitFiles",
+		"cmd-g cmd-p": "sparkling:gitFiles"
+	},
+	".platform-darwin .sparkling-gitStage": {
 		"cmd-g cmd-s": "sparkling:gitStage"
 	},
 	".platform-darwin .sparkling-gitBranches": {
@@ -44,6 +46,7 @@
 		"cmd-escape": "sparkling:hide",
 		"enter": "sparkling:accept"
 	},
+
 	".sparkling-find.sparkling-input": {
 		"enter": "sparkling:find",
 		"shift-enter": "sparkling:replace"
@@ -58,33 +61,41 @@
 		"cmd-l cmd-s": "sparkling:lsUp"
 	},
 
-	".platform-win32 atom-workspace, .platform-linux .sparkling-input": {
+	".platform-win32 atom-workspace, .platform-linux atom-workspace": {
 		"ctrl-l ctrl-s": "sparkling:ls",
 		"ctrl-shift-a": "sparkling:findToggle",
 		"ctrl-r ctrl-p": "sparkling:removeFiles",
-		"ctrl-d ctrl-p": "sparkling:duplicateFiles"
+		"ctrl-u ctrl-p": "sparkling:duplicateFiles",
+		"ctrl-r ctrl-r": "sparkling:renameFiles"
 	},
-	".platform-win32 .sparkling-files, .platform-linux .sparkling-input": {
+	".platform-win32 .sparkling-files, .platform-linux .sparkling-files": {
 		"ctrl-p": "sparkling:files"
 	},
-	".platform-win32 .sparkling-gitFiles, .platform-linux .sparkling-input": {
-		"ctrl-g ctrl-p": "sparkling:gitFiles",
+	".platform-win32 .sparkling-gitFiles, .platform-linux .sparkling-gitFiles": {
+		"ctrl-g ctrl-p": "sparkling:gitFiles"
+	},
+	".platform-win32 .sparkling-gitStage, .platform-linux .sparkling-gitStage": {
 		"ctrl-g ctrl-s": "sparkling:gitStage"
 	},
-	".platform-win32 .sparkling-gitBranches, .platform-linux .sparkling-input": {
+	".platform-win32 .sparkling-gitBranches, .platform-linux .sparkling-gitBranches": {
 		"ctrl-g ctrl-b": "sparkling:gitBranches"
 	},
-	".platform-win32 .sparkling-lines atom-text-editor, .platform-linux .sparkling-input": {
+	".platform-win32 .sparkling-gitCommits, .platform-linux .sparkling-gitCommits": {
+		"ctrl-g ctrl-c": "sparkling:gitCommits"
+	},
+	".platform-win32 .sparkling-gitLog, .platform-linux .sparkling-gitLog": {
+		"ctrl-g ctrl-l": "sparkling:gitLog"
+	},
+	".platform-win32 .sparkling-lines atom-text-editor, .platform-linux .sparkling-lines": {
 		"ctrl-l ctrl-l": "sparkling:lines"
 	},
-	".platform-win32 .sparkling-allLines, .platform-linux .sparkling-input": {
+	".platform-win32 .sparkling-allLines, .platform-linux .sparkling-allLines": {
 		"ctrl-l ctrl-L": "sparkling:allLines"
 	},
-	".platform-win32 .sparkling-autocompleteLines atom-text-editor, .platform-linux .sparkling-input": {
+	".platform-win32 .sparkling-autocompleteLines atom-text-editor, .platform-linux .sparkling-autocompleteLines": {
 		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
 	},
 	".platform-win32 .sparkling-input, .platform-linux .sparkling-input": {
-		"ctrl-l ctrl-s": "sparkling:lsUp",
 		"ctrl-k": "sparkling:previous",
 		"ctrl-l": "sparkling:right",
 		"ctrl-h": "sparkling:left",
