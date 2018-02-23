@@ -5755,6 +5755,25 @@ var loadData$2 = (function (onData) {
 var gitCommitsFactory = function gitCommitsFactory(h, store) {
 	var accept = function accept(commit) {
 		var value = commit.value.split(' ', 1)[0];
+		atom.clipboard.write(value);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		description: 'Copy git commit hash to clipboard',
+		id: 'sparkling-git-log'
+	};
+};
+
+var gitLog = commandFactory(gitCommitsFactory);
+
+var gitCommitsFactory$1 = function gitCommitsFactory(h, store) {
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
 
 		var cmdProcess = spawnInProject('git', ['checkout', value]);
 		cmdProcess.on('exit', function () {
@@ -5772,7 +5791,7 @@ var gitCommitsFactory = function gitCommitsFactory(h, store) {
 	};
 };
 
-var gitCommits = commandFactory(gitCommitsFactory);
+var gitCommits = commandFactory(gitCommitsFactory$1);
 
 var gitStageFactory = function gitStageFactory(h, store) {
 	var loadData = loadDataFactory({ hideDeletedFiles: false });
@@ -6226,6 +6245,12 @@ var config = {
 	gitCommits: {
 		title: 'Checkout git commits',
 		description: 'Enable checkout git commits',
+		type: 'boolean',
+		default: true
+	},
+	gitLog: {
+		title: 'Copy git commits hash to clipboard',
+		description: 'Enable copy git commits hash to clipboard',
 		type: 'boolean',
 		default: true
 	},
@@ -8336,7 +8361,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'gitCommits', command: gitCommits }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'gitLog', command: gitLog }, { id: 'gitCommits', command: gitCommits }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;
