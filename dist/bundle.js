@@ -5428,44 +5428,6 @@ var commandFactory = (function (optionsFactory) {
 });
 
 var loadData = (function (onData) {
-	var cmdProcess = spawnInProject('git', ['branch']);
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-});
-
-var gitBranchesFactory = function gitBranchesFactory(h, store) {
-	var accept = function accept(branch) {
-		var value = branch.value.trim(0);
-
-		if (/^\*/.test(value)) {
-			return;
-		}
-
-		var cmdProcess = spawnInProject('git', ['checkout', value]);
-		cmdProcess.stdout.on('data', function () {
-			store.dispatch({
-				type: 'HIDE'
-			});
-		});
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		columns: 3,
-		description: 'Checkout git branches',
-		id: 'sparkling-git-branches'
-	};
-};
-
-var gitBranches = commandFactory(gitBranchesFactory);
-
-var loadData$1 = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['--files']);
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').filter(function (s) {
@@ -5496,7 +5458,7 @@ var filesFactory = function filesFactory(h, store) {
 	};
 
 	return {
-		loadData: loadData$1,
+		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
 		sliceLength: 20,
@@ -5521,7 +5483,7 @@ var duplicateFiles = function duplicateFiles(h, store) {
 	};
 
 	return {
-		loadData: loadData$1,
+		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
 		sliceLength: 20,
@@ -5546,7 +5508,7 @@ var renameFiles = function renameFiles(h, store) {
 	};
 
 	return {
-		loadData: loadData$1,
+		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
 		sliceLength: 20,
@@ -5569,7 +5531,7 @@ var removeFiles = function removeFiles(h, store) {
 	};
 
 	return {
-		loadData: loadData$1,
+		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
 		sliceLength: 20,
@@ -5740,6 +5702,77 @@ var gitFilesFactory = function gitFilesFactory(h, store) {
 };
 
 var gitFiles = commandFactory(gitFilesFactory);
+
+var loadData$1 = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['branch']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
+var gitBranchesFactory = function gitBranchesFactory(h, store) {
+	var accept = function accept(branch) {
+		var value = branch.value.trim(0);
+
+		if (/^\*/.test(value)) {
+			return;
+		}
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.stdout.on('data', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		columns: 3,
+		description: 'Checkout git branches',
+		id: 'sparkling-git-branches'
+	};
+};
+
+var gitBranches = commandFactory(gitBranchesFactory);
+
+var loadData$2 = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['log', '--pretty=oneline', '--abbrev-commit']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
+var gitCommitsFactory = function gitCommitsFactory(h, store) {
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.on('exit', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		description: 'Checkout git commit',
+		id: 'sparkling-git-commit'
+	};
+};
+
+var gitCommits = commandFactory(gitCommitsFactory);
 
 var gitStageFactory = function gitStageFactory(h, store) {
 	var loadData = loadDataFactory({ hideDeletedFiles: false });
@@ -6098,7 +6131,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 
 var replace$1 = commandFactory(replaceFactory);
 
-var loadData$2 = (function (onData) {
+var loadData$3 = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
 
 	cmdProcess.stdout.on('data', function (data) {
@@ -6138,7 +6171,7 @@ var allLinesFactory = function allLinesFactory(h, store) {
 	};
 
 	return {
-		loadData: loadData$2,
+		loadData: loadData$3,
 		accept: accept,
 		description: 'Find lines in project',
 		id: 'sparkling-project-lines'
@@ -6155,7 +6188,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	};
 
 	return {
-		loadData: loadData$2,
+		loadData: loadData$3,
 		accept: accept,
 		renderer: renderer$2,
 		description: 'Autocomplete lines from project',
@@ -6190,6 +6223,12 @@ var config = {
 		type: 'boolean',
 		default: true
 	},
+	gitCommits: {
+		title: 'Checkout git commits',
+		description: 'Enable checkout git commits',
+		type: 'boolean',
+		default: true
+	},
 	lines: {
 		title: 'Find buffer lines',
 		description: 'Enable find buffer lines',
@@ -6211,12 +6250,6 @@ var config = {
 	find: {
 		title: 'Find pattern with ripgrep',
 		description: 'Enable find with ripgrep',
-		type: 'boolean',
-		default: true
-	},
-	agFind: {
-		title: 'Find pattern with ag',
-		description: 'Enable find with ag',
 		type: 'boolean',
 		default: true
 	},
@@ -8303,7 +8336,7 @@ module.exports = {
 
 	config: config,
 
-	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
+	commands: [{ id: 'files', command: files }, { id: 'gitFiles', command: gitFiles }, { id: 'gitStage', command: gitStage }, { id: 'gitBranches', command: gitBranches }, { id: 'gitCommits', command: gitCommits }, { id: 'lines', command: lines }, { id: 'allLines', command: allLines }, { id: 'autocompleteLines', command: autocompleteLines }, { id: 'find', command: find$1 }, { id: 'replace', command: replace$1 }],
 
 	provideSparkling: function provideSparkling() {
 		return commandFactory;

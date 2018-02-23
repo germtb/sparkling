@@ -16,6 +16,9 @@
 	".platform-darwin .sparkling-gitBranches": {
 		"cmd-g cmd-b": "sparkling:gitBranches"
 	},
+	".platform-darwin .sparkling-gitCommits": {
+		"cmd-g cmd-c": "sparkling:gitCommits"
+	},
 	".platform-darwin .sparkling-lines atom-text-editor": {
 		"cmd-l cmd-l": "sparkling:lines"
 	},
