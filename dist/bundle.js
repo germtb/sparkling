@@ -5300,6 +5300,12 @@ var iconClassForPath = function iconClassForPath(path$$1) {
 	return fileIconsService.iconClassForPath(path$$1);
 };
 
+var escapeHTML = function escapeHTML(str) {
+	return str.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
+		return '&#' + i.charCodeAt(0) + ';';
+	});
+};
+
 var wrap = function wrap(str) {
 	var pattern = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 	var start = arguments[2];
@@ -5318,9 +5324,8 @@ var wrap = function wrap(str) {
 	styleHash[end] = styleHash[end] ? 'closeStyledAndFuzzy' : 'closeStyled';
 
 	var wrappedStr = '';
-
 	for (var i = 0; i < str.length; i++) {
-		var c = str[i];
+		var c = escapeHTML(str[i]);
 
 		if (styleHash[i] === 'fuzzy') {
 			wrappedStr += '<span class="highlight">' + c + '</span>';
@@ -6068,7 +6073,7 @@ var replaceRenderer = function replaceRenderer(_ref) {
 	    path$$1 = item.path;
 
 
-	var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + replace + '</span>');
+	var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + escapeHTML(replace) + '</span>');
 
 	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
@@ -6209,7 +6214,6 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	return {
 		loadData: loadData$3,
 		accept: accept,
-		renderer: renderer$2,
 		description: 'Autocomplete lines from project',
 		id: 'sparkling-autocomplete-lines'
 	};
