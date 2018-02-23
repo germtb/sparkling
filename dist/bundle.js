@@ -5950,12 +5950,14 @@ var loadDataFactory$1 = (function (store) {
 							    startStr = _match$split2[0],
 							    lengthStr = _match$split2[1];
 
-							var start = preValue.length + 1 + parseInt(startStr);
-							var end = parseInt(lengthStr) + start - 1;
+							var column = parseInt(startStr);
+							var length = parseInt(lengthStr);
+							var start = preValue.length + 1 + column;
+							var end = length + start - 1;
 
 							processedData.push({
 								value: preValue + ' ' + line,
-								match: line.slice(start, end),
+								match: line.slice(column, column + length),
 								path: path$$1,
 								lineNumber: lineNumber,
 								column: parseInt(startStr),
@@ -6129,11 +6131,12 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		var replace = getReplace(store.getState());
 		var lineNumber = item.lineNumber,
 		    path$$1 = item.path,
-		    find = item.find;
+		    match = item.match;
 
 
-		var sedRegex = lineNumber + ',' + lineNumber + 's/' + find + '/' + replace + '/';
+		var sedRegex = lineNumber + ',' + lineNumber + 's/' + match + '/' + replace + '/';
 		spawnInProject('sed', ['-i', '', '-e', sedRegex, path$$1]);
+
 		store.dispatch({
 			type: 'REMOVE_ITEM',
 			payload: item
