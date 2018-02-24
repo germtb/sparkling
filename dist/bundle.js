@@ -1682,1277 +1682,6 @@ if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' 
   warning('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
 }
 
-var Children = {
-	only: function only(children) {
-		return children && children[0] || null;
-	}
-};
-
-function proptype() {}
-proptype.isRequired = proptype;
-
-var PropTypes = {
-	element: proptype,
-	func: proptype,
-	shape: function shape() {
-		return proptype;
-	},
-	instanceOf: function instanceOf() {
-		return proptype;
-	}
-};
-
-var subscriptionShape = PropTypes.shape({
-  trySubscribe: PropTypes.func.isRequired,
-  tryUnsubscribe: PropTypes.func.isRequired,
-  notifyNestedSubs: PropTypes.func.isRequired,
-  isSubscribed: PropTypes.func.isRequired
-});
-
-var storeShape = PropTypes.shape({
-  subscribe: PropTypes.func.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  getState: PropTypes.func.isRequired
-});
-
-/**
- * Prints a warning in the console if it exists.
- *
- * @param {String} message The warning message.
- * @returns {void}
- */
-function warning$1(message) {
-  /* eslint-disable no-console */
-  if (typeof console !== 'undefined' && typeof console.error === 'function') {
-    console.error(message);
-  }
-  /* eslint-enable no-console */
-  try {
-    // This error was thrown as a convenience so that if you enable
-    // "break on all exceptions" in your console,
-    // it would pause the execution at this line.
-    throw new Error(message);
-    /* eslint-disable no-empty */
-  } catch (e) {}
-  /* eslint-enable no-empty */
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
-
-
-
-
-
-
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-
-
-
-
-
-
-
-
-var _extends$1 = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-
-
-
-
-
-
-
-
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-var didWarnAboutReceivingStore = false;
-function warnAboutReceivingStore() {
-  if (didWarnAboutReceivingStore) {
-    return;
-  }
-  didWarnAboutReceivingStore = true;
-
-  warning$1('<Provider> does not support changing `store` on the fly. ' + 'It is most likely that you see this error because you updated to ' + 'Redux 2.x and React Redux 2.x which no longer hot reload reducers ' + 'automatically. See https://github.com/reactjs/react-redux/releases/' + 'tag/v2.0.0 for the migration instructions.');
-}
-
-function createProvider() {
-  var _Provider$childContex;
-
-  var storeKey = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'store';
-  var subKey = arguments[1];
-
-  var subscriptionKey = subKey || storeKey + 'Subscription';
-
-  var Provider = function (_Component) {
-    inherits(Provider, _Component);
-
-    Provider.prototype.getChildContext = function getChildContext() {
-      var _ref;
-
-      return _ref = {}, _ref[storeKey] = this[storeKey], _ref[subscriptionKey] = null, _ref;
-    };
-
-    function Provider(props, context) {
-      classCallCheck(this, Provider);
-
-      var _this = possibleConstructorReturn(this, _Component.call(this, props, context));
-
-      _this[storeKey] = props.store;
-      return _this;
-    }
-
-    Provider.prototype.render = function render$$1() {
-      return Children.only(this.props.children);
-    };
-
-    return Provider;
-  }(Component);
-
-  {
-    Provider.prototype.componentWillReceiveProps = function (nextProps) {
-      if (this[storeKey] !== nextProps.store) {
-        warnAboutReceivingStore();
-      }
-    };
-  }
-
-  Provider.childContextTypes = (_Provider$childContex = {}, _Provider$childContex[storeKey] = storeShape.isRequired, _Provider$childContex[subscriptionKey] = subscriptionShape, _Provider$childContex);
-
-  return Provider;
-}
-
-var Provider = createProvider();
-
-/**
- * Copyright 2015, Yahoo! Inc.
- * Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
- */
-var REACT_STATICS = {
-    childContextTypes: true,
-    contextTypes: true,
-    defaultProps: true,
-    displayName: true,
-    getDefaultProps: true,
-    mixins: true,
-    propTypes: true,
-    type: true
-};
-
-var KNOWN_STATICS = {
-    name: true,
-    length: true,
-    prototype: true,
-    caller: true,
-    callee: true,
-    arguments: true,
-    arity: true
-};
-
-var defineProperty$1 = Object.defineProperty;
-var getOwnPropertyNames = Object.getOwnPropertyNames;
-var getOwnPropertySymbols = Object.getOwnPropertySymbols;
-var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-var getPrototypeOf = Object.getPrototypeOf;
-var objectPrototype = getPrototypeOf && getPrototypeOf(Object);
-
-var hoistNonReactStatics = function hoistNonReactStatics(targetComponent, sourceComponent, blacklist) {
-    if (typeof sourceComponent !== 'string') {
-        // don't hoist over string (html) components
-
-        if (objectPrototype) {
-            var inheritedComponent = getPrototypeOf(sourceComponent);
-            if (inheritedComponent && inheritedComponent !== objectPrototype) {
-                hoistNonReactStatics(targetComponent, inheritedComponent, blacklist);
-            }
-        }
-
-        var keys = getOwnPropertyNames(sourceComponent);
-
-        if (getOwnPropertySymbols) {
-            keys = keys.concat(getOwnPropertySymbols(sourceComponent));
-        }
-
-        for (var i = 0; i < keys.length; ++i) {
-            var key = keys[i];
-            if (!REACT_STATICS[key] && !KNOWN_STATICS[key] && (!blacklist || !blacklist[key])) {
-                var descriptor = getOwnPropertyDescriptor(sourceComponent, key);
-                try {
-                    // Avoid failures from read-only properties
-                    defineProperty$1(targetComponent, key, descriptor);
-                } catch (e) {}
-            }
-        }
-
-        return targetComponent;
-    }
-
-    return targetComponent;
-};
-
-var invariant = function () {};
-
-// encapsulates the subscription logic for connecting a component to the redux store, as
-// well as nesting subscriptions of descendant components, so that we can ensure the
-// ancestor components re-render before descendants
-
-var CLEARED = null;
-var nullListeners = {
-  notify: function notify() {}
-};
-
-function createListenerCollection() {
-  // the current/next pattern is copied from redux's createStore code.
-  // TODO: refactor+expose that code to be reusable here?
-  var current = [];
-  var next = [];
-
-  return {
-    clear: function clear() {
-      next = CLEARED;
-      current = CLEARED;
-    },
-    notify: function notify() {
-      var listeners = current = next;
-      for (var i = 0; i < listeners.length; i++) {
-        listeners[i]();
-      }
-    },
-    get: function get$$1() {
-      return next;
-    },
-    subscribe: function subscribe(listener) {
-      var isSubscribed = true;
-      if (next === current) next = current.slice();
-      next.push(listener);
-
-      return function unsubscribe() {
-        if (!isSubscribed || current === CLEARED) return;
-        isSubscribed = false;
-
-        if (next === current) next = current.slice();
-        next.splice(next.indexOf(listener), 1);
-      };
-    }
-  };
-}
-
-var Subscription = function () {
-  function Subscription(store, parentSub, onStateChange) {
-    classCallCheck(this, Subscription);
-
-    this.store = store;
-    this.parentSub = parentSub;
-    this.onStateChange = onStateChange;
-    this.unsubscribe = null;
-    this.listeners = nullListeners;
-  }
-
-  Subscription.prototype.addNestedSub = function addNestedSub(listener) {
-    this.trySubscribe();
-    return this.listeners.subscribe(listener);
-  };
-
-  Subscription.prototype.notifyNestedSubs = function notifyNestedSubs() {
-    this.listeners.notify();
-  };
-
-  Subscription.prototype.isSubscribed = function isSubscribed() {
-    return Boolean(this.unsubscribe);
-  };
-
-  Subscription.prototype.trySubscribe = function trySubscribe() {
-    if (!this.unsubscribe) {
-      this.unsubscribe = this.parentSub ? this.parentSub.addNestedSub(this.onStateChange) : this.store.subscribe(this.onStateChange);
-
-      this.listeners = createListenerCollection();
-    }
-  };
-
-  Subscription.prototype.tryUnsubscribe = function tryUnsubscribe() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
-      this.listeners.clear();
-      this.listeners = nullListeners;
-    }
-  };
-
-  return Subscription;
-}();
-
-var hotReloadingVersion = 0;
-var dummyState = {};
-function noop() {}
-function makeSelectorStateful(sourceSelector, store) {
-  // wrap the selector in an object that tracks its results between runs.
-  var selector = {
-    run: function runComponentSelector(props) {
-      try {
-        var nextProps = sourceSelector(store.getState(), props);
-        if (nextProps !== selector.props || selector.error) {
-          selector.shouldComponentUpdate = true;
-          selector.props = nextProps;
-          selector.error = null;
-        }
-      } catch (error) {
-        selector.shouldComponentUpdate = true;
-        selector.error = error;
-      }
-    }
-  };
-
-  return selector;
-}
-
-function connectAdvanced(
-/*
-  selectorFactory is a func that is responsible for returning the selector function used to
-  compute new props from state, props, and dispatch. For example:
-     export default connectAdvanced((dispatch, options) => (state, props) => ({
-      thing: state.things[props.thingId],
-      saveThing: fields => dispatch(actionCreators.saveThing(props.thingId, fields)),
-    }))(YourComponent)
-   Access to dispatch is provided to the factory so selectorFactories can bind actionCreators
-  outside of their selector as an optimization. Options passed to connectAdvanced are passed to
-  the selectorFactory, along with displayName and WrappedComponent, as the second argument.
-   Note that selectorFactory is responsible for all caching/memoization of inbound and outbound
-  props. Do not use connectAdvanced directly without memoizing results between calls to your
-  selector, otherwise the Connect component will re-render on every state or props change.
-*/
-selectorFactory) {
-  var _contextTypes, _childContextTypes;
-
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-  var _ref$getDisplayName = _ref.getDisplayName,
-      getDisplayName = _ref$getDisplayName === undefined ? function (name) {
-    return 'ConnectAdvanced(' + name + ')';
-  } : _ref$getDisplayName,
-      _ref$methodName = _ref.methodName,
-      methodName = _ref$methodName === undefined ? 'connectAdvanced' : _ref$methodName,
-      _ref$renderCountProp = _ref.renderCountProp,
-      renderCountProp = _ref$renderCountProp === undefined ? undefined : _ref$renderCountProp,
-      _ref$shouldHandleStat = _ref.shouldHandleStateChanges,
-      shouldHandleStateChanges = _ref$shouldHandleStat === undefined ? true : _ref$shouldHandleStat,
-      _ref$storeKey = _ref.storeKey,
-      storeKey = _ref$storeKey === undefined ? 'store' : _ref$storeKey,
-      _ref$withRef = _ref.withRef,
-      withRef = _ref$withRef === undefined ? false : _ref$withRef,
-      connectOptions = objectWithoutProperties(_ref, ['getDisplayName', 'methodName', 'renderCountProp', 'shouldHandleStateChanges', 'storeKey', 'withRef']);
-
-  var subscriptionKey = storeKey + 'Subscription';
-  var version = hotReloadingVersion++;
-
-  var contextTypes = (_contextTypes = {}, _contextTypes[storeKey] = storeShape, _contextTypes[subscriptionKey] = subscriptionShape, _contextTypes);
-  var childContextTypes = (_childContextTypes = {}, _childContextTypes[subscriptionKey] = subscriptionShape, _childContextTypes);
-
-  return function wrapWithConnect(WrappedComponent) {
-    invariant(typeof WrappedComponent == 'function', 'You must pass a component to the function returned by ' + ('connect. Instead received ' + JSON.stringify(WrappedComponent)));
-
-    var wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
-
-    var displayName = getDisplayName(wrappedComponentName);
-
-    var selectorFactoryOptions = _extends$1({}, connectOptions, {
-      getDisplayName: getDisplayName,
-      methodName: methodName,
-      renderCountProp: renderCountProp,
-      shouldHandleStateChanges: shouldHandleStateChanges,
-      storeKey: storeKey,
-      withRef: withRef,
-      displayName: displayName,
-      wrappedComponentName: wrappedComponentName,
-      WrappedComponent: WrappedComponent
-    });
-
-    var Connect = function (_Component) {
-      inherits(Connect, _Component);
-
-      function Connect(props, context) {
-        classCallCheck(this, Connect);
-
-        var _this = possibleConstructorReturn(this, _Component.call(this, props, context));
-
-        _this.version = version;
-        _this.state = {};
-        _this.renderCount = 0;
-        _this.store = props[storeKey] || context[storeKey];
-        _this.propsMode = Boolean(props[storeKey]);
-        _this.setWrappedInstance = _this.setWrappedInstance.bind(_this);
-
-        invariant(_this.store, 'Could not find "' + storeKey + '" in either the context or props of ' + ('"' + displayName + '". Either wrap the root component in a <Provider>, ') + ('or explicitly pass "' + storeKey + '" as a prop to "' + displayName + '".'));
-
-        _this.initSelector();
-        _this.initSubscription();
-        return _this;
-      }
-
-      Connect.prototype.getChildContext = function getChildContext() {
-        var _ref2;
-
-        // If this component received store from props, its subscription should be transparent
-        // to any descendants receiving store+subscription from context; it passes along
-        // subscription passed to it. Otherwise, it shadows the parent subscription, which allows
-        // Connect to control ordering of notifications to flow top-down.
-        var subscription = this.propsMode ? null : this.subscription;
-        return _ref2 = {}, _ref2[subscriptionKey] = subscription || this.context[subscriptionKey], _ref2;
-      };
-
-      Connect.prototype.componentDidMount = function componentDidMount() {
-        if (!shouldHandleStateChanges) return;
-
-        // componentWillMount fires during server side rendering, but componentDidMount and
-        // componentWillUnmount do not. Because of this, trySubscribe happens during ...didMount.
-        // Otherwise, unsubscription would never take place during SSR, causing a memory leak.
-        // To handle the case where a child component may have triggered a state change by
-        // dispatching an action in its componentWillMount, we have to re-run the select and maybe
-        // re-render.
-        this.subscription.trySubscribe();
-        this.selector.run(this.props);
-        if (this.selector.shouldComponentUpdate) this.forceUpdate();
-      };
-
-      Connect.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
-        this.selector.run(nextProps);
-      };
-
-      Connect.prototype.shouldComponentUpdate = function shouldComponentUpdate() {
-        return this.selector.shouldComponentUpdate;
-      };
-
-      Connect.prototype.componentWillUnmount = function componentWillUnmount() {
-        if (this.subscription) this.subscription.tryUnsubscribe();
-        this.subscription = null;
-        this.notifyNestedSubs = noop;
-        this.store = null;
-        this.selector.run = noop;
-        this.selector.shouldComponentUpdate = false;
-      };
-
-      Connect.prototype.getWrappedInstance = function getWrappedInstance() {
-        return this.wrappedInstance;
-      };
-
-      Connect.prototype.setWrappedInstance = function setWrappedInstance(ref) {
-        this.wrappedInstance = ref;
-      };
-
-      Connect.prototype.initSelector = function initSelector() {
-        var sourceSelector = selectorFactory(this.store.dispatch, selectorFactoryOptions);
-        this.selector = makeSelectorStateful(sourceSelector, this.store);
-        this.selector.run(this.props);
-      };
-
-      Connect.prototype.initSubscription = function initSubscription() {
-        if (!shouldHandleStateChanges) return;
-
-        // parentSub's source should match where store came from: props vs. context. A component
-        // connected to the store via props shouldn't use subscription from context, or vice versa.
-        var parentSub = (this.propsMode ? this.props : this.context)[subscriptionKey];
-        this.subscription = new Subscription(this.store, parentSub, this.onStateChange.bind(this));
-
-        // `notifyNestedSubs` is duplicated to handle the case where the component is  unmounted in
-        // the middle of the notification loop, where `this.subscription` will then be null. An
-        // extra null check every change can be avoided by copying the method onto `this` and then
-        // replacing it with a no-op on unmount. This can probably be avoided if Subscription's
-        // listeners logic is changed to not call listeners that have been unsubscribed in the
-        // middle of the notification loop.
-        this.notifyNestedSubs = this.subscription.notifyNestedSubs.bind(this.subscription);
-      };
-
-      Connect.prototype.onStateChange = function onStateChange() {
-        this.selector.run(this.props);
-
-        if (!this.selector.shouldComponentUpdate) {
-          this.notifyNestedSubs();
-        } else {
-          this.componentDidUpdate = this.notifyNestedSubsOnComponentDidUpdate;
-          this.setState(dummyState);
-        }
-      };
-
-      Connect.prototype.notifyNestedSubsOnComponentDidUpdate = function notifyNestedSubsOnComponentDidUpdate() {
-        // `componentDidUpdate` is conditionally implemented when `onStateChange` determines it
-        // needs to notify nested subs. Once called, it unimplements itself until further state
-        // changes occur. Doing it this way vs having a permanent `componentDidUpdate` that does
-        // a boolean check every time avoids an extra method call most of the time, resulting
-        // in some perf boost.
-        this.componentDidUpdate = undefined;
-        this.notifyNestedSubs();
-      };
-
-      Connect.prototype.isSubscribed = function isSubscribed() {
-        return Boolean(this.subscription) && this.subscription.isSubscribed();
-      };
-
-      Connect.prototype.addExtraProps = function addExtraProps(props) {
-        if (!withRef && !renderCountProp && !(this.propsMode && this.subscription)) return props;
-        // make a shallow copy so that fields added don't leak to the original selector.
-        // this is especially important for 'ref' since that's a reference back to the component
-        // instance. a singleton memoized selector would then be holding a reference to the
-        // instance, preventing the instance from being garbage collected, and that would be bad
-        var withExtras = _extends$1({}, props);
-        if (withRef) withExtras.ref = this.setWrappedInstance;
-        if (renderCountProp) withExtras[renderCountProp] = this.renderCount++;
-        if (this.propsMode && this.subscription) withExtras[subscriptionKey] = this.subscription;
-        return withExtras;
-      };
-
-      Connect.prototype.render = function render$$1() {
-        var selector = this.selector;
-        selector.shouldComponentUpdate = false;
-
-        if (selector.error) {
-          throw selector.error;
-        } else {
-          return h(WrappedComponent, this.addExtraProps(selector.props));
-        }
-      };
-
-      return Connect;
-    }(Component);
-
-    Connect.WrappedComponent = WrappedComponent;
-    Connect.displayName = displayName;
-    Connect.childContextTypes = childContextTypes;
-    Connect.contextTypes = contextTypes;
-
-
-    {
-      Connect.prototype.componentWillUpdate = function componentWillUpdate() {
-        var _this2 = this;
-
-        // We are hot reloading!
-        if (this.version !== version) {
-          this.version = version;
-          this.initSelector();
-
-          // If any connected descendants don't hot reload (and resubscribe in the process), their
-          // listeners will be lost when we unsubscribe. Unfortunately, by copying over all
-          // listeners, this does mean that the old versions of connected descendants will still be
-          // notified of state changes; however, their onStateChange function is a no-op so this
-          // isn't a huge deal.
-          var oldListeners = [];
-
-          if (this.subscription) {
-            oldListeners = this.subscription.listeners.get();
-            this.subscription.tryUnsubscribe();
-          }
-          this.initSubscription();
-          if (shouldHandleStateChanges) {
-            this.subscription.trySubscribe();
-            oldListeners.forEach(function (listener) {
-              return _this2.subscription.listeners.subscribe(listener);
-            });
-          }
-        }
-      };
-    }
-
-    return hoistNonReactStatics(Connect, WrappedComponent);
-  };
-}
-
-var hasOwn = Object.prototype.hasOwnProperty;
-
-function is(x, y) {
-  if (x === y) {
-    return x !== 0 || y !== 0 || 1 / x === 1 / y;
-  } else {
-    return x !== x && y !== y;
-  }
-}
-
-function shallowEqual(objA, objB) {
-  if (is(objA, objB)) return true;
-
-  if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
-    return false;
-  }
-
-  var keysA = Object.keys(objA);
-  var keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) return false;
-
-  for (var i = 0; i < keysA.length; i++) {
-    if (!hasOwn.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal$2 = (typeof global === 'undefined' ? 'undefined' : _typeof(global)) == 'object' && global && global.Object === Object && global;
-
-/** Detect free variable `self`. */
-var freeSelf$1 = (typeof self === 'undefined' ? 'undefined' : _typeof(self)) == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root$3 = freeGlobal$2 || freeSelf$1 || Function('return this')();
-
-/** Built-in value references. */
-var _Symbol = root$3.Symbol;
-
-/** Used for built-in method references. */
-var objectProto$1$1 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$1$1 = objectProto$1$1.hasOwnProperty;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$2 = objectProto$1$1.toString;
-
-/** Built-in value references. */
-var symToStringTag$1$1 = _Symbol ? _Symbol.toStringTag : undefined;
-
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
-function getRawTag$2(value) {
-  var isOwn = hasOwnProperty$1$1.call(value, symToStringTag$1$1),
-      tag = value[symToStringTag$1$1];
-
-  try {
-    value[symToStringTag$1$1] = undefined;
-    var unmasked = true;
-  } catch (e) {}
-
-  var result = nativeObjectToString$2.call(value);
-  if (unmasked) {
-    if (isOwn) {
-      value[symToStringTag$1$1] = tag;
-    } else {
-      delete value[symToStringTag$1$1];
-    }
-  }
-  return result;
-}
-
-/** Used for built-in method references. */
-var objectProto$2$1 = Object.prototype;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$1$1 = objectProto$2$1.toString;
-
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
-function objectToString$2(value) {
-  return nativeObjectToString$1$1.call(value);
-}
-
-/** `Object#toString` result references. */
-var nullTag$1 = '[object Null]';
-var undefinedTag$1 = '[object Undefined]';
-
-/** Built-in value references. */
-var symToStringTag$2 = _Symbol ? _Symbol.toStringTag : undefined;
-
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
-function baseGetTag$2(value) {
-    if (value == null) {
-        return value === undefined ? undefinedTag$1 : nullTag$1;
-    }
-    return symToStringTag$2 && symToStringTag$2 in Object(value) ? getRawTag$2(value) : objectToString$2(value);
-}
-
-/**
- * Creates a unary function that invokes `func` with its argument transformed.
- *
- * @private
- * @param {Function} func The function to wrap.
- * @param {Function} transform The argument transform.
- * @returns {Function} Returns the new function.
- */
-function overArg$2(func, transform) {
-  return function (arg) {
-    return func(transform(arg));
-  };
-}
-
-/** Built-in value references. */
-var getPrototype$2 = overArg$2(Object.getPrototypeOf, Object);
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike$2(value) {
-  return value != null && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) == 'object';
-}
-
-/** `Object#toString` result references. */
-var objectTag$1 = '[object Object]';
-
-/** Used for built-in method references. */
-var funcProto$1 = Function.prototype;
-var objectProto$3 = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString$1 = funcProto$1.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
-
-/** Used to infer the `Object` constructor. */
-var objectCtorString$1 = funcToString$1.call(Object);
-
-/**
- * Checks if `value` is a plain object, that is, an object created by the
- * `Object` constructor or one with a `[[Prototype]]` of `null`.
- *
- * @static
- * @memberOf _
- * @since 0.8.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- * }
- *
- * _.isPlainObject(new Foo);
- * // => false
- *
- * _.isPlainObject([1, 2, 3]);
- * // => false
- *
- * _.isPlainObject({ 'x': 0, 'y': 0 });
- * // => true
- *
- * _.isPlainObject(Object.create(null));
- * // => true
- */
-function isPlainObject$2(value) {
-  if (!isObjectLike$2(value) || baseGetTag$2(value) != objectTag$1) {
-    return false;
-  }
-  var proto = getPrototype$2(value);
-  if (proto === null) {
-    return true;
-  }
-  var Ctor = hasOwnProperty$2.call(proto, 'constructor') && proto.constructor;
-  return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString$1.call(Ctor) == objectCtorString$1;
-}
-
-function verifyPlainObject(value, displayName, methodName) {
-  if (!isPlainObject$2(value)) {
-    warning$1(methodName + '() in ' + displayName + ' must return a plain object. Instead received ' + value + '.');
-  }
-}
-
-function wrapMapToPropsConstant(getConstant) {
-  return function initConstantSelector(dispatch, options$$1) {
-    var constant = getConstant(dispatch, options$$1);
-
-    function constantSelector() {
-      return constant;
-    }
-    constantSelector.dependsOnOwnProps = false;
-    return constantSelector;
-  };
-}
-
-// dependsOnOwnProps is used by createMapToPropsProxy to determine whether to pass props as args
-// to the mapToProps function being wrapped. It is also used by makePurePropsSelector to determine
-// whether mapToProps needs to be invoked when props have changed.
-// 
-// A length of one signals that mapToProps does not depend on props from the parent component.
-// A length of zero is assumed to mean mapToProps is getting args via arguments or ...args and
-// therefore not reporting its length accurately..
-function getDependsOnOwnProps(mapToProps) {
-  return mapToProps.dependsOnOwnProps !== null && mapToProps.dependsOnOwnProps !== undefined ? Boolean(mapToProps.dependsOnOwnProps) : mapToProps.length !== 1;
-}
-
-// Used by whenMapStateToPropsIsFunction and whenMapDispatchToPropsIsFunction,
-// this function wraps mapToProps in a proxy function which does several things:
-// 
-//  * Detects whether the mapToProps function being called depends on props, which
-//    is used by selectorFactory to decide if it should reinvoke on props changes.
-//    
-//  * On first call, handles mapToProps if returns another function, and treats that
-//    new function as the true mapToProps for subsequent calls.
-//    
-//  * On first call, verifies the first result is a plain object, in order to warn
-//    the developer that their mapToProps function is not returning a valid result.
-//    
-function wrapMapToPropsFunc(mapToProps, methodName) {
-  return function initProxySelector(dispatch, _ref) {
-    var displayName = _ref.displayName;
-
-    var proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
-      return proxy.dependsOnOwnProps ? proxy.mapToProps(stateOrDispatch, ownProps) : proxy.mapToProps(stateOrDispatch);
-    };
-
-    // allow detectFactoryAndVerify to get ownProps
-    proxy.dependsOnOwnProps = true;
-
-    proxy.mapToProps = function detectFactoryAndVerify(stateOrDispatch, ownProps) {
-      proxy.mapToProps = mapToProps;
-      proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps);
-      var props = proxy(stateOrDispatch, ownProps);
-
-      if (typeof props === 'function') {
-        proxy.mapToProps = props;
-        proxy.dependsOnOwnProps = getDependsOnOwnProps(props);
-        props = proxy(stateOrDispatch, ownProps);
-      }
-
-      verifyPlainObject(props, displayName, methodName);
-
-      return props;
-    };
-
-    return proxy;
-  };
-}
-
-function whenMapDispatchToPropsIsFunction(mapDispatchToProps) {
-  return typeof mapDispatchToProps === 'function' ? wrapMapToPropsFunc(mapDispatchToProps, 'mapDispatchToProps') : undefined;
-}
-
-function whenMapDispatchToPropsIsMissing(mapDispatchToProps) {
-  return !mapDispatchToProps ? wrapMapToPropsConstant(function (dispatch) {
-    return { dispatch: dispatch };
-  }) : undefined;
-}
-
-function whenMapDispatchToPropsIsObject(mapDispatchToProps) {
-  return mapDispatchToProps && (typeof mapDispatchToProps === 'undefined' ? 'undefined' : _typeof(mapDispatchToProps)) === 'object' ? wrapMapToPropsConstant(function (dispatch) {
-    return bindActionCreators(mapDispatchToProps, dispatch);
-  }) : undefined;
-}
-
-var defaultMapDispatchToPropsFactories = [whenMapDispatchToPropsIsFunction, whenMapDispatchToPropsIsMissing, whenMapDispatchToPropsIsObject];
-
-function whenMapStateToPropsIsFunction(mapStateToProps) {
-  return typeof mapStateToProps === 'function' ? wrapMapToPropsFunc(mapStateToProps, 'mapStateToProps') : undefined;
-}
-
-function whenMapStateToPropsIsMissing(mapStateToProps) {
-  return !mapStateToProps ? wrapMapToPropsConstant(function () {
-    return {};
-  }) : undefined;
-}
-
-var defaultMapStateToPropsFactories = [whenMapStateToPropsIsFunction, whenMapStateToPropsIsMissing];
-
-function defaultMergeProps(stateProps, dispatchProps, ownProps) {
-  return _extends$1({}, ownProps, stateProps, dispatchProps);
-}
-
-function wrapMergePropsFunc(mergeProps) {
-  return function initMergePropsProxy(dispatch, _ref) {
-    var displayName = _ref.displayName,
-        pure = _ref.pure,
-        areMergedPropsEqual = _ref.areMergedPropsEqual;
-
-    var hasRunOnce = false;
-    var mergedProps = void 0;
-
-    return function mergePropsProxy(stateProps, dispatchProps, ownProps) {
-      var nextMergedProps = mergeProps(stateProps, dispatchProps, ownProps);
-
-      if (hasRunOnce) {
-        if (!pure || !areMergedPropsEqual(nextMergedProps, mergedProps)) mergedProps = nextMergedProps;
-      } else {
-        hasRunOnce = true;
-        mergedProps = nextMergedProps;
-
-        verifyPlainObject(mergedProps, displayName, 'mergeProps');
-      }
-
-      return mergedProps;
-    };
-  };
-}
-
-function whenMergePropsIsFunction(mergeProps) {
-  return typeof mergeProps === 'function' ? wrapMergePropsFunc(mergeProps) : undefined;
-}
-
-function whenMergePropsIsOmitted(mergeProps) {
-  return !mergeProps ? function () {
-    return defaultMergeProps;
-  } : undefined;
-}
-
-var defaultMergePropsFactories = [whenMergePropsIsFunction, whenMergePropsIsOmitted];
-
-function verify(selector, methodName, displayName) {
-  if (!selector) {
-    throw new Error('Unexpected value for ' + methodName + ' in ' + displayName + '.');
-  } else if (methodName === 'mapStateToProps' || methodName === 'mapDispatchToProps') {
-    if (!selector.hasOwnProperty('dependsOnOwnProps')) {
-      warning$1('The selector for ' + methodName + ' of ' + displayName + ' did not specify a value for dependsOnOwnProps.');
-    }
-  }
-}
-
-function verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, displayName) {
-  verify(mapStateToProps, 'mapStateToProps', displayName);
-  verify(mapDispatchToProps, 'mapDispatchToProps', displayName);
-  verify(mergeProps, 'mergeProps', displayName);
-}
-
-function impureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch) {
-  return function impureFinalPropsSelector(state, ownProps) {
-    return mergeProps(mapStateToProps(state, ownProps), mapDispatchToProps(dispatch, ownProps), ownProps);
-  };
-}
-
-function pureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch, _ref) {
-  var areStatesEqual = _ref.areStatesEqual,
-      areOwnPropsEqual = _ref.areOwnPropsEqual,
-      areStatePropsEqual = _ref.areStatePropsEqual;
-
-  var hasRunAtLeastOnce = false;
-  var state = void 0;
-  var ownProps = void 0;
-  var stateProps = void 0;
-  var dispatchProps = void 0;
-  var mergedProps = void 0;
-
-  function handleFirstCall(firstState, firstOwnProps) {
-    state = firstState;
-    ownProps = firstOwnProps;
-    stateProps = mapStateToProps(state, ownProps);
-    dispatchProps = mapDispatchToProps(dispatch, ownProps);
-    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
-    hasRunAtLeastOnce = true;
-    return mergedProps;
-  }
-
-  function handleNewPropsAndNewState() {
-    stateProps = mapStateToProps(state, ownProps);
-
-    if (mapDispatchToProps.dependsOnOwnProps) dispatchProps = mapDispatchToProps(dispatch, ownProps);
-
-    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
-    return mergedProps;
-  }
-
-  function handleNewProps() {
-    if (mapStateToProps.dependsOnOwnProps) stateProps = mapStateToProps(state, ownProps);
-
-    if (mapDispatchToProps.dependsOnOwnProps) dispatchProps = mapDispatchToProps(dispatch, ownProps);
-
-    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
-    return mergedProps;
-  }
-
-  function handleNewState() {
-    var nextStateProps = mapStateToProps(state, ownProps);
-    var statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps);
-    stateProps = nextStateProps;
-
-    if (statePropsChanged) mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
-
-    return mergedProps;
-  }
-
-  function handleSubsequentCalls(nextState, nextOwnProps) {
-    var propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps);
-    var stateChanged = !areStatesEqual(nextState, state);
-    state = nextState;
-    ownProps = nextOwnProps;
-
-    if (propsChanged && stateChanged) return handleNewPropsAndNewState();
-    if (propsChanged) return handleNewProps();
-    if (stateChanged) return handleNewState();
-    return mergedProps;
-  }
-
-  return function pureFinalPropsSelector(nextState, nextOwnProps) {
-    return hasRunAtLeastOnce ? handleSubsequentCalls(nextState, nextOwnProps) : handleFirstCall(nextState, nextOwnProps);
-  };
-}
-
-// TODO: Add more comments
-
-// If pure is true, the selector returned by selectorFactory will memoize its results,
-// allowing connectAdvanced's shouldComponentUpdate to return false if final
-// props have not changed. If false, the selector will always return a new
-// object and shouldComponentUpdate will always return true.
-
-function finalPropsSelectorFactory(dispatch, _ref2) {
-  var initMapStateToProps = _ref2.initMapStateToProps,
-      initMapDispatchToProps = _ref2.initMapDispatchToProps,
-      initMergeProps = _ref2.initMergeProps,
-      options$$1 = objectWithoutProperties(_ref2, ['initMapStateToProps', 'initMapDispatchToProps', 'initMergeProps']);
-
-  var mapStateToProps = initMapStateToProps(dispatch, options$$1);
-  var mapDispatchToProps = initMapDispatchToProps(dispatch, options$$1);
-  var mergeProps = initMergeProps(dispatch, options$$1);
-
-  {
-    verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, options$$1.displayName);
-  }
-
-  var selectorFactory = options$$1.pure ? pureFinalPropsSelectorFactory : impureFinalPropsSelectorFactory;
-
-  return selectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch, options$$1);
-}
-
-/*
-  connect is a facade over connectAdvanced. It turns its args into a compatible
-  selectorFactory, which has the signature:
-
-    (dispatch, options) => (nextState, nextOwnProps) => nextFinalProps
-  
-  connect passes its args to connectAdvanced as options, which will in turn pass them to
-  selectorFactory each time a Connect component instance is instantiated or hot reloaded.
-
-  selectorFactory returns a final props selector from its mapStateToProps,
-  mapStateToPropsFactories, mapDispatchToProps, mapDispatchToPropsFactories, mergeProps,
-  mergePropsFactories, and pure args.
-
-  The resulting final props selector is called by the Connect component instance whenever
-  it receives new props or store state.
- */
-
-function match(arg, factories, name) {
-  for (var i = factories.length - 1; i >= 0; i--) {
-    var result = factories[i](arg);
-    if (result) return result;
-  }
-
-  return function (dispatch, options$$1) {
-    throw new Error('Invalid value of type ' + (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) + ' for ' + name + ' argument when connecting component ' + options$$1.wrappedComponentName + '.');
-  };
-}
-
-function strictEqual(a, b) {
-  return a === b;
-}
-
-// createConnect with default args builds the 'official' connect behavior. Calling it with
-// different options opens up some testing and extensibility scenarios
-function createConnect() {
-  var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-      _ref$connectHOC = _ref.connectHOC,
-      connectHOC = _ref$connectHOC === undefined ? connectAdvanced : _ref$connectHOC,
-      _ref$mapStateToPropsF = _ref.mapStateToPropsFactories,
-      mapStateToPropsFactories = _ref$mapStateToPropsF === undefined ? defaultMapStateToPropsFactories : _ref$mapStateToPropsF,
-      _ref$mapDispatchToPro = _ref.mapDispatchToPropsFactories,
-      mapDispatchToPropsFactories = _ref$mapDispatchToPro === undefined ? defaultMapDispatchToPropsFactories : _ref$mapDispatchToPro,
-      _ref$mergePropsFactor = _ref.mergePropsFactories,
-      mergePropsFactories = _ref$mergePropsFactor === undefined ? defaultMergePropsFactories : _ref$mergePropsFactor,
-      _ref$selectorFactory = _ref.selectorFactory,
-      selectorFactory = _ref$selectorFactory === undefined ? finalPropsSelectorFactory : _ref$selectorFactory;
-
-  return function connect(mapStateToProps, mapDispatchToProps, mergeProps) {
-    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-
-    var _ref2$pure = _ref2.pure,
-        pure = _ref2$pure === undefined ? true : _ref2$pure,
-        _ref2$areStatesEqual = _ref2.areStatesEqual,
-        areStatesEqual = _ref2$areStatesEqual === undefined ? strictEqual : _ref2$areStatesEqual,
-        _ref2$areOwnPropsEqua = _ref2.areOwnPropsEqual,
-        areOwnPropsEqual = _ref2$areOwnPropsEqua === undefined ? shallowEqual : _ref2$areOwnPropsEqua,
-        _ref2$areStatePropsEq = _ref2.areStatePropsEqual,
-        areStatePropsEqual = _ref2$areStatePropsEq === undefined ? shallowEqual : _ref2$areStatePropsEq,
-        _ref2$areMergedPropsE = _ref2.areMergedPropsEqual,
-        areMergedPropsEqual = _ref2$areMergedPropsE === undefined ? shallowEqual : _ref2$areMergedPropsE,
-        extraOptions = objectWithoutProperties(_ref2, ['pure', 'areStatesEqual', 'areOwnPropsEqual', 'areStatePropsEqual', 'areMergedPropsEqual']);
-
-    var initMapStateToProps = match(mapStateToProps, mapStateToPropsFactories, 'mapStateToProps');
-    var initMapDispatchToProps = match(mapDispatchToProps, mapDispatchToPropsFactories, 'mapDispatchToProps');
-    var initMergeProps = match(mergeProps, mergePropsFactories, 'mergeProps');
-
-    return connectHOC(selectorFactory, _extends$1({
-      // used in error messages
-      methodName: 'connect',
-
-      // used to compute Connect's displayName from the wrapped component's displayName.
-      getDisplayName: function getDisplayName(name) {
-        return 'Connect(' + name + ')';
-      },
-
-      // if mapStateToProps is falsy, the Connect component doesn't subscribe to store state changes
-      shouldHandleStateChanges: Boolean(mapStateToProps),
-
-      // passed through to selectorFactory
-      initMapStateToProps: initMapStateToProps,
-      initMapDispatchToProps: initMapDispatchToProps,
-      initMergeProps: initMergeProps,
-      pure: pure,
-      areStatesEqual: areStatesEqual,
-      areOwnPropsEqual: areOwnPropsEqual,
-      areStatePropsEqual: areStatePropsEqual,
-      areMergedPropsEqual: areMergedPropsEqual
-
-    }, extraOptions));
-  };
-}
-
-var connect = createConnect();
-
-
-//# sourceMappingURL=preact-redux.esm.js.map
-
-var isVisible = function isVisible(state) {
-	return state.visible;
-};
-var getOptions = function getOptions(state) {
-	return state.options;
-};
-var getData = function getData(state) {
-	return state.data;
-};
-var getIndex = function getIndex(state) {
-	return state.index;
-};
-var getOffset = function getOffset(state) {
-	return state.offset;
-};
-var getPattern = function getPattern(state) {
-	return state.pattern.value;
-};
-var getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getOffset(state) + getIndex(state)];
-};
-var getRawDataLength = function getRawDataLength(state) {
-	return state.data.length;
-};
-var getSparklingData = function getSparklingData(state) {
-	return state.sparklingData;
-};
-var getFind = function getFind(state) {
-	return state.find;
-};
-var isFindVisible = function isFindVisible(state) {
-	return state.findVisible;
-};
-var getReplace = function getReplace(state) {
-	return state.replace;
-};
-
-var getExtraInput = function getExtraInput(state) {
-	return state.extraInput;
-};
-var isSmartCase = function isSmartCase(state) {
-	return state.smartCase;
-};
-var getScope = function getScope(state) {
-	return state.scope;
-};
-var isLiteralSearch = function isLiteralSearch(state) {
-	return state.literalSearch;
-};
-var isWholeWord = function isWholeWord(state) {
-	return state.wholeWord;
-};
-
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function commonjsRequire () {
@@ -2964,539 +1693,6 @@ function commonjsRequire () {
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
-
-var classnames = createCommonjsModule(function (module) {
-/*!
-  Copyright (c) 2016 Jed Watson.
-  Licensed under the MIT License (MIT), see
-  http://jedwatson.github.io/classnames
-*/
-/* global define */
-
-(function () {
-	var hasOwn = {}.hasOwnProperty;
-
-	function classNames () {
-		var classes = [];
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg;
-
-			if (argType === 'string' || argType === 'number') {
-				classes.push(arg);
-			} else if (Array.isArray(arg)) {
-				classes.push(classNames.apply(null, arg));
-			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes.push(key);
-					}
-				}
-			}
-		}
-
-		return classes.join(' ');
-	}
-
-	if ('object' !== 'undefined' && module.exports) {
-		module.exports = classNames;
-	} else if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
-		// register as 'classnames', consistent with npm package name
-		undefined('classnames', [], function () {
-			return classNames;
-		});
-	} else {
-		window.classNames = classNames;
-	}
-}());
-});
-
-var classCallCheck$1 = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-
-
-
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends$2 = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-
-
-var inherits$1 = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-
-
-
-
-
-
-
-
-var objectWithoutProperties$1 = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn$1 = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-
-
-
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-
-
-
-
-
-
-
-
-
-
-var toArray = function (arr) {
-  return Array.isArray(arr) ? arr : Array.from(arr);
-};
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
-
-var Input = function (_Component) {
-	inherits$1(Input, _Component);
-
-	function Input() {
-		classCallCheck$1(this, Input);
-		return possibleConstructorReturn$1(this, (Input.__proto__ || Object.getPrototypeOf(Input)).apply(this, arguments));
-	}
-
-	createClass(Input, [{
-		key: 'componentDidMount',
-		value: function componentDidMount() {
-			if (this.props.autoFocus) {
-				this.input.focus();
-			}
-		}
-	}, {
-		key: 'render',
-		value: function render$$1() {
-			var _this2 = this;
-
-			var _props = this.props,
-			    id = _props.id,
-			    setValue = _props.setValue,
-			    value = _props.value,
-			    className = _props.className,
-			    placeholder = _props.placeholder,
-			    _props$tabIndex = _props.tabIndex,
-			    tabIndex = _props$tabIndex === undefined ? -1 : _props$tabIndex;
-
-
-			return h('input', {
-				id: id,
-				tabIndex: tabIndex,
-				className: classnames('sparkling-input native-key-bindings', className),
-				placeholder: placeholder,
-				onInput: function onInput(event) {
-					setValue(event.target.value);
-				},
-				value: value,
-				ref: function ref(input) {
-					_this2.input = input;
-				}
-			});
-		}
-	}]);
-	return Input;
-}(Component);
-
-var SparklingInput = function SparklingInput(_ref) {
-	var options$$1 = _ref.options,
-	    data = _ref.data,
-	    rawDataLength = _ref.rawDataLength,
-	    pattern = _ref.pattern,
-	    setPattern = _ref.setPattern;
-	var description = options$$1.description,
-	    childrenRenderer = options$$1.childrenRenderer;
-
-	var filteredDataLength = data.length;
-
-	return h(
-		'div',
-		{ className: 'sparkling-input-container' },
-		h(
-			'div',
-			{ className: 'sparkling-meta-data' },
-			h(
-				'span',
-				null,
-				filteredDataLength + ' / ' + rawDataLength
-			),
-			h(
-				'span',
-				{ className: 'sparkling-command-description' },
-				description
-			)
-		),
-		h(Input, {
-			autoFocus: true,
-			id: 'sparkling-input',
-			tabIndex: 1,
-			className: classnames('sparkling-input', 'native-key-bindings', {
-				'sparkling-input--has-results': filteredDataLength > 0,
-				'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
-			}),
-			placeholder: 'Sparkling fuzzy filter',
-			value: pattern,
-			setValue: setPattern
-		}),
-		childrenRenderer && childrenRenderer()
-	);
-};
-
-var SparklingInput$1 = connect(function (state) {
-	return {
-		data: getSparklingData(state),
-		options: getOptions(state),
-		rawDataLength: getRawDataLength(state),
-		pattern: getPattern(state)
-	};
-}, function (dispatch) {
-	return {
-		setPattern: function setPattern(pattern) {
-			return dispatch({ type: 'SET_PATTERN', payload: { pattern: pattern } });
-		}
-	};
-})(SparklingInput);
-
-var SparklingResults = function SparklingResults(_ref) {
-	var options$$1 = _ref.options,
-	    selectedValue = _ref.selectedValue,
-	    data = _ref.data,
-	    selectedIndex = _ref.selectedIndex,
-	    offset = _ref.offset,
-	    pattern = _ref.pattern;
-	var preview = options$$1.preview,
-	    renderer = options$$1.renderer,
-	    accept = options$$1.accept,
-	    columns = options$$1.columns,
-	    sliceLength = options$$1.sliceLength;
-
-	var style = columns > 1 ? {
-		'grid-auto-columns': 'minmax(' + 100.0 / columns + '%, 100%)',
-		'grid-auto-flow': 'column',
-		'grid-template-rows': 'repeat(' + sliceLength / columns + ', 1fr)'
-	} : {
-		'grid-auto-flow': 'row'
-	};
-
-	return h(
-		'div',
-		{ className: 'sparkling-results-container' },
-		h(
-			'div',
-			{ className: 'sparkling-results', style: style },
-			data.slice(offset, offset + sliceLength).map(function (item, index$$1) {
-				return renderer({
-					item: item,
-					index: index$$1,
-					selectedIndex: selectedIndex,
-					accept: accept,
-					pattern: pattern
-				});
-			})
-		),
-		preview && selectedValue && h(
-			'div',
-			{ className: 'sparkling-preview' },
-			preview(selectedValue)
-		)
-	);
-};
-
-var SparklingResults$1 = connect(function (state) {
-	return {
-		options: getOptions(state),
-		data: getSparklingData(state),
-		selectedIndex: getIndex(state),
-		selectedValue: getSelectedValue(state),
-		offset: getOffset(state),
-		pattern: getPattern(state)
-	};
-})(SparklingResults);
-
-var Sparkling = (function (_ref) {
-	var options$$1 = _ref.options;
-	var id = options$$1.id;
-
-
-	return h(
-		'div',
-		{ className: 'sparkling', id: id },
-		h(SparklingResults$1, null),
-		h(SparklingInput$1, null)
-	);
-});
-
-var SparklingContainer = function SparklingContainer(_ref) {
-	var visible = _ref.visible,
-	    props = objectWithoutProperties$1(_ref, ['visible']);
-
-	if (!visible) {
-		return null;
-	}
-
-	return h(Sparkling, props);
-};
-
-var SparklingContainer$1 = connect(function (state) {
-	return {
-		visible: isVisible(state),
-		options: getOptions(state)
-	};
-})(SparklingContainer);
-
-var FindContainer = function FindContainer(_ref) {
-	var visible = _ref.visible,
-	    value = _ref.value,
-	    setValue = _ref.setValue,
-	    toggleSmartCase = _ref.toggleSmartCase,
-	    smartCase = _ref.smartCase,
-	    scope = _ref.scope,
-	    setScope = _ref.setScope,
-	    toggleLiteralSearch = _ref.toggleLiteralSearch,
-	    literalSearch = _ref.literalSearch;
-
-	if (!visible) {
-		return null;
-	}
-
-	return h(
-		'div',
-		{ className: 'sparkling-input-container' },
-		h(
-			'div',
-			{ className: 'sparkling-find-options' },
-			h(
-				'button',
-				{
-					onClick: toggleSmartCase,
-					className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', smartCase))
-				},
-				'Smart case'
-			),
-			h(
-				'button',
-				{
-					onClick: toggleLiteralSearch,
-					className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', literalSearch))
-				},
-				'Literal search'
-			)
-		),
-		h(Input, {
-			tabIndex: 0,
-			className: 'sparkling-find',
-			autoFocus: true,
-			value: value,
-			setValue: setValue,
-			placeholder: 'Enter to find, shift Enter to replace'
-		}),
-		h(Input, {
-			tabIndex: 1,
-			className: 'sparkling-scope',
-			value: scope,
-			setValue: setScope,
-			placeholder: 'Scope. Leave empty to search whole project'
-		})
-	);
-};
-
-var FindContainer$1 = connect(function (state) {
-	return {
-		visible: isFindVisible(state),
-		value: getFind(state),
-		smartCase: isSmartCase(state),
-		literalSearch: isLiteralSearch(state),
-		scope: getScope(state),
-		wholeWord: isWholeWord(state)
-	};
-}, function (dispatch) {
-	return {
-		setValue: function setValue(find) {
-			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
-		},
-		toggleSmartCase: function toggleSmartCase() {
-			return dispatch({ type: 'TOGGLE_SMART_CASE' });
-		},
-		toggleLiteralSearch: function toggleLiteralSearch() {
-			return dispatch({ type: 'TOGGLE_LITERAL_SEARCH' });
-		},
-		setScope: function setScope(scope) {
-			return dispatch({ type: 'SET_SCOPE', payload: { scope: scope } });
-		},
-		toggleWholeWord: function toggleWholeWord() {
-			return dispatch({ type: 'TOGGLE_WHOLE_WORD' });
-		}
-	};
-})(FindContainer);
-
-var ExtraInputContainer = function ExtraInputContainer(_ref) {
-	var extraInput = _ref.extraInput,
-	    setValue = _ref.setValue;
-	var value = extraInput.value,
-	    id = extraInput.id,
-	    _extraInput$placehold = extraInput.placeholder,
-	    placeholder = _extraInput$placehold === undefined ? '' : _extraInput$placehold;
-
-	if (!id) {
-		return null;
-	}
-
-	return h(
-		'div',
-		{ id: id, className: 'sparkling-input-container' },
-		h(Input, {
-			autoFocus: true,
-			value: value,
-			setValue: setValue,
-			placeholder: placeholder
-		})
-	);
-};
-
-var ExtraInputContainer$1 = connect(function (state) {
-	return {
-		extraInput: getExtraInput(state)
-	};
-}, function (dispatch) {
-	return {
-		setValue: function setValue(value) {
-			return dispatch({ type: 'SET_EXTRA_INPUT_VALUE', payload: { value: value } });
-		}
-	};
-})(ExtraInputContainer);
 
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
@@ -3514,7 +1710,7 @@ var root_1 = _root;
 })();
 //# sourceMappingURL=root.js.map
 
-var root$4 = {
+var root$3 = {
 	root: root_1
 };
 
@@ -3603,7 +1799,7 @@ var UnsubscriptionError_1 = {
 	UnsubscriptionError: UnsubscriptionError_2
 };
 
-var Subscription$1 = (function () {
+var Subscription = (function () {
     /**
      * @param {function(): void} [unsubscribe] A function describing how to
      * perform the disposal of resources when the `unsubscribe` method is called.
@@ -3772,7 +1968,7 @@ var Subscription$1 = (function () {
     }(new Subscription()));
     return Subscription;
 }());
-var Subscription_2 = Subscription$1;
+var Subscription_2 = Subscription;
 function flattenUnsubscriptionErrors(errors) {
     return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError_1.UnsubscriptionError) ? err.errors : err); }, []);
 }
@@ -3795,7 +1991,7 @@ var Observer = {
 };
 
 var rxSubscriber = createCommonjsModule(function (module, exports) {
-var Symbol = root$4.root.Symbol;
+var Symbol = root$3.root.Symbol;
 exports.rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'function') ?
     Symbol.for('rxSubscriber') : '@@rxSubscriber';
 /**
@@ -4117,7 +2313,7 @@ function getSymbolObservable(context) {
     return $$observable;
 }
 exports.getSymbolObservable = getSymbolObservable;
-exports.observable = getSymbolObservable(root$4.root);
+exports.observable = getSymbolObservable(root$3.root);
 /**
  * @deprecated use observable instead
  */
@@ -4129,8 +2325,8 @@ var observable_1 = observable.getSymbolObservable;
 var observable_2 = observable.observable;
 var observable_3 = observable.$$observable;
 
-function noop$1() { }
-var noop_2 = noop$1;
+function noop() { }
+var noop_2 = noop;
 //# sourceMappingURL=noop.js.map
 
 var noop_1 = {
@@ -4343,11 +2539,11 @@ var Observable = (function () {
     Observable.prototype.forEach = function (next, PromiseCtor) {
         var _this = this;
         if (!PromiseCtor) {
-            if (root$4.root.Rx && root$4.root.Rx.config && root$4.root.Rx.config.Promise) {
-                PromiseCtor = root$4.root.Rx.config.Promise;
+            if (root$3.root.Rx && root$3.root.Rx.config && root$3.root.Rx.config.Promise) {
+                PromiseCtor = root$3.root.Rx.config.Promise;
             }
-            else if (root$4.root.Promise) {
-                PromiseCtor = root$4.root.Promise;
+            else if (root$3.root.Promise) {
+                PromiseCtor = root$3.root.Promise;
             }
         }
         if (!PromiseCtor) {
@@ -4427,11 +2623,11 @@ var Observable = (function () {
     Observable.prototype.toPromise = function (PromiseCtor) {
         var _this = this;
         if (!PromiseCtor) {
-            if (root$4.root.Rx && root$4.root.Rx.config && root$4.root.Rx.config.Promise) {
-                PromiseCtor = root$4.root.Rx.config.Promise;
+            if (root$3.root.Rx && root$3.root.Rx.config && root$3.root.Rx.config.Promise) {
+                PromiseCtor = root$3.root.Rx.config.Promise;
             }
-            else if (root$4.root.Promise) {
-                PromiseCtor = root$4.root.Promise;
+            else if (root$3.root.Promise) {
+                PromiseCtor = root$3.root.Promise;
             }
         }
         if (!PromiseCtor) {
@@ -4462,6 +2658,175 @@ var Observable_2 = Observable;
 
 var Observable_1 = {
 	Observable: Observable_2
+};
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
+var _extends$1 = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+var objectWithoutProperties = function (obj, keys) {
+  var target = {};
+
+  for (var i in obj) {
+    if (keys.indexOf(i) >= 0) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+    target[i] = obj[i];
+  }
+
+  return target;
+};
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+
+
+
+
+
+
+
+
+
+
+var toArray = function (arr) {
+  return Array.isArray(arr) ? arr : Array.from(arr);
+};
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
 };
 
 var reducerCreator = function reducerCreator(actions) {
@@ -4550,14 +2915,14 @@ var sparklingData = reducerCreator({
 var pattern = reducerCreator({
 	SET_PATTERN: function SET_PATTERN(state, _ref3) {
 		var pattern = _ref3.pattern;
-		return _extends$2({}, state, { value: pattern });
+		return _extends$1({}, state, { value: pattern });
 	},
 	SHOW: function SHOW(state) {
-		return _extends$2({}, state, { value: '' });
+		return _extends$1({}, state, { value: '' });
 	}
 })({ value: '', id: '' });
 
-var index$2 = reducerCreator({
+var index = reducerCreator({
 	SET_INDEX: returnPayload('value'),
 	SET_DATA: 0,
 	SET_PATTERN: 0,
@@ -4576,7 +2941,7 @@ var extraInput = reducerCreator({
 	SHOW_EXTRA_INPUT: returnPayload(),
 	SET_EXTRA_INPUT_VALUE: function SET_EXTRA_INPUT_VALUE(state, _ref4) {
 		var value = _ref4.value;
-		return _extends$2({}, state, { value: value });
+		return _extends$1({}, state, { value: value });
 	},
 	HIDE: { value: '', id: null }
 })({ value: '', id: null });
@@ -4609,7 +2974,7 @@ var reducers = combineReducers({
 	options: options$1,
 	data: data,
 	sparklingData: sparklingData,
-	index: index$2,
+	index: index,
 	offset: offset,
 	pattern: pattern,
 	findVisible: findVisible,
@@ -4706,7 +3071,109 @@ function storeFactory(reducers$$1) {
 
 var store = storeFactory(reducers);
 
+var isVisible = function isVisible(state) {
+	return state.visible;
+};
+var getOptions = function getOptions(state) {
+	return state.options;
+};
+var getData = function getData(state) {
+	return state.data;
+};
+var getIndex = function getIndex(state) {
+	return state.index;
+};
+var getOffset = function getOffset(state) {
+	return state.offset;
+};
+var getPattern = function getPattern(state) {
+	return state.pattern.value;
+};
+var getSelectedValue = function getSelectedValue(state) {
+	return getSparklingData(state)[getOffset(state) + getIndex(state)];
+};
+var getRawDataLength = function getRawDataLength(state) {
+	return state.data.length;
+};
+var getSparklingData = function getSparklingData(state) {
+	return state.sparklingData;
+};
+var getFind = function getFind(state) {
+	return state.find;
+};
+var isFindVisible = function isFindVisible(state) {
+	return state.findVisible;
+};
+var getReplace = function getReplace(state) {
+	return state.replace;
+};
+
+var getExtraInput = function getExtraInput(state) {
+	return state.extraInput;
+};
+var isSmartCase = function isSmartCase(state) {
+	return state.smartCase;
+};
+var getScope = function getScope(state) {
+	return state.scope;
+};
+var isLiteralSearch = function isLiteralSearch(state) {
+	return state.literalSearch;
+};
+var isWholeWord = function isWholeWord(state) {
+	return state.wholeWord;
+};
+
 var DEFAULT_SLICE_LENGTH = 12;
+
+var classnames = createCommonjsModule(function (module) {
+/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				classes.push(classNames.apply(null, arg));
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if ('object' !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
+		// register as 'classnames', consistent with npm package name
+		undefined('classnames', [], function () {
+			return classNames;
+		});
+	} else {
+		window.classNames = classNames;
+	}
+}());
+});
 
 var fuzzysort = createCommonjsModule(function (module) {
 /*
@@ -5388,9 +3855,9 @@ var commandFactory = (function (optionsFactory) {
 	    sliceLength = _optionsFactory$slice === undefined ? DEFAULT_SLICE_LENGTH : _optionsFactory$slice,
 	    _optionsFactory$colum = _optionsFactory.columns,
 	    columns = _optionsFactory$colum === undefined ? 1 : _optionsFactory$colum,
-	    extraOptions = objectWithoutProperties$1(_optionsFactory, ['loadData', 'accept', 'renderer', 'preview', 'sliceLength', 'columns']);
+	    extraOptions = objectWithoutProperties(_optionsFactory, ['loadData', 'accept', 'renderer', 'preview', 'sliceLength', 'columns']);
 
-	var options$$1 = _extends$2({
+	var options$$1 = _extends$1({
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
@@ -5400,7 +3867,7 @@ var commandFactory = (function (optionsFactory) {
 	}, extraOptions);
 
 	return function (extraOptions) {
-		options$$1 = extraOptions ? _extends$2({}, options$$1, extraOptions) : options$$1;
+		options$$1 = extraOptions ? _extends$1({}, options$$1, extraOptions) : options$$1;
 
 		var state = store.getState();
 
@@ -5449,7 +3916,7 @@ var loadData = (function (onData) {
 });
 
 var renderer = (function (props) {
-	return defaultRenderer(_extends$2({}, props, {
+	return defaultRenderer(_extends$1({}, props, {
 		className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
 	}));
 });
@@ -6062,10 +4529,1276 @@ var findFactory = function findFactory(h, store) {
 
 var find$1 = commandFactory(findFactory);
 
+var Children = {
+	only: function only(children) {
+		return children && children[0] || null;
+	}
+};
+
+function proptype() {}
+proptype.isRequired = proptype;
+
+var PropTypes = {
+	element: proptype,
+	func: proptype,
+	shape: function shape() {
+		return proptype;
+	},
+	instanceOf: function instanceOf() {
+		return proptype;
+	}
+};
+
+var subscriptionShape = PropTypes.shape({
+  trySubscribe: PropTypes.func.isRequired,
+  tryUnsubscribe: PropTypes.func.isRequired,
+  notifyNestedSubs: PropTypes.func.isRequired,
+  isSubscribed: PropTypes.func.isRequired
+});
+
+var storeShape = PropTypes.shape({
+  subscribe: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  getState: PropTypes.func.isRequired
+});
+
+/**
+ * Prints a warning in the console if it exists.
+ *
+ * @param {String} message The warning message.
+ * @returns {void}
+ */
+function warning$1(message) {
+  /* eslint-disable no-console */
+  if (typeof console !== 'undefined' && typeof console.error === 'function') {
+    console.error(message);
+  }
+  /* eslint-enable no-console */
+  try {
+    // This error was thrown as a convenience so that if you enable
+    // "break on all exceptions" in your console,
+    // it would pause the execution at this line.
+    throw new Error(message);
+    /* eslint-disable no-empty */
+  } catch (e) {}
+  /* eslint-enable no-empty */
+}
+
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
+var classCallCheck$1 = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+
+
+
+
+
+
+
+
+var _extends$2 = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+
+
+var inherits$1 = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+var objectWithoutProperties$1 = function (obj, keys) {
+  var target = {};
+
+  for (var i in obj) {
+    if (keys.indexOf(i) >= 0) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+    target[i] = obj[i];
+  }
+
+  return target;
+};
+
+var possibleConstructorReturn$1 = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+var didWarnAboutReceivingStore = false;
+function warnAboutReceivingStore() {
+  if (didWarnAboutReceivingStore) {
+    return;
+  }
+  didWarnAboutReceivingStore = true;
+
+  warning$1('<Provider> does not support changing `store` on the fly. ' + 'It is most likely that you see this error because you updated to ' + 'Redux 2.x and React Redux 2.x which no longer hot reload reducers ' + 'automatically. See https://github.com/reactjs/react-redux/releases/' + 'tag/v2.0.0 for the migration instructions.');
+}
+
+function createProvider() {
+  var _Provider$childContex;
+
+  var storeKey = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'store';
+  var subKey = arguments[1];
+
+  var subscriptionKey = subKey || storeKey + 'Subscription';
+
+  var Provider = function (_Component) {
+    inherits$1(Provider, _Component);
+
+    Provider.prototype.getChildContext = function getChildContext() {
+      var _ref;
+
+      return _ref = {}, _ref[storeKey] = this[storeKey], _ref[subscriptionKey] = null, _ref;
+    };
+
+    function Provider(props, context) {
+      classCallCheck$1(this, Provider);
+
+      var _this = possibleConstructorReturn$1(this, _Component.call(this, props, context));
+
+      _this[storeKey] = props.store;
+      return _this;
+    }
+
+    Provider.prototype.render = function render$$1() {
+      return Children.only(this.props.children);
+    };
+
+    return Provider;
+  }(Component);
+
+  {
+    Provider.prototype.componentWillReceiveProps = function (nextProps) {
+      if (this[storeKey] !== nextProps.store) {
+        warnAboutReceivingStore();
+      }
+    };
+  }
+
+  Provider.childContextTypes = (_Provider$childContex = {}, _Provider$childContex[storeKey] = storeShape.isRequired, _Provider$childContex[subscriptionKey] = subscriptionShape, _Provider$childContex);
+
+  return Provider;
+}
+
+var Provider = createProvider();
+
+/**
+ * Copyright 2015, Yahoo! Inc.
+ * Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
+ */
+var REACT_STATICS = {
+    childContextTypes: true,
+    contextTypes: true,
+    defaultProps: true,
+    displayName: true,
+    getDefaultProps: true,
+    mixins: true,
+    propTypes: true,
+    type: true
+};
+
+var KNOWN_STATICS = {
+    name: true,
+    length: true,
+    prototype: true,
+    caller: true,
+    callee: true,
+    arguments: true,
+    arity: true
+};
+
+var defineProperty$1 = Object.defineProperty;
+var getOwnPropertyNames = Object.getOwnPropertyNames;
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var getPrototypeOf = Object.getPrototypeOf;
+var objectPrototype = getPrototypeOf && getPrototypeOf(Object);
+
+var hoistNonReactStatics = function hoistNonReactStatics(targetComponent, sourceComponent, blacklist) {
+    if (typeof sourceComponent !== 'string') {
+        // don't hoist over string (html) components
+
+        if (objectPrototype) {
+            var inheritedComponent = getPrototypeOf(sourceComponent);
+            if (inheritedComponent && inheritedComponent !== objectPrototype) {
+                hoistNonReactStatics(targetComponent, inheritedComponent, blacklist);
+            }
+        }
+
+        var keys = getOwnPropertyNames(sourceComponent);
+
+        if (getOwnPropertySymbols) {
+            keys = keys.concat(getOwnPropertySymbols(sourceComponent));
+        }
+
+        for (var i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            if (!REACT_STATICS[key] && !KNOWN_STATICS[key] && (!blacklist || !blacklist[key])) {
+                var descriptor = getOwnPropertyDescriptor(sourceComponent, key);
+                try {
+                    // Avoid failures from read-only properties
+                    defineProperty$1(targetComponent, key, descriptor);
+                } catch (e) {}
+            }
+        }
+
+        return targetComponent;
+    }
+
+    return targetComponent;
+};
+
+var invariant = function () {};
+
+// encapsulates the subscription logic for connecting a component to the redux store, as
+// well as nesting subscriptions of descendant components, so that we can ensure the
+// ancestor components re-render before descendants
+
+var CLEARED = null;
+var nullListeners = {
+  notify: function notify() {}
+};
+
+function createListenerCollection() {
+  // the current/next pattern is copied from redux's createStore code.
+  // TODO: refactor+expose that code to be reusable here?
+  var current = [];
+  var next = [];
+
+  return {
+    clear: function clear() {
+      next = CLEARED;
+      current = CLEARED;
+    },
+    notify: function notify() {
+      var listeners = current = next;
+      for (var i = 0; i < listeners.length; i++) {
+        listeners[i]();
+      }
+    },
+    get: function get$$1() {
+      return next;
+    },
+    subscribe: function subscribe(listener) {
+      var isSubscribed = true;
+      if (next === current) next = current.slice();
+      next.push(listener);
+
+      return function unsubscribe() {
+        if (!isSubscribed || current === CLEARED) return;
+        isSubscribed = false;
+
+        if (next === current) next = current.slice();
+        next.splice(next.indexOf(listener), 1);
+      };
+    }
+  };
+}
+
+var Subscription$1 = function () {
+  function Subscription(store, parentSub, onStateChange) {
+    classCallCheck$1(this, Subscription);
+
+    this.store = store;
+    this.parentSub = parentSub;
+    this.onStateChange = onStateChange;
+    this.unsubscribe = null;
+    this.listeners = nullListeners;
+  }
+
+  Subscription.prototype.addNestedSub = function addNestedSub(listener) {
+    this.trySubscribe();
+    return this.listeners.subscribe(listener);
+  };
+
+  Subscription.prototype.notifyNestedSubs = function notifyNestedSubs() {
+    this.listeners.notify();
+  };
+
+  Subscription.prototype.isSubscribed = function isSubscribed() {
+    return Boolean(this.unsubscribe);
+  };
+
+  Subscription.prototype.trySubscribe = function trySubscribe() {
+    if (!this.unsubscribe) {
+      this.unsubscribe = this.parentSub ? this.parentSub.addNestedSub(this.onStateChange) : this.store.subscribe(this.onStateChange);
+
+      this.listeners = createListenerCollection();
+    }
+  };
+
+  Subscription.prototype.tryUnsubscribe = function tryUnsubscribe() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+      this.listeners.clear();
+      this.listeners = nullListeners;
+    }
+  };
+
+  return Subscription;
+}();
+
+var hotReloadingVersion = 0;
+var dummyState = {};
+function noop$1() {}
+function makeSelectorStateful(sourceSelector, store) {
+  // wrap the selector in an object that tracks its results between runs.
+  var selector = {
+    run: function runComponentSelector(props) {
+      try {
+        var nextProps = sourceSelector(store.getState(), props);
+        if (nextProps !== selector.props || selector.error) {
+          selector.shouldComponentUpdate = true;
+          selector.props = nextProps;
+          selector.error = null;
+        }
+      } catch (error) {
+        selector.shouldComponentUpdate = true;
+        selector.error = error;
+      }
+    }
+  };
+
+  return selector;
+}
+
+function connectAdvanced(
+/*
+  selectorFactory is a func that is responsible for returning the selector function used to
+  compute new props from state, props, and dispatch. For example:
+     export default connectAdvanced((dispatch, options) => (state, props) => ({
+      thing: state.things[props.thingId],
+      saveThing: fields => dispatch(actionCreators.saveThing(props.thingId, fields)),
+    }))(YourComponent)
+   Access to dispatch is provided to the factory so selectorFactories can bind actionCreators
+  outside of their selector as an optimization. Options passed to connectAdvanced are passed to
+  the selectorFactory, along with displayName and WrappedComponent, as the second argument.
+   Note that selectorFactory is responsible for all caching/memoization of inbound and outbound
+  props. Do not use connectAdvanced directly without memoizing results between calls to your
+  selector, otherwise the Connect component will re-render on every state or props change.
+*/
+selectorFactory) {
+  var _contextTypes, _childContextTypes;
+
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  var _ref$getDisplayName = _ref.getDisplayName,
+      getDisplayName = _ref$getDisplayName === undefined ? function (name) {
+    return 'ConnectAdvanced(' + name + ')';
+  } : _ref$getDisplayName,
+      _ref$methodName = _ref.methodName,
+      methodName = _ref$methodName === undefined ? 'connectAdvanced' : _ref$methodName,
+      _ref$renderCountProp = _ref.renderCountProp,
+      renderCountProp = _ref$renderCountProp === undefined ? undefined : _ref$renderCountProp,
+      _ref$shouldHandleStat = _ref.shouldHandleStateChanges,
+      shouldHandleStateChanges = _ref$shouldHandleStat === undefined ? true : _ref$shouldHandleStat,
+      _ref$storeKey = _ref.storeKey,
+      storeKey = _ref$storeKey === undefined ? 'store' : _ref$storeKey,
+      _ref$withRef = _ref.withRef,
+      withRef = _ref$withRef === undefined ? false : _ref$withRef,
+      connectOptions = objectWithoutProperties$1(_ref, ['getDisplayName', 'methodName', 'renderCountProp', 'shouldHandleStateChanges', 'storeKey', 'withRef']);
+
+  var subscriptionKey = storeKey + 'Subscription';
+  var version = hotReloadingVersion++;
+
+  var contextTypes = (_contextTypes = {}, _contextTypes[storeKey] = storeShape, _contextTypes[subscriptionKey] = subscriptionShape, _contextTypes);
+  var childContextTypes = (_childContextTypes = {}, _childContextTypes[subscriptionKey] = subscriptionShape, _childContextTypes);
+
+  return function wrapWithConnect(WrappedComponent) {
+    invariant(typeof WrappedComponent == 'function', 'You must pass a component to the function returned by ' + ('connect. Instead received ' + JSON.stringify(WrappedComponent)));
+
+    var wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+
+    var displayName = getDisplayName(wrappedComponentName);
+
+    var selectorFactoryOptions = _extends$2({}, connectOptions, {
+      getDisplayName: getDisplayName,
+      methodName: methodName,
+      renderCountProp: renderCountProp,
+      shouldHandleStateChanges: shouldHandleStateChanges,
+      storeKey: storeKey,
+      withRef: withRef,
+      displayName: displayName,
+      wrappedComponentName: wrappedComponentName,
+      WrappedComponent: WrappedComponent
+    });
+
+    var Connect = function (_Component) {
+      inherits$1(Connect, _Component);
+
+      function Connect(props, context) {
+        classCallCheck$1(this, Connect);
+
+        var _this = possibleConstructorReturn$1(this, _Component.call(this, props, context));
+
+        _this.version = version;
+        _this.state = {};
+        _this.renderCount = 0;
+        _this.store = props[storeKey] || context[storeKey];
+        _this.propsMode = Boolean(props[storeKey]);
+        _this.setWrappedInstance = _this.setWrappedInstance.bind(_this);
+
+        invariant(_this.store, 'Could not find "' + storeKey + '" in either the context or props of ' + ('"' + displayName + '". Either wrap the root component in a <Provider>, ') + ('or explicitly pass "' + storeKey + '" as a prop to "' + displayName + '".'));
+
+        _this.initSelector();
+        _this.initSubscription();
+        return _this;
+      }
+
+      Connect.prototype.getChildContext = function getChildContext() {
+        var _ref2;
+
+        // If this component received store from props, its subscription should be transparent
+        // to any descendants receiving store+subscription from context; it passes along
+        // subscription passed to it. Otherwise, it shadows the parent subscription, which allows
+        // Connect to control ordering of notifications to flow top-down.
+        var subscription = this.propsMode ? null : this.subscription;
+        return _ref2 = {}, _ref2[subscriptionKey] = subscription || this.context[subscriptionKey], _ref2;
+      };
+
+      Connect.prototype.componentDidMount = function componentDidMount() {
+        if (!shouldHandleStateChanges) return;
+
+        // componentWillMount fires during server side rendering, but componentDidMount and
+        // componentWillUnmount do not. Because of this, trySubscribe happens during ...didMount.
+        // Otherwise, unsubscription would never take place during SSR, causing a memory leak.
+        // To handle the case where a child component may have triggered a state change by
+        // dispatching an action in its componentWillMount, we have to re-run the select and maybe
+        // re-render.
+        this.subscription.trySubscribe();
+        this.selector.run(this.props);
+        if (this.selector.shouldComponentUpdate) this.forceUpdate();
+      };
+
+      Connect.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
+        this.selector.run(nextProps);
+      };
+
+      Connect.prototype.shouldComponentUpdate = function shouldComponentUpdate() {
+        return this.selector.shouldComponentUpdate;
+      };
+
+      Connect.prototype.componentWillUnmount = function componentWillUnmount() {
+        if (this.subscription) this.subscription.tryUnsubscribe();
+        this.subscription = null;
+        this.notifyNestedSubs = noop$1;
+        this.store = null;
+        this.selector.run = noop$1;
+        this.selector.shouldComponentUpdate = false;
+      };
+
+      Connect.prototype.getWrappedInstance = function getWrappedInstance() {
+        return this.wrappedInstance;
+      };
+
+      Connect.prototype.setWrappedInstance = function setWrappedInstance(ref) {
+        this.wrappedInstance = ref;
+      };
+
+      Connect.prototype.initSelector = function initSelector() {
+        var sourceSelector = selectorFactory(this.store.dispatch, selectorFactoryOptions);
+        this.selector = makeSelectorStateful(sourceSelector, this.store);
+        this.selector.run(this.props);
+      };
+
+      Connect.prototype.initSubscription = function initSubscription() {
+        if (!shouldHandleStateChanges) return;
+
+        // parentSub's source should match where store came from: props vs. context. A component
+        // connected to the store via props shouldn't use subscription from context, or vice versa.
+        var parentSub = (this.propsMode ? this.props : this.context)[subscriptionKey];
+        this.subscription = new Subscription$1(this.store, parentSub, this.onStateChange.bind(this));
+
+        // `notifyNestedSubs` is duplicated to handle the case where the component is  unmounted in
+        // the middle of the notification loop, where `this.subscription` will then be null. An
+        // extra null check every change can be avoided by copying the method onto `this` and then
+        // replacing it with a no-op on unmount. This can probably be avoided if Subscription's
+        // listeners logic is changed to not call listeners that have been unsubscribed in the
+        // middle of the notification loop.
+        this.notifyNestedSubs = this.subscription.notifyNestedSubs.bind(this.subscription);
+      };
+
+      Connect.prototype.onStateChange = function onStateChange() {
+        this.selector.run(this.props);
+
+        if (!this.selector.shouldComponentUpdate) {
+          this.notifyNestedSubs();
+        } else {
+          this.componentDidUpdate = this.notifyNestedSubsOnComponentDidUpdate;
+          this.setState(dummyState);
+        }
+      };
+
+      Connect.prototype.notifyNestedSubsOnComponentDidUpdate = function notifyNestedSubsOnComponentDidUpdate() {
+        // `componentDidUpdate` is conditionally implemented when `onStateChange` determines it
+        // needs to notify nested subs. Once called, it unimplements itself until further state
+        // changes occur. Doing it this way vs having a permanent `componentDidUpdate` that does
+        // a boolean check every time avoids an extra method call most of the time, resulting
+        // in some perf boost.
+        this.componentDidUpdate = undefined;
+        this.notifyNestedSubs();
+      };
+
+      Connect.prototype.isSubscribed = function isSubscribed() {
+        return Boolean(this.subscription) && this.subscription.isSubscribed();
+      };
+
+      Connect.prototype.addExtraProps = function addExtraProps(props) {
+        if (!withRef && !renderCountProp && !(this.propsMode && this.subscription)) return props;
+        // make a shallow copy so that fields added don't leak to the original selector.
+        // this is especially important for 'ref' since that's a reference back to the component
+        // instance. a singleton memoized selector would then be holding a reference to the
+        // instance, preventing the instance from being garbage collected, and that would be bad
+        var withExtras = _extends$2({}, props);
+        if (withRef) withExtras.ref = this.setWrappedInstance;
+        if (renderCountProp) withExtras[renderCountProp] = this.renderCount++;
+        if (this.propsMode && this.subscription) withExtras[subscriptionKey] = this.subscription;
+        return withExtras;
+      };
+
+      Connect.prototype.render = function render$$1() {
+        var selector = this.selector;
+        selector.shouldComponentUpdate = false;
+
+        if (selector.error) {
+          throw selector.error;
+        } else {
+          return h(WrappedComponent, this.addExtraProps(selector.props));
+        }
+      };
+
+      return Connect;
+    }(Component);
+
+    Connect.WrappedComponent = WrappedComponent;
+    Connect.displayName = displayName;
+    Connect.childContextTypes = childContextTypes;
+    Connect.contextTypes = contextTypes;
+
+
+    {
+      Connect.prototype.componentWillUpdate = function componentWillUpdate() {
+        var _this2 = this;
+
+        // We are hot reloading!
+        if (this.version !== version) {
+          this.version = version;
+          this.initSelector();
+
+          // If any connected descendants don't hot reload (and resubscribe in the process), their
+          // listeners will be lost when we unsubscribe. Unfortunately, by copying over all
+          // listeners, this does mean that the old versions of connected descendants will still be
+          // notified of state changes; however, their onStateChange function is a no-op so this
+          // isn't a huge deal.
+          var oldListeners = [];
+
+          if (this.subscription) {
+            oldListeners = this.subscription.listeners.get();
+            this.subscription.tryUnsubscribe();
+          }
+          this.initSubscription();
+          if (shouldHandleStateChanges) {
+            this.subscription.trySubscribe();
+            oldListeners.forEach(function (listener) {
+              return _this2.subscription.listeners.subscribe(listener);
+            });
+          }
+        }
+      };
+    }
+
+    return hoistNonReactStatics(Connect, WrappedComponent);
+  };
+}
+
+var hasOwn = Object.prototype.hasOwnProperty;
+
+function is(x, y) {
+  if (x === y) {
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    return x !== x && y !== y;
+  }
+}
+
+function shallowEqual(objA, objB) {
+  if (is(objA, objB)) return true;
+
+  if ((typeof objA === 'undefined' ? 'undefined' : _typeof$1(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof$1(objB)) !== 'object' || objB === null) {
+    return false;
+  }
+
+  var keysA = Object.keys(objA);
+  var keysB = Object.keys(objB);
+
+  if (keysA.length !== keysB.length) return false;
+
+  for (var i = 0; i < keysA.length; i++) {
+    if (!hasOwn.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal$2 = (typeof global === 'undefined' ? 'undefined' : _typeof$1(global)) == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf$1 = (typeof self === 'undefined' ? 'undefined' : _typeof$1(self)) == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root$5 = freeGlobal$2 || freeSelf$1 || Function('return this')();
+
+/** Built-in value references. */
+var _Symbol = root$5.Symbol;
+
+/** Used for built-in method references. */
+var objectProto$1$1 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$1$1 = objectProto$1$1.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$2 = objectProto$1$1.toString;
+
+/** Built-in value references. */
+var symToStringTag$1$1 = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
+ */
+function getRawTag$2(value) {
+  var isOwn = hasOwnProperty$1$1.call(value, symToStringTag$1$1),
+      tag = value[symToStringTag$1$1];
+
+  try {
+    value[symToStringTag$1$1] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString$2.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag$1$1] = tag;
+    } else {
+      delete value[symToStringTag$1$1];
+    }
+  }
+  return result;
+}
+
+/** Used for built-in method references. */
+var objectProto$2$1 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$1$1 = objectProto$2$1.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString$2(value) {
+  return nativeObjectToString$1$1.call(value);
+}
+
+/** `Object#toString` result references. */
+var nullTag$1 = '[object Null]';
+var undefinedTag$1 = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$2 = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag$2(value) {
+    if (value == null) {
+        return value === undefined ? undefinedTag$1 : nullTag$1;
+    }
+    return symToStringTag$2 && symToStringTag$2 in Object(value) ? getRawTag$2(value) : objectToString$2(value);
+}
+
+/**
+ * Creates a unary function that invokes `func` with its argument transformed.
+ *
+ * @private
+ * @param {Function} func The function to wrap.
+ * @param {Function} transform The argument transform.
+ * @returns {Function} Returns the new function.
+ */
+function overArg$2(func, transform) {
+  return function (arg) {
+    return func(transform(arg));
+  };
+}
+
+/** Built-in value references. */
+var getPrototype$2 = overArg$2(Object.getPrototypeOf, Object);
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike$2(value) {
+  return value != null && (typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) == 'object';
+}
+
+/** `Object#toString` result references. */
+var objectTag$1 = '[object Object]';
+
+/** Used for built-in method references. */
+var funcProto$1 = Function.prototype;
+var objectProto$3 = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString$1 = funcProto$1.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
+
+/** Used to infer the `Object` constructor. */
+var objectCtorString$1 = funcToString$1.call(Object);
+
+/**
+ * Checks if `value` is a plain object, that is, an object created by the
+ * `Object` constructor or one with a `[[Prototype]]` of `null`.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.8.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ * }
+ *
+ * _.isPlainObject(new Foo);
+ * // => false
+ *
+ * _.isPlainObject([1, 2, 3]);
+ * // => false
+ *
+ * _.isPlainObject({ 'x': 0, 'y': 0 });
+ * // => true
+ *
+ * _.isPlainObject(Object.create(null));
+ * // => true
+ */
+function isPlainObject$2(value) {
+  if (!isObjectLike$2(value) || baseGetTag$2(value) != objectTag$1) {
+    return false;
+  }
+  var proto = getPrototype$2(value);
+  if (proto === null) {
+    return true;
+  }
+  var Ctor = hasOwnProperty$2.call(proto, 'constructor') && proto.constructor;
+  return typeof Ctor == 'function' && Ctor instanceof Ctor && funcToString$1.call(Ctor) == objectCtorString$1;
+}
+
+function verifyPlainObject(value, displayName, methodName) {
+  if (!isPlainObject$2(value)) {
+    warning$1(methodName + '() in ' + displayName + ' must return a plain object. Instead received ' + value + '.');
+  }
+}
+
+function wrapMapToPropsConstant(getConstant) {
+  return function initConstantSelector(dispatch, options$$1) {
+    var constant = getConstant(dispatch, options$$1);
+
+    function constantSelector() {
+      return constant;
+    }
+    constantSelector.dependsOnOwnProps = false;
+    return constantSelector;
+  };
+}
+
+// dependsOnOwnProps is used by createMapToPropsProxy to determine whether to pass props as args
+// to the mapToProps function being wrapped. It is also used by makePurePropsSelector to determine
+// whether mapToProps needs to be invoked when props have changed.
+// 
+// A length of one signals that mapToProps does not depend on props from the parent component.
+// A length of zero is assumed to mean mapToProps is getting args via arguments or ...args and
+// therefore not reporting its length accurately..
+function getDependsOnOwnProps(mapToProps) {
+  return mapToProps.dependsOnOwnProps !== null && mapToProps.dependsOnOwnProps !== undefined ? Boolean(mapToProps.dependsOnOwnProps) : mapToProps.length !== 1;
+}
+
+// Used by whenMapStateToPropsIsFunction and whenMapDispatchToPropsIsFunction,
+// this function wraps mapToProps in a proxy function which does several things:
+// 
+//  * Detects whether the mapToProps function being called depends on props, which
+//    is used by selectorFactory to decide if it should reinvoke on props changes.
+//    
+//  * On first call, handles mapToProps if returns another function, and treats that
+//    new function as the true mapToProps for subsequent calls.
+//    
+//  * On first call, verifies the first result is a plain object, in order to warn
+//    the developer that their mapToProps function is not returning a valid result.
+//    
+function wrapMapToPropsFunc(mapToProps, methodName) {
+  return function initProxySelector(dispatch, _ref) {
+    var displayName = _ref.displayName;
+
+    var proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
+      return proxy.dependsOnOwnProps ? proxy.mapToProps(stateOrDispatch, ownProps) : proxy.mapToProps(stateOrDispatch);
+    };
+
+    // allow detectFactoryAndVerify to get ownProps
+    proxy.dependsOnOwnProps = true;
+
+    proxy.mapToProps = function detectFactoryAndVerify(stateOrDispatch, ownProps) {
+      proxy.mapToProps = mapToProps;
+      proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps);
+      var props = proxy(stateOrDispatch, ownProps);
+
+      if (typeof props === 'function') {
+        proxy.mapToProps = props;
+        proxy.dependsOnOwnProps = getDependsOnOwnProps(props);
+        props = proxy(stateOrDispatch, ownProps);
+      }
+
+      verifyPlainObject(props, displayName, methodName);
+
+      return props;
+    };
+
+    return proxy;
+  };
+}
+
+function whenMapDispatchToPropsIsFunction(mapDispatchToProps) {
+  return typeof mapDispatchToProps === 'function' ? wrapMapToPropsFunc(mapDispatchToProps, 'mapDispatchToProps') : undefined;
+}
+
+function whenMapDispatchToPropsIsMissing(mapDispatchToProps) {
+  return !mapDispatchToProps ? wrapMapToPropsConstant(function (dispatch) {
+    return { dispatch: dispatch };
+  }) : undefined;
+}
+
+function whenMapDispatchToPropsIsObject(mapDispatchToProps) {
+  return mapDispatchToProps && (typeof mapDispatchToProps === 'undefined' ? 'undefined' : _typeof$1(mapDispatchToProps)) === 'object' ? wrapMapToPropsConstant(function (dispatch) {
+    return bindActionCreators(mapDispatchToProps, dispatch);
+  }) : undefined;
+}
+
+var defaultMapDispatchToPropsFactories = [whenMapDispatchToPropsIsFunction, whenMapDispatchToPropsIsMissing, whenMapDispatchToPropsIsObject];
+
+function whenMapStateToPropsIsFunction(mapStateToProps) {
+  return typeof mapStateToProps === 'function' ? wrapMapToPropsFunc(mapStateToProps, 'mapStateToProps') : undefined;
+}
+
+function whenMapStateToPropsIsMissing(mapStateToProps) {
+  return !mapStateToProps ? wrapMapToPropsConstant(function () {
+    return {};
+  }) : undefined;
+}
+
+var defaultMapStateToPropsFactories = [whenMapStateToPropsIsFunction, whenMapStateToPropsIsMissing];
+
+function defaultMergeProps(stateProps, dispatchProps, ownProps) {
+  return _extends$2({}, ownProps, stateProps, dispatchProps);
+}
+
+function wrapMergePropsFunc(mergeProps) {
+  return function initMergePropsProxy(dispatch, _ref) {
+    var displayName = _ref.displayName,
+        pure = _ref.pure,
+        areMergedPropsEqual = _ref.areMergedPropsEqual;
+
+    var hasRunOnce = false;
+    var mergedProps = void 0;
+
+    return function mergePropsProxy(stateProps, dispatchProps, ownProps) {
+      var nextMergedProps = mergeProps(stateProps, dispatchProps, ownProps);
+
+      if (hasRunOnce) {
+        if (!pure || !areMergedPropsEqual(nextMergedProps, mergedProps)) mergedProps = nextMergedProps;
+      } else {
+        hasRunOnce = true;
+        mergedProps = nextMergedProps;
+
+        verifyPlainObject(mergedProps, displayName, 'mergeProps');
+      }
+
+      return mergedProps;
+    };
+  };
+}
+
+function whenMergePropsIsFunction(mergeProps) {
+  return typeof mergeProps === 'function' ? wrapMergePropsFunc(mergeProps) : undefined;
+}
+
+function whenMergePropsIsOmitted(mergeProps) {
+  return !mergeProps ? function () {
+    return defaultMergeProps;
+  } : undefined;
+}
+
+var defaultMergePropsFactories = [whenMergePropsIsFunction, whenMergePropsIsOmitted];
+
+function verify(selector, methodName, displayName) {
+  if (!selector) {
+    throw new Error('Unexpected value for ' + methodName + ' in ' + displayName + '.');
+  } else if (methodName === 'mapStateToProps' || methodName === 'mapDispatchToProps') {
+    if (!selector.hasOwnProperty('dependsOnOwnProps')) {
+      warning$1('The selector for ' + methodName + ' of ' + displayName + ' did not specify a value for dependsOnOwnProps.');
+    }
+  }
+}
+
+function verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, displayName) {
+  verify(mapStateToProps, 'mapStateToProps', displayName);
+  verify(mapDispatchToProps, 'mapDispatchToProps', displayName);
+  verify(mergeProps, 'mergeProps', displayName);
+}
+
+function impureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch) {
+  return function impureFinalPropsSelector(state, ownProps) {
+    return mergeProps(mapStateToProps(state, ownProps), mapDispatchToProps(dispatch, ownProps), ownProps);
+  };
+}
+
+function pureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch, _ref) {
+  var areStatesEqual = _ref.areStatesEqual,
+      areOwnPropsEqual = _ref.areOwnPropsEqual,
+      areStatePropsEqual = _ref.areStatePropsEqual;
+
+  var hasRunAtLeastOnce = false;
+  var state = void 0;
+  var ownProps = void 0;
+  var stateProps = void 0;
+  var dispatchProps = void 0;
+  var mergedProps = void 0;
+
+  function handleFirstCall(firstState, firstOwnProps) {
+    state = firstState;
+    ownProps = firstOwnProps;
+    stateProps = mapStateToProps(state, ownProps);
+    dispatchProps = mapDispatchToProps(dispatch, ownProps);
+    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
+    hasRunAtLeastOnce = true;
+    return mergedProps;
+  }
+
+  function handleNewPropsAndNewState() {
+    stateProps = mapStateToProps(state, ownProps);
+
+    if (mapDispatchToProps.dependsOnOwnProps) dispatchProps = mapDispatchToProps(dispatch, ownProps);
+
+    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
+    return mergedProps;
+  }
+
+  function handleNewProps() {
+    if (mapStateToProps.dependsOnOwnProps) stateProps = mapStateToProps(state, ownProps);
+
+    if (mapDispatchToProps.dependsOnOwnProps) dispatchProps = mapDispatchToProps(dispatch, ownProps);
+
+    mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
+    return mergedProps;
+  }
+
+  function handleNewState() {
+    var nextStateProps = mapStateToProps(state, ownProps);
+    var statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps);
+    stateProps = nextStateProps;
+
+    if (statePropsChanged) mergedProps = mergeProps(stateProps, dispatchProps, ownProps);
+
+    return mergedProps;
+  }
+
+  function handleSubsequentCalls(nextState, nextOwnProps) {
+    var propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps);
+    var stateChanged = !areStatesEqual(nextState, state);
+    state = nextState;
+    ownProps = nextOwnProps;
+
+    if (propsChanged && stateChanged) return handleNewPropsAndNewState();
+    if (propsChanged) return handleNewProps();
+    if (stateChanged) return handleNewState();
+    return mergedProps;
+  }
+
+  return function pureFinalPropsSelector(nextState, nextOwnProps) {
+    return hasRunAtLeastOnce ? handleSubsequentCalls(nextState, nextOwnProps) : handleFirstCall(nextState, nextOwnProps);
+  };
+}
+
+// TODO: Add more comments
+
+// If pure is true, the selector returned by selectorFactory will memoize its results,
+// allowing connectAdvanced's shouldComponentUpdate to return false if final
+// props have not changed. If false, the selector will always return a new
+// object and shouldComponentUpdate will always return true.
+
+function finalPropsSelectorFactory(dispatch, _ref2) {
+  var initMapStateToProps = _ref2.initMapStateToProps,
+      initMapDispatchToProps = _ref2.initMapDispatchToProps,
+      initMergeProps = _ref2.initMergeProps,
+      options$$1 = objectWithoutProperties$1(_ref2, ['initMapStateToProps', 'initMapDispatchToProps', 'initMergeProps']);
+
+  var mapStateToProps = initMapStateToProps(dispatch, options$$1);
+  var mapDispatchToProps = initMapDispatchToProps(dispatch, options$$1);
+  var mergeProps = initMergeProps(dispatch, options$$1);
+
+  {
+    verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps, options$$1.displayName);
+  }
+
+  var selectorFactory = options$$1.pure ? pureFinalPropsSelectorFactory : impureFinalPropsSelectorFactory;
+
+  return selectorFactory(mapStateToProps, mapDispatchToProps, mergeProps, dispatch, options$$1);
+}
+
+/*
+  connect is a facade over connectAdvanced. It turns its args into a compatible
+  selectorFactory, which has the signature:
+
+    (dispatch, options) => (nextState, nextOwnProps) => nextFinalProps
+  
+  connect passes its args to connectAdvanced as options, which will in turn pass them to
+  selectorFactory each time a Connect component instance is instantiated or hot reloaded.
+
+  selectorFactory returns a final props selector from its mapStateToProps,
+  mapStateToPropsFactories, mapDispatchToProps, mapDispatchToPropsFactories, mergeProps,
+  mergePropsFactories, and pure args.
+
+  The resulting final props selector is called by the Connect component instance whenever
+  it receives new props or store state.
+ */
+
+function match(arg, factories, name) {
+  for (var i = factories.length - 1; i >= 0; i--) {
+    var result = factories[i](arg);
+    if (result) return result;
+  }
+
+  return function (dispatch, options$$1) {
+    throw new Error('Invalid value of type ' + (typeof arg === 'undefined' ? 'undefined' : _typeof$1(arg)) + ' for ' + name + ' argument when connecting component ' + options$$1.wrappedComponentName + '.');
+  };
+}
+
+function strictEqual(a, b) {
+  return a === b;
+}
+
+// createConnect with default args builds the 'official' connect behavior. Calling it with
+// different options opens up some testing and extensibility scenarios
+function createConnect() {
+  var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+      _ref$connectHOC = _ref.connectHOC,
+      connectHOC = _ref$connectHOC === undefined ? connectAdvanced : _ref$connectHOC,
+      _ref$mapStateToPropsF = _ref.mapStateToPropsFactories,
+      mapStateToPropsFactories = _ref$mapStateToPropsF === undefined ? defaultMapStateToPropsFactories : _ref$mapStateToPropsF,
+      _ref$mapDispatchToPro = _ref.mapDispatchToPropsFactories,
+      mapDispatchToPropsFactories = _ref$mapDispatchToPro === undefined ? defaultMapDispatchToPropsFactories : _ref$mapDispatchToPro,
+      _ref$mergePropsFactor = _ref.mergePropsFactories,
+      mergePropsFactories = _ref$mergePropsFactor === undefined ? defaultMergePropsFactories : _ref$mergePropsFactor,
+      _ref$selectorFactory = _ref.selectorFactory,
+      selectorFactory = _ref$selectorFactory === undefined ? finalPropsSelectorFactory : _ref$selectorFactory;
+
+  return function connect(mapStateToProps, mapDispatchToProps, mergeProps) {
+    var _ref2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    var _ref2$pure = _ref2.pure,
+        pure = _ref2$pure === undefined ? true : _ref2$pure,
+        _ref2$areStatesEqual = _ref2.areStatesEqual,
+        areStatesEqual = _ref2$areStatesEqual === undefined ? strictEqual : _ref2$areStatesEqual,
+        _ref2$areOwnPropsEqua = _ref2.areOwnPropsEqual,
+        areOwnPropsEqual = _ref2$areOwnPropsEqua === undefined ? shallowEqual : _ref2$areOwnPropsEqua,
+        _ref2$areStatePropsEq = _ref2.areStatePropsEqual,
+        areStatePropsEqual = _ref2$areStatePropsEq === undefined ? shallowEqual : _ref2$areStatePropsEq,
+        _ref2$areMergedPropsE = _ref2.areMergedPropsEqual,
+        areMergedPropsEqual = _ref2$areMergedPropsE === undefined ? shallowEqual : _ref2$areMergedPropsE,
+        extraOptions = objectWithoutProperties$1(_ref2, ['pure', 'areStatesEqual', 'areOwnPropsEqual', 'areStatePropsEqual', 'areMergedPropsEqual']);
+
+    var initMapStateToProps = match(mapStateToProps, mapStateToPropsFactories, 'mapStateToProps');
+    var initMapDispatchToProps = match(mapDispatchToProps, mapDispatchToPropsFactories, 'mapDispatchToProps');
+    var initMergeProps = match(mergeProps, mergePropsFactories, 'mergeProps');
+
+    return connectHOC(selectorFactory, _extends$2({
+      // used in error messages
+      methodName: 'connect',
+
+      // used to compute Connect's displayName from the wrapped component's displayName.
+      getDisplayName: function getDisplayName(name) {
+        return 'Connect(' + name + ')';
+      },
+
+      // if mapStateToProps is falsy, the Connect component doesn't subscribe to store state changes
+      shouldHandleStateChanges: Boolean(mapStateToProps),
+
+      // passed through to selectorFactory
+      initMapStateToProps: initMapStateToProps,
+      initMapDispatchToProps: initMapDispatchToProps,
+      initMergeProps: initMergeProps,
+      pure: pure,
+      areStatesEqual: areStatesEqual,
+      areOwnPropsEqual: areOwnPropsEqual,
+      areStatePropsEqual: areStatePropsEqual,
+      areMergedPropsEqual: areMergedPropsEqual
+
+    }, extraOptions));
+  };
+}
+
+var connect = createConnect();
+
+
+//# sourceMappingURL=preact-redux.esm.js.map
+
+var Input = function (_Component) {
+	inherits(Input, _Component);
+
+	function Input() {
+		classCallCheck(this, Input);
+		return possibleConstructorReturn(this, (Input.__proto__ || Object.getPrototypeOf(Input)).apply(this, arguments));
+	}
+
+	createClass(Input, [{
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			if (this.props.autoFocus) {
+				this.input.focus();
+			}
+		}
+	}, {
+		key: 'render',
+		value: function render$$1() {
+			var _this2 = this;
+
+			var _props = this.props,
+			    id = _props.id,
+			    setValue = _props.setValue,
+			    value = _props.value,
+			    className = _props.className,
+			    placeholder = _props.placeholder,
+			    _props$tabIndex = _props.tabIndex,
+			    tabIndex = _props$tabIndex === undefined ? -1 : _props$tabIndex;
+
+
+			return h('input', {
+				id: id,
+				tabIndex: tabIndex,
+				className: classnames('sparkling-input native-key-bindings', className),
+				placeholder: placeholder,
+				onInput: function onInput(event) {
+					setValue(event.target.value);
+				},
+				value: value,
+				ref: function ref(input) {
+					_this2.input = input;
+				}
+			});
+		}
+	}]);
+	return Input;
+}(Component);
+
 var replaceRenderer = function replaceRenderer(_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
-	    index$$1 = _ref.index,
+	    index = _ref.index,
 	    selectedIndex = _ref.selectedIndex,
 	    accept = _ref.accept,
 	    replace = _ref.replace;
@@ -6077,7 +5810,7 @@ var replaceRenderer = function replaceRenderer(_ref) {
 
 	var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + escapeHTML(replace) + '</span>');
 
-	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index$$1 === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+	var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
 
 	return h('div', {
 		className: finalClassName,
@@ -6226,236 +5959,272 @@ var autocompleteLines = commandFactory(autocompleteLinesFactory);
 
 var config = {};
 
-var loadDataFactory$2 = (function (store) {
-	return function (onData) {
-		var options = getOptions(store.getState());
-		var path$$1 = options.path;
+var SparklingInput = function SparklingInput(_ref) {
+	var options$$1 = _ref.options,
+	    data = _ref.data,
+	    rawDataLength = _ref.rawDataLength,
+	    pattern = _ref.pattern,
+	    setPattern = _ref.setPattern;
+	var description = options$$1.description,
+	    childrenRenderer = options$$1.childrenRenderer;
 
+	var filteredDataLength = data.length;
 
-		var cmdProcess = spawnInProject('ls', ['-a', path$$1]);
+	return h(
+		'div',
+		{ className: 'sparkling-input-container' },
+		h(
+			'div',
+			{ className: 'sparkling-meta-data' },
+			h(
+				'span',
+				null,
+				filteredDataLength + ' / ' + rawDataLength
+			),
+			h(
+				'span',
+				{ className: 'sparkling-command-description' },
+				description
+			)
+		),
+		h(Input, {
+			autoFocus: true,
+			id: 'sparkling-input',
+			tabIndex: 1,
+			className: classnames('sparkling-input', 'native-key-bindings', {
+				'sparkling-input--has-results': filteredDataLength > 0,
+				'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
+			}),
+			placeholder: 'Sparkling fuzzy filter',
+			value: pattern,
+			setValue: setPattern
+		}),
+		childrenRenderer && childrenRenderer()
+	);
+};
 
-		cmdProcess.stdout.on('data', function (data) {
-			var options = getOptions(store.getState());
-			var path$$1 = options.path;
-
-
-			onData(data.toString('utf-8').split('\n').filter(function (s) {
-				return s.length && s !== '.';
-			}).map(function (value) {
-				var absolutePath = path.resolve(path$$1, value);
-
-				if (value === '.') {
-					return { value: '.', absolutePath: absolutePath, isFolder: true };
-				} else if (value === '..') {
-					return { value: '..', absolutePath: absolutePath, isFolder: true };
-				}
-
-				var cwd = atom.project.getPaths()[0];
-				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
-
-				var isFolder = fs.lstatSync(absolutePath).isDirectory();
-				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
-			}).sort(function (a, b) {
-				if (a.isFolder && !b.isFolder) {
-					return -1;
-				} else if (!a.isFolder && b.isFolder) {
-					return 1;
-				} else if (a.absolutePath > b.absolutePath) {
-					return 1;
-				} else if (b.absolutePath < a.absolutePath) {
-					return -1;
-				}
-
-				return 0;
-			}));
-		});
-
-		return function () {
-			cmdProcess.stdin.pause();
-			cmdProcess.kill();
-		};
+var SparklingInput$1 = connect(function (state) {
+	return {
+		data: getSparklingData(state),
+		options: getOptions(state),
+		rawDataLength: getRawDataLength(state),
+		pattern: getPattern(state)
 	};
-});
-
-var renderer$5 = (function (props) {
-	var absolutePath = props.item.absolutePath;
-
-
-	return defaultRenderer(_extends$2({}, props, {
-		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
-	}));
-});
-
-var lsFactory = function lsFactory(h, store) {
-	var loadData = loadDataFactory$2(store);
-
-	var accept = function accept(_ref) {
-		var absolutePath = _ref.absolutePath;
-
-		if (fs.lstatSync(absolutePath).isDirectory()) {
-			ls({ path: absolutePath });
-		} else {
-			store.dispatch({ type: 'HIDE' });
-			atom.workspace.open(absolutePath);
+}, function (dispatch) {
+	return {
+		setPattern: function setPattern(pattern) {
+			return dispatch({ type: 'SET_PATTERN', payload: { pattern: pattern } });
 		}
 	};
+})(SparklingInput);
 
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer$5,
-		sliceLength: 20,
-		columns: 4,
-		description: 'Project navigation',
-		id: 'sparkling-ls'
+var SparklingResults = function SparklingResults(_ref) {
+	var options$$1 = _ref.options,
+	    selectedValue = _ref.selectedValue,
+	    data = _ref.data,
+	    selectedIndex = _ref.selectedIndex,
+	    offset = _ref.offset,
+	    pattern = _ref.pattern;
+	var preview = options$$1.preview,
+	    renderer = options$$1.renderer,
+	    accept = options$$1.accept,
+	    columns = options$$1.columns,
+	    sliceLength = options$$1.sliceLength;
+
+	var style = columns > 1 ? {
+		'grid-auto-columns': 'minmax(' + 100.0 / columns + '%, 100%)',
+		'grid-auto-flow': 'column',
+		'grid-template-rows': 'repeat(' + sliceLength / columns + ', 1fr)'
+	} : {
+		'grid-auto-flow': 'row'
 	};
+
+	return h(
+		'div',
+		{ className: 'sparkling-results-container' },
+		h(
+			'div',
+			{ className: 'sparkling-results', style: style },
+			data.slice(offset, offset + sliceLength).map(function (item, index) {
+				return renderer({
+					item: item,
+					index: index,
+					selectedIndex: selectedIndex,
+					accept: accept,
+					pattern: pattern
+				});
+			})
+		),
+		preview && selectedValue && h(
+			'div',
+			{ className: 'sparkling-preview' },
+			preview(selectedValue)
+		)
+	);
 };
 
-var ls = commandFactory(lsFactory);
+var SparklingResults$1 = connect(function (state) {
+	return {
+		options: getOptions(state),
+		data: getSparklingData(state),
+		selectedIndex: getIndex(state),
+		selectedValue: getSelectedValue(state),
+		offset: getOffset(state),
+		pattern: getPattern(state)
+	};
+})(SparklingResults);
 
-var next = function next() {
-	var state = store.getState();
-	var index = getIndex(state);
-	var sparklingData = getSparklingData(state);
-	var options = getOptions(state);
-	var sliceLength = options.sliceLength;
+var Sparkling = (function (_ref) {
+	var options$$1 = _ref.options;
+	var id = options$$1.id;
 
 
-	if (index === sliceLength - 1) {
-		var offset = getOffset(state);
-		var value = Math.min(offset + 1, sparklingData.length - sliceLength);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
-	}
-};
+	return h(
+		'div',
+		{ className: 'sparkling', id: id },
+		h(SparklingResults$1, null),
+		h(SparklingInput$1, null)
+	);
+});
 
-var previous = function previous() {
-	var state = store.getState();
-	var index = getIndex(state);
+var SparklingContainer = function SparklingContainer(_ref) {
+	var visible = _ref.visible,
+	    props = objectWithoutProperties(_ref, ['visible']);
 
-	if (index === 0) {
-		var offset = getOffset(state);
-		var value = Math.max(offset - 1, 0);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value2 = Math.max(index - 1, 0);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
-	}
-};
-
-var left = function left() {
-	var state = store.getState();
-	var index = getIndex(state);
-	var options = getOptions(state);
-	var columns = options.columns,
-	    sliceLength = options.sliceLength;
-
-	var rows = sliceLength / columns;
-
-	if (index === 0) {
-		var offset = getOffset(state);
-		var value = Math.max(offset - rows, 0);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value3 = Math.max(index - rows, 0);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value3 } });
-	}
-};
-
-var right = function right() {
-	var state = store.getState();
-	var index = getIndex(state);
-	var sparklingData = getSparklingData(state);
-	var options = getOptions(state);
-	var sliceLength = options.sliceLength,
-	    columns = options.columns;
-
-	var rows = sliceLength / columns;
-
-	if (index === sliceLength - 1) {
-		var offset = getOffset(state);
-		var value = Math.min(offset + rows, sparklingData.length - sliceLength);
-		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
-	} else {
-		var _value4 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
-		store.dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
-	}
-};
-
-var hide = function hide() {
-	store.dispatch({ type: 'HIDE' });
-};
-
-var accept = function accept() {
-	var state = store.getState();
-	var value = getSelectedValue(state);
-
-	if (value === null || value === undefined) {
-		return;
+	if (!visible) {
+		return null;
 	}
 
-	var _getOptions = getOptions(state),
-	    accept = _getOptions.accept;
-
-	accept(value);
+	return h(Sparkling, props);
 };
 
-var findToggle = function findToggle() {
-	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-	    inBuffer = _ref.inBuffer;
+var SparklingContainer$1 = connect(function (state) {
+	return {
+		visible: isVisible(state),
+		options: getOptions(state)
+	};
+})(SparklingContainer);
 
-	var findInput = document.querySelector('#sparkling-project-find #sparkling-input');
-	var replaceInput = document.querySelector('#sparkling-project-replace #sparkling-input');
+var FindContainer = function FindContainer(_ref) {
+	var visible = _ref.visible,
+	    value = _ref.value,
+	    setValue = _ref.setValue,
+	    toggleSmartCase = _ref.toggleSmartCase,
+	    smartCase = _ref.smartCase,
+	    scope = _ref.scope,
+	    setScope = _ref.setScope,
+	    toggleLiteralSearch = _ref.toggleLiteralSearch,
+	    literalSearch = _ref.literalSearch;
 
-	if (findInput && findInput !== document.activeElement) {
-		findInput.focus();
-	} else if (replaceInput && replaceInput !== document.activeElement) {
-		replaceInput.focus();
-	} else if (isFindVisible(store.getState())) {
-		store.dispatch({ type: 'HIDE_SEARCH' });
-	} else {
-		var editor = atom.workspace.getActiveTextEditor();
-		var find = editor ? editor.getSelectedText() : '';
-		var cwd = atom.project.getPaths()[0];
-		var scope = inBuffer && editor ? editor.getPath().replace(cwd, '') : '';
-
-		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find, scope: scope } });
+	if (!visible) {
+		return null;
 	}
+
+	return h(
+		'div',
+		{ className: 'sparkling-input-container' },
+		h(
+			'div',
+			{ className: 'sparkling-find-options' },
+			h(
+				'button',
+				{
+					onClick: toggleSmartCase,
+					className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', smartCase))
+				},
+				'Smart case'
+			),
+			h(
+				'button',
+				{
+					onClick: toggleLiteralSearch,
+					className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', literalSearch))
+				},
+				'Literal search'
+			)
+		),
+		h(Input, {
+			tabIndex: 0,
+			className: 'sparkling-find',
+			autoFocus: true,
+			value: value,
+			setValue: setValue,
+			placeholder: 'Enter to find, shift Enter to replace'
+		}),
+		h(Input, {
+			tabIndex: 1,
+			className: 'sparkling-scope',
+			value: scope,
+			setValue: setScope,
+			placeholder: 'Scope. Leave empty to search whole project'
+		})
+	);
 };
 
-var lsShow = function lsShow() {
-	var activeTextEditor = atom.workspace.getActiveTextEditor();
-	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
-	ls({ path: finalPath, description: finalPath });
+var FindContainer$1 = connect(function (state) {
+	return {
+		visible: isFindVisible(state),
+		value: getFind(state),
+		smartCase: isSmartCase(state),
+		literalSearch: isLiteralSearch(state),
+		scope: getScope(state),
+		wholeWord: isWholeWord(state)
+	};
+}, function (dispatch) {
+	return {
+		setValue: function setValue(find) {
+			return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
+		},
+		toggleSmartCase: function toggleSmartCase() {
+			return dispatch({ type: 'TOGGLE_SMART_CASE' });
+		},
+		toggleLiteralSearch: function toggleLiteralSearch() {
+			return dispatch({ type: 'TOGGLE_LITERAL_SEARCH' });
+		},
+		setScope: function setScope(scope) {
+			return dispatch({ type: 'SET_SCOPE', payload: { scope: scope } });
+		},
+		toggleWholeWord: function toggleWholeWord() {
+			return dispatch({ type: 'TOGGLE_WHOLE_WORD' });
+		}
+	};
+})(FindContainer);
+
+var ExtraInputContainer = function ExtraInputContainer(_ref) {
+	var extraInput = _ref.extraInput,
+	    setValue = _ref.setValue;
+	var value = extraInput.value,
+	    id = extraInput.id,
+	    _extraInput$placehold = extraInput.placeholder,
+	    placeholder = _extraInput$placehold === undefined ? '' : _extraInput$placehold;
+
+	if (!id) {
+		return null;
+	}
+
+	return h(
+		'div',
+		{ id: id, className: 'sparkling-input-container' },
+		h(Input, {
+			autoFocus: true,
+			value: value,
+			setValue: setValue,
+			placeholder: placeholder
+		})
+	);
 };
 
-var lsShowUp = function lsShowUp() {
-	var _getOptions2 = getOptions(store.getState()),
-	    optionsPath = _getOptions2.path;
-
-	var finalPath = path.resolve(optionsPath, '..');
-	ls({ path: finalPath, description: finalPath });
-};
-
-var copyFilesConfirm = function copyFilesConfirm() {
-	var extraInput = getExtraInput(store.getState());
-	var cmdProcess = spawnInProject('cp', [extraInput.originPath, extraInput.value]);
-	cmdProcess.on('exit', function () {
-		store.dispatch({ type: 'HIDE' });
-		atom.workspace.open(extraInput.value);
-	});
-};
-
-var moveFilesConfirm = function moveFilesConfirm() {
-	var extraInput = getExtraInput(store.getState());
-	var cmdProcess = spawnInProject('mv', [extraInput.originPath, extraInput.value]);
-	cmdProcess.on('exit', function () {
-		store.dispatch({ type: 'HIDE' });
-		atom.workspace.open(extraInput.value);
-	});
-};
+var ExtraInputContainer$1 = connect(function (state) {
+	return {
+		extraInput: getExtraInput(state)
+	};
+}, function (dispatch) {
+	return {
+		setValue: function setValue(value) {
+			return dispatch({ type: 'SET_EXTRA_INPUT_VALUE', payload: { value: value } });
+		}
+	};
+})(ExtraInputContainer);
 
 function isScheduler(value) {
     return value && typeof value.schedule === 'function';
@@ -6822,7 +6591,7 @@ function symbolIteratorPonyfill(root) {
     }
 }
 exports.symbolIteratorPonyfill = symbolIteratorPonyfill;
-exports.iterator = symbolIteratorPonyfill(root$4.root);
+exports.iterator = symbolIteratorPonyfill(root$3.root);
 /**
  * @deprecated use iterator instead
  */
@@ -6907,7 +6676,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
         }, function (err) { return destination.error(err); })
             .then(null, function (err) {
             // Escaping the Promise trap: globally throw unhandled errors
-            root$4.root.setTimeout(function () { throw err; });
+            root$3.root.setTimeout(function () { throw err; });
         });
         return destination;
     }
@@ -7479,7 +7248,7 @@ var AsyncAction = (function (_super) {
     };
     AsyncAction.prototype.requestAsyncId = function (scheduler, id, delay) {
         if (delay === void 0) { delay = 0; }
-        return root$4.root.setInterval(scheduler.flush.bind(scheduler, this), delay);
+        return root$3.root.setInterval(scheduler.flush.bind(scheduler, this), delay);
     };
     AsyncAction.prototype.recycleAsyncId = function (scheduler, id, delay) {
         if (delay === void 0) { delay = 0; }
@@ -7489,7 +7258,7 @@ var AsyncAction = (function (_super) {
         }
         // Otherwise, if the action's delay time is different from the current delay,
         // or the action has been rescheduled before it's executed, clear the interval id
-        return root$4.root.clearInterval(id) && undefined || undefined;
+        return root$3.root.clearInterval(id) && undefined || undefined;
     };
     /**
      * Immediately executes this action and the `work` it contains.
@@ -8296,6 +8065,257 @@ var setupObservables = (function () {
 	});
 });
 
+var loadView = (function () {
+	var reactRoot = document.createElement('div');
+
+	render(h(
+		Provider,
+		{ store: store },
+		h(
+			'div',
+			null,
+			h(SparklingContainer$1, null),
+			h(FindContainer$1, null),
+			h(ExtraInputContainer$1, null)
+		)
+	), reactRoot);
+
+	setupObservables();
+
+	atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
+});
+
+var loadDataFactory$2 = (function (store) {
+	return function (onData) {
+		var options = getOptions(store.getState());
+		var path$$1 = options.path;
+
+
+		var cmdProcess = spawnInProject('ls', ['-a', path$$1]);
+
+		cmdProcess.stdout.on('data', function (data) {
+			var options = getOptions(store.getState());
+			var path$$1 = options.path;
+
+
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length && s !== '.';
+			}).map(function (value) {
+				var absolutePath = path.resolve(path$$1, value);
+
+				if (value === '.') {
+					return { value: '.', absolutePath: absolutePath, isFolder: true };
+				} else if (value === '..') {
+					return { value: '..', absolutePath: absolutePath, isFolder: true };
+				}
+
+				var cwd = atom.project.getPaths()[0];
+				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
+
+				var isFolder = fs.lstatSync(absolutePath).isDirectory();
+				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
+			}).sort(function (a, b) {
+				if (a.isFolder && !b.isFolder) {
+					return -1;
+				} else if (!a.isFolder && b.isFolder) {
+					return 1;
+				} else if (a.absolutePath > b.absolutePath) {
+					return 1;
+				} else if (b.absolutePath < a.absolutePath) {
+					return -1;
+				}
+
+				return 0;
+			}));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var renderer$5 = (function (props) {
+	var absolutePath = props.item.absolutePath;
+
+
+	return defaultRenderer(_extends$1({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+	}));
+});
+
+var lsFactory = function lsFactory(h, store) {
+	var loadData = loadDataFactory$2(store);
+
+	var accept = function accept(_ref) {
+		var absolutePath = _ref.absolutePath;
+
+		if (fs.lstatSync(absolutePath).isDirectory()) {
+			ls({ path: absolutePath });
+		} else {
+			store.dispatch({ type: 'HIDE' });
+			atom.workspace.open(absolutePath);
+		}
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$5,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Project navigation',
+		id: 'sparkling-ls'
+	};
+};
+
+var ls = commandFactory(lsFactory);
+
+var next = function next() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var sparklingData = getSparklingData(state);
+	var options = getOptions(state);
+	var sliceLength = options.sliceLength;
+
+
+	if (index === sliceLength - 1) {
+		var offset = getOffset(state);
+		var value = Math.min(offset + 1, sparklingData.length - sliceLength);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value } });
+	}
+};
+
+var previous = function previous() {
+	var state = store.getState();
+	var index = getIndex(state);
+
+	if (index === 0) {
+		var offset = getOffset(state);
+		var value = Math.max(offset - 1, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value2 = Math.max(index - 1, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+	}
+};
+
+var left = function left() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var options = getOptions(state);
+	var columns = options.columns,
+	    sliceLength = options.sliceLength;
+
+	var rows = sliceLength / columns;
+
+	if (index === 0) {
+		var offset = getOffset(state);
+		var value = Math.max(offset - rows, 0);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value3 = Math.max(index - rows, 0);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value3 } });
+	}
+};
+
+var right = function right() {
+	var state = store.getState();
+	var index = getIndex(state);
+	var sparklingData = getSparklingData(state);
+	var options = getOptions(state);
+	var sliceLength = options.sliceLength,
+	    columns = options.columns;
+
+	var rows = sliceLength / columns;
+
+	if (index === sliceLength - 1) {
+		var offset = getOffset(state);
+		var value = Math.min(offset + rows, sparklingData.length - sliceLength);
+		store.dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+	} else {
+		var _value4 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
+		store.dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
+	}
+};
+
+var hide = function hide() {
+	store.dispatch({ type: 'HIDE' });
+};
+
+var accept = function accept() {
+	var state = store.getState();
+	var value = getSelectedValue(state);
+
+	if (value === null || value === undefined) {
+		return;
+	}
+
+	var _getOptions = getOptions(state),
+	    accept = _getOptions.accept;
+
+	accept(value);
+};
+
+var findToggle = function findToggle() {
+	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+	    inBuffer = _ref.inBuffer;
+
+	var findInput = document.querySelector('#sparkling-project-find #sparkling-input');
+	var replaceInput = document.querySelector('#sparkling-project-replace #sparkling-input');
+
+	if (findInput && findInput !== document.activeElement) {
+		findInput.focus();
+	} else if (replaceInput && replaceInput !== document.activeElement) {
+		replaceInput.focus();
+	} else if (isFindVisible(store.getState())) {
+		store.dispatch({ type: 'HIDE_SEARCH' });
+	} else {
+		var editor = atom.workspace.getActiveTextEditor();
+		var find = editor ? editor.getSelectedText() : '';
+		var cwd = atom.project.getPaths()[0];
+		var scope = inBuffer && editor ? editor.getPath().replace(cwd, '') : '';
+
+		store.dispatch({ type: 'SHOW_SEARCH', payload: { find: find, scope: scope } });
+	}
+};
+
+var lsShow = function lsShow() {
+	var activeTextEditor = atom.workspace.getActiveTextEditor();
+	var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
+	ls({ path: finalPath, description: finalPath });
+};
+
+var lsShowUp = function lsShowUp() {
+	var _getOptions2 = getOptions(store.getState()),
+	    optionsPath = _getOptions2.path;
+
+	var finalPath = path.resolve(optionsPath, '..');
+	ls({ path: finalPath, description: finalPath });
+};
+
+var copyFilesConfirm = function copyFilesConfirm() {
+	var extraInput = getExtraInput(store.getState());
+	var cmdProcess = spawnInProject('cp', [extraInput.originPath, extraInput.value]);
+	cmdProcess.on('exit', function () {
+		store.dispatch({ type: 'HIDE' });
+		atom.workspace.open(extraInput.value);
+	});
+};
+
+var moveFilesConfirm = function moveFilesConfirm() {
+	var extraInput = getExtraInput(store.getState());
+	var cmdProcess = spawnInProject('mv', [extraInput.originPath, extraInput.value]);
+	cmdProcess.on('exit', function () {
+		store.dispatch({ type: 'HIDE' });
+		atom.workspace.open(extraInput.value);
+	});
+};
+
 module.exports = {
 	subscriptions: null,
 
@@ -8305,23 +8325,7 @@ module.exports = {
 		return commandFactory;
 	},
 	setup: function setup() {
-		var reactRoot = document.createElement('div');
-
-		render(h(
-			Provider,
-			{ store: store },
-			h(
-				'div',
-				null,
-				h(SparklingContainer$1, null),
-				h(FindContainer$1, null),
-				h(ExtraInputContainer$1, null)
-			)
-		), reactRoot);
-
-		setupObservables();
-
-		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
+		loadView();
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:next': next,

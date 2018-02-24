@@ -54,6 +54,7 @@
     "it": true,
     "context": true,
     "document": true,
-    "Set": true
+    "Set": true,
+    "Promise": true
   }
 }
