@@ -7,24 +7,28 @@ Sparkling is a general fuzzy finder. It is different from the atom built-in one 
 Download this package from the atom package list. This package relies heavily on other programs from which it can create data sources. I recommend installing ag and ripgrep and including it in your path:
 
 https://github.com/BurntSushi/ripgrep
+
 https://github.com/ggreer/the_silver_searcher
 
-## Default commands
+## Keybindings
 
-| Keybinding                       |       Data source        |                 activate |
-| -------------------------------- | :----------------------: | -----------------------: |
-| `cmd-p`                          | ripgrep files in project |                open file |
-| `cmd-shift-a` then `enter`       |  ag pattern in project   |       go to line in file |
-| `cmd-shift-a` then `shift-enter` |  ag pattern in project   |          replace in file |
-| `cmd-l` + `cmd-L`                | ripgrep lines in project |       go to line in file |
-| `cmd-l` + `cmd-a`                | ripgrep lines in project |              insert text |
-| `cmd-l` + `cmd-l`                |   current buffer lines   |               go to line |
-| `cmd-g cmd-p`                    |        git status        |                open file |
-| `cmd-g cmd-s`                    |        git status        |       stage/unstage file |
-| `cmd-g cmd-b`                    |       git branches       |          checkout branch |
-| `cmd-l cmd-s`                    |            ls            | open file or dive folder |
+This package comes with a lot of Keybindings. I have tried my best to accomodate them semantically without disturbing native atom Keybindings. However, if this does not suit you, you can disable them in the package settings and create your own.
 
-`cmd-p` defaults to disabled since you need `ripgrep` in your path and I do not want to make it look like the plugin is broken.
+| Command                       | Keybinding     | Data source            | On activate     |
+| ----------------------------- | -------------- | ---------------------- | --------------- |
+| "sparkling:files"             | "cmd-p cmd-p": | ripgrep project files  | go to           |
+| "sparkling:gitFiles"          | "cmd-g cmd-f": | git status             | go to           |
+| "sparkling:gitStage"          | "cmd-g cmd-s": | git status             | stage / unstage |
+| "sparkling:gitBranches"       | "cmd-g cmd-b": | git branches           | checkout        |
+| "sparkling:gitCommits"        | "cmd-g cmd-c": | git log                | checkout        |
+| "sparkling:gitLog"            | "cmd-g cmd-l": | git log                | copy git hash   |
+| "sparkling:allLines"          | "cmd-l cmd-L": | ripgrep project lines  | go to           |
+| "sparkling:ls"                | "cmd-l cmd-s": | ls                     | go to / dive    |
+| "sparkling:removeFiles"       | "cmd-p cmd-D": | ripgrep project files  | rm              |
+| "sparkling:copyFiles"         | "cmd-p cmd-c": | ripgrep project files  | cp              |
+| "sparkling:moveFiles"         | "cmd-p cmd-m": | ripgrep project files  | mv              |
+| "sparkling:findToggle"        | "cmd-p cmd-f": | ripgrep project patten | go to           |
+| "sparkling:findInBufferToggle | "cmd-b cmd-f": | ripgrep buffer pattern | go to           |
 
 ## Find files
 

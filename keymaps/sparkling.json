@@ -10,7 +10,6 @@
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-p cmd-D": "sparkling:removeFiles",
 		"cmd-p cmd-c": "sparkling:copyFiles",
-		"cmd-p cmd-r": "sparkling:renameFiles",
 		"cmd-p cmd-m": "sparkling:moveFiles",
 		"cmd-p cmd-f": "sparkling:findToggle",
 		"cmd-b cmd-f": "sparkling:findInBufferToggle"
@@ -49,7 +48,6 @@
 		"ctrl-l ctrl-s": "sparkling:ls",
 		"ctrl-p ctrl-D": "sparkling:removeFiles",
 		"ctrl-p ctrl-c": "sparkling:copyFiles",
-		"ctrl-p ctrl-r": "sparkling:renameFiles",
 		"ctrl-p ctrl-m": "sparkling:moveFiles",
 		"ctrl-p ctrl-f": "sparkling:findToggle",
 		"ctrl-b ctrl-f": "sparkling:findInBufferToggle"
@@ -83,9 +81,6 @@
 	},
 	"#sparkling-copy-file-confirm .sparkling-input": {
 		"enter": "sparkling:copyFilesConfirm"
-	},
-	"#sparkling-rename-file-confirm .sparkling-input": {
-		"enter": "sparkling:renameFilesConfirm"
 	},
 	"#sparkling-move-file-confirm .sparkling-input": {
 		"enter": "sparkling:moveFilesConfirm"

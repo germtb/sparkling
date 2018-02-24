@@ -5500,31 +5500,6 @@ var copyFiles = function copyFiles(h, store) {
 
 var copyFiles$1 = commandFactory(copyFiles);
 
-var renameFiles = function renameFiles(h, store) {
-	var accept = function accept(file) {
-		store.dispatch({
-			type: 'SHOW_EXTRA_INPUT',
-			payload: {
-				id: 'sparkling-rename-file-confirm',
-				originPath: file.value,
-				value: file.value
-			}
-		});
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
-		description: 'Rename files in project',
-		id: 'sparkling-rename-files'
-	};
-};
-
-var renameFiles$1 = commandFactory(renameFiles);
-
 var moveFiles = function moveFiles(h, store) {
 	var accept = function accept(file) {
 		store.dispatch({
@@ -6474,15 +6449,6 @@ var copyFilesConfirm = function copyFilesConfirm() {
 };
 
 var moveFilesConfirm = function moveFilesConfirm() {
-	var extraInput = getExtraInput(store.getState());
-	var cmdProcess = spawnInProject('mv', [extraInput.originPath, extraInput.value]);
-	cmdProcess.on('exit', function () {
-		store.dispatch({ type: 'HIDE' });
-		atom.workspace.open(extraInput.value);
-	});
-};
-
-var renameFilesConfirm = function renameFilesConfirm() {
 	var extraInput = getExtraInput(store.getState());
 	var cmdProcess = spawnInProject('mv', [extraInput.originPath, extraInput.value]);
 	cmdProcess.on('exit', function () {
@@ -8379,11 +8345,9 @@ module.exports = {
 			'sparkling:lsUp': lsShowUp,
 			'sparkling:removeFiles': removeFiles$1,
 			'sparkling:moveFiles': moveFiles$1,
+			'sparkling:moveFilesConfirm': moveFilesConfirm,
 			'sparkling:copyFiles': copyFiles$1,
 			'sparkling:copyFilesConfirm': copyFilesConfirm,
-			'sparkling:moveFilesConfirm': moveFilesConfirm,
-			'sparkling:renameFiles': renameFiles$1,
-			'sparkling:renameFilesConfirm': renameFilesConfirm,
 			'sparkling:findToggle': function sparklingFindToggle() {
 				return findToggle();
 			},
