@@ -6,6 +6,7 @@
 		"cmd-g cmd-b": "sparkling:gitBranches",
 		"cmd-g cmd-c": "sparkling:gitCommits",
 		"cmd-g cmd-l": "sparkling:gitLog",
+		"cmd-g cmd--": "sparkling:gitCheckout",
 		"cmd-l cmd-L": "sparkling:allLines",
 		"cmd-l cmd-s": "sparkling:ls",
 		"cmd-p cmd-D": "sparkling:removeFiles",

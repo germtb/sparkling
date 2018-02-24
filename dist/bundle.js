@@ -4015,8 +4015,10 @@ var removeFiles = function removeFiles(h, store) {
 
 var removeFiles$1 = commandFactory(removeFiles);
 
-var loadDataFactory = (function (_ref) {
-	var hideDeletedFiles = _ref.hideDeletedFiles;
+var loadDataFactory = (function () {
+	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+	    hideDeletedFiles = _ref.hideDeletedFiles;
+
 	return function (onData) {
 		var cmdProcess = spawnInProject('git', ['status', '-s']);
 
@@ -4299,6 +4301,33 @@ var gitStageFactory = function gitStageFactory(h, store) {
 };
 
 var gitStage = commandFactory(gitStageFactory);
+
+var gitStageFactory$1 = function gitStageFactory(h, store) {
+	var loadData = loadDataFactory();
+
+	var accept = function accept(_ref) {
+		var path$$1 = _ref.path;
+
+		var cmdProcess = spawnInProject('git', ['checkout', '--', path$$1]);
+
+		cmdProcess.on('exit', function () {
+			store.dispatch({
+				type: 'RELOAD'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$1,
+		columns: 3,
+		description: 'git checkout -- files',
+		id: 'sparkling-git-checkout'
+	};
+};
+
+var gitCheckout = commandFactory(gitStageFactory$1);
 
 var renderer$2 = (function (_ref) {
 	var item = _ref.item,
@@ -8340,6 +8369,7 @@ module.exports = {
 			'sparkling:gitBranches': gitBranches,
 			'sparkling:gitLog': gitLog,
 			'sparkling:gitCommits': gitCommits,
+			'sparkling:gitCheckout': gitCheckout,
 			'sparkling:lines': lines,
 			'sparkling:allLines': allLines,
 			'sparkling:autocompleteLines': autocompleteLines,
