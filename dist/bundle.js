@@ -4226,7 +4226,7 @@ var loadData$2 = (function (onData) {
 	});
 });
 
-var gitCommitsFactory = function gitCommitsFactory(h, store) {
+var gitLogCheckoutFactory = function gitLogCheckoutFactory(h, store) {
 	var accept = function accept(commit) {
 		var value = commit.value.split(' ', 1)[0];
 		atom.clipboard.write(value);
@@ -4238,14 +4238,14 @@ var gitCommitsFactory = function gitCommitsFactory(h, store) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		description: 'Copy git commit hash to clipboard',
+		description: 'git log - Copy git commit hash to clipboard',
 		id: 'sparkling-git-log'
 	};
 };
 
-var gitLog = commandFactory(gitCommitsFactory);
+var gitLog = commandFactory(gitLogCheckoutFactory);
 
-var gitCommitsFactory$1 = function gitCommitsFactory(h, store) {
+var gitLogCheckoutFactory$1 = function gitLogCheckoutFactory(h, store) {
 	var accept = function accept(commit) {
 		var value = commit.value.split(' ', 1)[0];
 
@@ -4260,12 +4260,12 @@ var gitCommitsFactory$1 = function gitCommitsFactory(h, store) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		description: 'Checkout git commit',
+		description: 'git log - Checkout git commit',
 		id: 'sparkling-git-commit'
 	};
 };
 
-var gitCommits = commandFactory(gitCommitsFactory$1);
+var gitLogCheckout = commandFactory(gitLogCheckoutFactory$1);
 
 var gitStageFactory = function gitStageFactory(h, store) {
 	var loadData = loadDataFactory({ hideDeletedFiles: false });
@@ -4328,6 +4328,36 @@ var gitStageFactory$1 = function gitStageFactory(h, store) {
 };
 
 var gitCheckout = commandFactory(gitStageFactory$1);
+
+var loadData$3 = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['reflog']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+});
+
+var gitReflog = function gitReflog(h, store) {
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
+		atom.clipboard.write(value);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return {
+		loadData: loadData$3,
+		accept: accept,
+		description: 'git reflog - Copy git commit hash to clipboard',
+		id: 'sparkling-git-reflog'
+	};
+};
+
+var gitReflog$1 = commandFactory(gitReflog);
 
 var renderer$2 = (function (_ref) {
 	var item = _ref.item,
@@ -5920,7 +5950,7 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 
 var replace$1 = commandFactory(replaceFactory);
 
-var loadData$3 = (function (onData) {
+var loadData$4 = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
 
 	cmdProcess.stdout.on('data', function (data) {
@@ -5960,7 +5990,7 @@ var allLinesFactory = function allLinesFactory(h, store) {
 	};
 
 	return {
-		loadData: loadData$3,
+		loadData: loadData$4,
 		accept: accept,
 		description: 'Find lines in project',
 		id: 'sparkling-project-lines'
@@ -5977,7 +6007,7 @@ var autocompleteLinesFactory = function autocompleteLinesFactory(h, store) {
 	};
 
 	return {
-		loadData: loadData$3,
+		loadData: loadData$4,
 		accept: accept,
 		description: 'Autocomplete lines from project',
 		id: 'sparkling-autocomplete-lines'
@@ -8368,8 +8398,9 @@ module.exports = {
 			'sparkling:gitStage': gitStage,
 			'sparkling:gitBranches': gitBranches,
 			'sparkling:gitLog': gitLog,
-			'sparkling:gitCommits': gitCommits,
+			'sparkling:gitLogCheckout': gitLogCheckout,
 			'sparkling:gitCheckout': gitCheckout,
+			'sparkling:gitReflog': gitReflog$1,
 			'sparkling:lines': lines,
 			'sparkling:allLines': allLines,
 			'sparkling:autocompleteLines': autocompleteLines,

@@ -21,8 +21,10 @@ This package comes with a lot of Keybindings. I have tried my best to accomodate
 | sparkling:gitStage           | cmd-g cmd-s             | git status            | stage / unstage |
 | sparkling:gitCheckout        | cmd-g cmd--             | git status            | checkout --     |
 | sparkling:gitBranches        | cmd-g cmd-b             | git branches          | checkout        |
-| sparkling:gitCommits         | cmd-g cmd-c             | git log               | checkout        |
 | sparkling:gitLog             | cmd-g cmd-l             | git log               | copy git hash   |
+| sparkling:gitLogCheckout     | cmd-g cmd-L             | git log               | checkout        |
+| sparkling:gitReflog          | cmd-g cmd-r             | git reflog            | copy git hash   |
+| sparkling:gitReflogCheckout  | cmd-g cmd-R             | git reflog            | checkout        |
 | sparkling:allLines           | cmd-l cmd-L             | ripgrep project lines | go to           |
 | sparkling:ls                 | cmd-l cmd-s             | ls                    | go to / dive    |
 | sparkling:removeFiles        | cmd-p cmd-D             | ripgrep project files | rm              |
