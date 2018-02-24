@@ -3749,6 +3749,26 @@ return fuzzysortNew()
 var fileIconsService = null;
 var promise = null;
 
+var fileReplace = async function fileReplace(_ref) {
+	var path$$1 = _ref.path,
+	    line = _ref.line,
+	    lineNumber = _ref.lineNumber,
+	    match = _ref.match,
+	    replace = _ref.replace,
+	    column = _ref.column;
+
+	var newLine = line.slice(0, column) + replace.replace('\\', '\\\\').replace('/', '\\/') + line.slice(column + match.length);
+
+	// note: escape newLine
+	var sedRegex = lineNumber + ',' + lineNumber + 's/^.*$/' + newLine + '/';
+	var cmdProcess = spawnInProject('sed', ['-i', '', '-e', sedRegex, path$$1]);
+	await new Promise(function (resolve) {
+		cmdProcess.on('exit', function () {
+			resolve();
+		});
+	});
+};
+
 var fuzzyFilter = function fuzzyFilter(pattern, data) {
 	promise && promise.cancel();
 	promise = fuzzysort.goAsync(pattern, data, { key: 'value' });
@@ -4483,6 +4503,7 @@ var loadDataFactory$1 = (function (store) {
 
 							processedData.push({
 								value: preValue + ' ' + line,
+								line: line,
 								match: line.slice(column, column + length),
 								path: path$$1,
 								lineNumber: lineNumber,
@@ -5923,15 +5944,22 @@ var replaceFactory = function replaceFactory(h$$1, store) {
 		var replace = getReplace(store.getState());
 		var lineNumber = item.lineNumber,
 		    path$$1 = item.path,
-		    match = item.match;
+		    match = item.match,
+		    column = item.column,
+		    line = item.line;
 
 
-		var sedRegex = lineNumber + ',' + lineNumber + 's/' + match + '/' + replace + '/';
-		spawnInProject('sed', ['-i', '', '-e', sedRegex, path$$1]);
-
-		store.dispatch({
-			type: 'REMOVE_ITEM',
-			payload: item
+		fileReplace({
+			line: line,
+			lineNumber: lineNumber,
+			path: path$$1,
+			column: column,
+			match: match,
+			replace: replace
+		}).then(function () {
+			store.dispatch({
+				type: 'RELOAD'
+			});
 		});
 	};
 
