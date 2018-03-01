@@ -3498,6 +3498,8 @@ var toConsumableArray = function (arr) {
   }
 };
 
+// @flow
+
 var reducerCreator = function reducerCreator(actions) {
 	return function (initialState) {
 		return function () {
