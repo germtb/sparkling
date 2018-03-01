@@ -10,13 +10,15 @@
 		"sparkling:allLines",
 		"sparkling:autocompleteLines"
 	],
-	"description":
-		"Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
+	"description": "Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
 	"scripts": {
 		"test": "jest",
 		"build": "rollup -c"
 	},
-	"keywords": ["fuzzy", "find"],
+	"keywords": [
+		"fuzzy",
+		"find"
+	],
 	"repository": "https://github.com/germtb/sparkling",
 	"jest": {},
 	"license": "MIT",
@@ -41,8 +43,9 @@
 	"dependencies": {
 		"classnames": "^2.2.5",
 		"fuzzysort": "^1.0.5",
-		"preact": "^8.2.7",
-		"preact-redux": "^2.0.3",
+		"react": "^16.2.0",
+		"react-dom": "^16.2.0",
+		"react-redux": "^5.0.7",
 		"redux": "^3.6.0",
 		"rxjs": "^5.5.6"
 	},

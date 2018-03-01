@@ -16,10 +16,7 @@ module.exports = {
 			babelrc: false,
 			presets: ['es2015-rollup'],
 			exclude: ['node_modules/**', '**/*.json'],
-			plugins: [
-				'transform-object-rest-spread',
-				['transform-react-jsx', { pragma: 'h' }]
-			]
+			plugins: ['transform-object-rest-spread', 'transform-react-jsx']
 		}),
 		resolve({
 			jsnext: true
@@ -27,15 +24,13 @@ module.exports = {
 		commonJS({
 			include: 'node_modules/**',
 			namedExports: {
-				'./node_modules/preact/dist/preact.js': [
-					'h:',
-					'createElement',
-					'cloneElement',
+				'node_modules/react/index.js': [
+					'Children',
+					'PureComponent',
 					'Component',
-					'render',
-					'rerender',
-					'options'
-				]
+					'createElement'
+				],
+				'node_modules/react-dom/index.js': ['render']
 			}
 		}),
 		builtins(),

@@ -79,4 +79,4 @@ This package comes with a lot of Keybindings. I have tried my best to accomodate
 
 You can build a plugin with your own sources, just like I show in this example project: https://github.com/germtb/sparkling-extras
 
-As you can see I provide a `h` instance from preact and a redux `store` so that you can interact with sparkling and even create your own view for it.
+I provide a `React` instance a redux `store` so that you can interact with sparkling and even create your own view for it.

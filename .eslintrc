@@ -8,11 +8,6 @@
     "jsx": true,
     "modules": true
   },
-  "settings": {
-    "react": {
-      "pragma": "h"
-    }
-  },
   "rules": {
       "no-dupe-args": 2,
       "no-dupe-keys": 2,
