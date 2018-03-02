@@ -14,7 +14,7 @@ module.exports = {
 	plugins: [
 		babel({
 			babelrc: false,
-			presets: ['es2015-rollup'],
+			presets: ['es2015-rollup', 'flow'],
 			exclude: ['node_modules/**', '**/*.json'],
 			plugins: ['transform-object-rest-spread', 'transform-react-jsx']
 		}),
