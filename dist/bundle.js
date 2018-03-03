@@ -353,6 +353,7 @@ var files = (function (dependencies) {
 var isVisible = function isVisible(state) {
 	return state.visible;
 };
+
 var getOptions = function getOptions(state) {
 	return state.options;
 };
@@ -386,7 +387,6 @@ var isFindVisible = function isFindVisible(state) {
 var getReplace = function getReplace(state) {
 	return state.replace;
 };
-
 var getExtraInput = function getExtraInput(state) {
 	return state.extraInput;
 };
