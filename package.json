@@ -1,78 +1,80 @@
 {
-	"name": "sparkling",
-	"main": "./dist/bundle",
-	"version": "0.2.18",
-	"activationEvents": [
-		"sparkling:files",
-		"sparkling:gitFiles",
-		"sparkling:gitBranches",
-		"sparkling:lines",
-		"sparkling:allLines",
-		"sparkling:autocompleteLines"
-	],
-	"description":
-		"Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
-	"scripts": {
-		"test": "jest",
-		"build": "rollup -c"
-	},
-	"keywords": ["fuzzy", "find"],
-	"repository": "https://github.com/germtb/sparkling",
-	"jest": {},
-	"license": "MIT",
-	"engines": {
-		"atom": ">=1.0.0 <2.0.0"
-	},
-	"providedServices": {
-		"sparkling": {
-			"description": "",
-			"versions": {
-				"0.1.0": "provideSparkling"
-			}
-		}
-	},
-	"consumedServices": {
-		"atom.file-icons": {
-			"versions": {
-				"1.0.0": "consumeFileIcons"
-			}
-		}
-	},
-	"dependencies": {
-		"classnames": "^2.2.5",
-		"fuzzysort": "^1.0.5",
-		"react": "^16.2.0",
-		"react-dom": "^16.2.0",
-		"react-redux": "^5.0.7",
-		"redux": "^3.6.0",
-		"rxjs": "^5.5.6"
-	},
-	"devDependencies": {
-		"babel-cli": "^6.26.0",
-		"babel-core": "^6.24.1",
-		"babel-eslint": "^7.2.3",
-		"babel-jest": "^22.2.2",
-		"babel-loader": "^7.1.2",
-		"babel-plugin-transform-object-rest-spread": "^6.26.0",
-		"babel-plugin-transform-react-jsx": "^6.24.1",
-		"babel-polyfill": "^6.23.0",
-		"babel-preset-env": "^1.6.1",
-		"babel-preset-es2015-rollup": "^3.0.0",
-		"babel-preset-flow": "^6.23.0",
-		"eslint": "^3.19.0",
-		"eslint-config-airbnb": "^14.1.0",
-		"eslint-plugin-import": "^2.2.0",
-		"eslint-plugin-jsx-a11y": "^4.0.0",
-		"eslint-plugin-react": "^7.3.0",
-		"flow-bin": "^0.66.0",
-		"glow": "^1.2.2",
-		"jest-cli": "^22.3.0",
-		"rollup": "^0.55.5",
-		"rollup-plugin-babel": "^3.0.3",
-		"rollup-plugin-bundle-size": "^1.0.1",
-		"rollup-plugin-commonjs": "^8.3.0",
-		"rollup-plugin-node-builtins": "^2.1.2",
-		"rollup-plugin-node-resolve": "^3.0.2",
-		"rollup-plugin-sizes": "^0.4.2"
-	}
+  "name": "sparkling",
+  "main": "./dist/bundle",
+  "version": "0.3.0",
+  "activationEvents": [
+    "sparkling:files",
+    "sparkling:gitFiles",
+    "sparkling:gitBranches",
+    "sparkling:lines",
+    "sparkling:allLines",
+    "sparkling:autocompleteLines"
+  ],
+  "description": "Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
+  "scripts": {
+    "test": "jest",
+    "build": "rollup -c"
+  },
+  "keywords": [
+    "fuzzy",
+    "find"
+  ],
+  "repository": "https://github.com/germtb/sparkling",
+  "jest": {},
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "providedServices": {
+    "sparkling": {
+      "description": "",
+      "versions": {
+        "0.1.0": "provideSparkling"
+      }
+    }
+  },
+  "consumedServices": {
+    "atom.file-icons": {
+      "versions": {
+        "1.0.0": "consumeFileIcons"
+      }
+    }
+  },
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "fuzzysort": "^1.0.5",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.6.0",
+    "rxjs": "^5.5.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-jest": "^22.2.2",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "babel-preset-flow": "^6.23.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^7.3.0",
+    "flow-bin": "^0.66.0",
+    "glow": "^1.2.2",
+    "jest-cli": "^22.3.0",
+    "rollup": "^0.55.5",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-bundle-size": "^1.0.1",
+    "rollup-plugin-commonjs": "^8.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-sizes": "^0.4.2"
+  }
 }
