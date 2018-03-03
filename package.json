@@ -10,15 +10,13 @@
 		"sparkling:allLines",
 		"sparkling:autocompleteLines"
 	],
-	"description": "Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
+	"description":
+		"Sparkling is a general fuzzy finder so fuzzy that it is fizzy",
 	"scripts": {
 		"test": "jest",
 		"build": "rollup -c"
 	},
-	"keywords": [
-		"fuzzy",
-		"find"
-	],
+	"keywords": ["fuzzy", "find"],
 	"repository": "https://github.com/germtb/sparkling",
 	"jest": {},
 	"license": "MIT",
@@ -69,7 +67,6 @@
 		"flow-bin": "^0.66.0",
 		"glow": "^1.2.2",
 		"jest-cli": "^22.3.0",
-		"regenerator-runtime": "^0.11.1",
 		"rollup": "^0.55.5",
 		"rollup-plugin-babel": "^3.0.3",
 		"rollup-plugin-bundle-size": "^1.0.1",

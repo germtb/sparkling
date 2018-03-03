@@ -3,8 +3,8 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var child_process = require('child_process');
-var fs = _interopDefault(require('fs'));
 var path = _interopDefault(require('path'));
+var fs = _interopDefault(require('fs'));
 var atom$1 = require('atom');
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -2593,7 +2593,7 @@ var commandFactoryFactory = (function (store) {
 			preview: null,
 			sliceLength: DEFAULT_SLICE_LENGTH,
 			columns: 1,
-			defaultRenderer: defaultRenderer
+			renderer: defaultRenderer
 		};
 
 		var options = _extends({}, defaults$$1, optionsFactory(react, store));
@@ -2651,6 +2651,147 @@ var files = (function (React, store) {
 		columns: 4,
 		description: 'Find files in project',
 		id: 'sparkling-files'
+	};
+});
+
+var isVisible = function isVisible(state) {
+	return state.visible;
+};
+var getOptions = function getOptions(state) {
+	return state.options;
+};
+var getData = function getData(state) {
+	return state.data;
+};
+var getIndex = function getIndex(state) {
+	return state.index;
+};
+var getOffset = function getOffset(state) {
+	return state.offset;
+};
+var getPattern = function getPattern(state) {
+	return state.pattern.value;
+};
+var getSelectedValue = function getSelectedValue(state) {
+	return getSparklingData(state)[getOffset(state) + getIndex(state)];
+};
+var getRawDataLength = function getRawDataLength(state) {
+	return state.data.length;
+};
+var getSparklingData = function getSparklingData(state) {
+	return state.sparklingData;
+};
+var getFind = function getFind(state) {
+	return state.find;
+};
+var isFindVisible = function isFindVisible(state) {
+	return state.findVisible;
+};
+var getReplace = function getReplace(state) {
+	return state.replace;
+};
+
+var getExtraInput = function getExtraInput(state) {
+	return state.extraInput;
+};
+var isSmartCase = function isSmartCase(state) {
+	return state.smartCase;
+};
+var getScope = function getScope(state) {
+	return state.scope;
+};
+var isLiteralSearch = function isLiteralSearch(state) {
+	return state.literalSearch;
+};
+var isWholeWord = function isWholeWord(state) {
+	return state.wholeWord;
+};
+
+var loadDataFactory = (function (store) {
+	return function (onData) {
+		var options = getOptions(store.getState());
+		var path$$1 = options.path;
+
+
+		var cmdProcess = spawnInProject('ls', ['-a', path$$1]);
+
+		cmdProcess.stdout.on('data', function (data) {
+			var options = getOptions(store.getState());
+			var path$$1 = options.path;
+
+
+			onData(data.toString('utf-8').split('\n').filter(function (s) {
+				return s.length && s !== '.';
+			}).map(function (value) {
+				var absolutePath = path.resolve(path$$1, value);
+
+				if (value === '.') {
+					return { value: '.', absolutePath: absolutePath, isFolder: true };
+				} else if (value === '..') {
+					return { value: '..', absolutePath: absolutePath, isFolder: true };
+				}
+
+				var cwd = atom.project.getPaths()[0];
+				var projectRelativePath = cwd === absolutePath ? cwd : absolutePath.replace(cwd, '~');
+
+				var isFolder = fs.lstatSync(absolutePath).isDirectory();
+				return { value: projectRelativePath, absolutePath: absolutePath, isFolder: isFolder };
+			}).sort(function (a, b) {
+				if (a.isFolder && !b.isFolder) {
+					return -1;
+				} else if (!a.isFolder && b.isFolder) {
+					return 1;
+				} else if (a.absolutePath > b.absolutePath) {
+					return 1;
+				} else if (b.absolutePath < a.absolutePath) {
+					return -1;
+				}
+
+				return 0;
+			}));
+		});
+
+		return function () {
+			cmdProcess.stdin.pause();
+			cmdProcess.kill();
+		};
+	};
+});
+
+var renderer$1 = (function (props) {
+	var absolutePath = props.item.absolutePath;
+
+
+	return defaultRenderer(_extends({}, props, {
+		className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+	}));
+});
+
+var ls = (function (React, store) {
+	var loadData = loadDataFactory(store);
+
+	var accept = function accept(_ref) {
+		var absolutePath = _ref.absolutePath;
+
+		var _getOptions = getOptions(store.getState()),
+		    lsCommand = _getOptions.lsCommand;
+
+		if (fs.lstatSync(absolutePath).isDirectory()) {
+			lsCommand({ path: absolutePath, description: absolutePath, lsCommand: lsCommand });
+		} else {
+			store.dispatch({ type: 'HIDE' });
+			atom.workspace.open(absolutePath);
+		}
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer$1,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Project navigation',
+		id: 'sparkling-ls'
 	};
 });
 
@@ -2721,7 +2862,7 @@ var removeFiles = (function (React, store) {
 	};
 });
 
-var loadDataFactory = (function () {
+var loadDataFactory$1 = (function () {
 	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 	    hideDeletedFiles = _ref.hideDeletedFiles;
 
@@ -2746,7 +2887,7 @@ var loadDataFactory = (function () {
 	};
 });
 
-var renderer$1 = (function (_ref) {
+var renderer$2 = (function (_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    className = _ref.className,
@@ -2860,7 +3001,7 @@ var renderer$1 = (function (_ref) {
 });
 
 var gitFiles = (function (React, store) {
-	var loadData = loadDataFactory({ hideDeletedFiles: true });
+	var loadData = loadDataFactory$1({ hideDeletedFiles: true });
 
 	var accept = function accept(_ref) {
 		var path$$1 = _ref.path;
@@ -2874,7 +3015,7 @@ var gitFiles = (function (React, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$1,
+		renderer: renderer$2,
 		columns: 3,
 		description: 'Find git status files',
 		id: 'sparkling-git-files'
@@ -2966,7 +3107,7 @@ var gitLogCheckout = (function (React, store) {
 });
 
 var gitStage = (function (React, store) {
-	var loadData = loadDataFactory({ hideDeletedFiles: false });
+	var loadData = loadDataFactory$1({ hideDeletedFiles: false });
 
 	var accept = function accept(_ref) {
 		var path$$1 = _ref.path,
@@ -2991,7 +3132,7 @@ var gitStage = (function (React, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$1,
+		renderer: renderer$2,
 		columns: 3,
 		description: 'Stage and unstage git files',
 		id: 'sparkling-git-stage'
@@ -2999,7 +3140,7 @@ var gitStage = (function (React, store) {
 });
 
 var gitCheckout = (function (React, store) {
-	var loadData = loadDataFactory();
+	var loadData = loadDataFactory$1();
 
 	var accept = function accept(_ref) {
 		var path$$1 = _ref.path;
@@ -3016,7 +3157,7 @@ var gitCheckout = (function (React, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$1,
+		renderer: renderer$2,
 		columns: 3,
 		description: 'git checkout -- files',
 		id: 'sparkling-git-checkout'
@@ -3051,7 +3192,27 @@ var gitReflog = (function (React, store) {
 	};
 });
 
-var renderer$2 = (function (_ref) {
+var gitReflogCheckout = (function (React, store) {
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.on('exit', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData$3,
+		accept: accept,
+		description: 'git reflog - Checkout git commit',
+		id: 'sparkling-git-reflog'
+	};
+});
+
+var renderer$3 = (function (_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    className = _ref.className,
@@ -3103,64 +3264,11 @@ var lines = (function (React, store) {
 		description: 'Find lines in current buffer',
 		id: 'sparkling-buffer-lines',
 		sliceLength: 10,
-		renderer: renderer$2
+		renderer: renderer$3
 	};
 });
 
-var isVisible = function isVisible(state) {
-	return state.visible;
-};
-var getOptions = function getOptions(state) {
-	return state.options;
-};
-var getData = function getData(state) {
-	return state.data;
-};
-var getIndex = function getIndex(state) {
-	return state.index;
-};
-var getOffset = function getOffset(state) {
-	return state.offset;
-};
-var getPattern = function getPattern(state) {
-	return state.pattern.value;
-};
-var getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getOffset(state) + getIndex(state)];
-};
-var getRawDataLength = function getRawDataLength(state) {
-	return state.data.length;
-};
-var getSparklingData = function getSparklingData(state) {
-	return state.sparklingData;
-};
-var getFind = function getFind(state) {
-	return state.find;
-};
-var isFindVisible = function isFindVisible(state) {
-	return state.findVisible;
-};
-var getReplace = function getReplace(state) {
-	return state.replace;
-};
-
-var getExtraInput = function getExtraInput(state) {
-	return state.extraInput;
-};
-var isSmartCase = function isSmartCase(state) {
-	return state.smartCase;
-};
-var getScope = function getScope(state) {
-	return state.scope;
-};
-var isLiteralSearch = function isLiteralSearch(state) {
-	return state.literalSearch;
-};
-var isWholeWord = function isWholeWord(state) {
-	return state.wholeWord;
-};
-
-var loadDataFactory$1 = (function (store) {
+var loadDataFactory$2 = (function (store) {
 	return function (onData) {
 		var state = store.getState();
 		var find = getFind(state);
@@ -3264,7 +3372,7 @@ var loadDataFactory$1 = (function (store) {
 	};
 });
 
-var renderer$3 = (function (_ref) {
+var renderer$4 = (function (_ref) {
 	var item = _ref.item,
 	    pattern = _ref.pattern,
 	    index = _ref.index,
@@ -3291,7 +3399,7 @@ var renderer$3 = (function (_ref) {
 });
 
 var find = (function (React, store) {
-	var loadData = loadDataFactory$1(store);
+	var loadData = loadDataFactory$2(store);
 
 	var accept = function accept(value) {
 		var scope = getScope(store.getState());
@@ -3311,7 +3419,7 @@ var find = (function (React, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$3,
+		renderer: renderer$4,
 		description: 'Find pattern in project',
 		id: 'sparkling-project-find',
 		sliceLength: 10,
@@ -5659,7 +5767,7 @@ var Replace = connect(function (state) {
 	};
 })(replaceRenderer);
 
-var renderer$4 = (function (props) {
+var renderer$5 = (function (props) {
 	return react.createElement(Replace, props);
 });
 
@@ -5689,7 +5797,7 @@ var ReplaceInputContainer = connect(function (state) {
 })(ReplaceInput);
 
 var replace = (function (React, store) {
-	var loadData = loadDataFactory$1(store);
+	var loadData = loadDataFactory$2(store);
 
 	var accept = function accept(item) {
 		var replace = getReplace(store.getState());
@@ -5717,7 +5825,7 @@ var replace = (function (React, store) {
 	return {
 		loadData: loadData,
 		accept: accept,
-		renderer: renderer$4,
+		renderer: renderer$5,
 		description: 'Replace pattern in project',
 		id: 'sparkling-project-replace',
 		sliceLength: 10,
@@ -6509,22 +6617,6 @@ var findToggle = function findToggle() {
 	};
 };
 
-var lsShow = function lsShow(path$$1, ls) {
-	return function () {
-		ls({ path: path$$1, description: path$$1, command: ls });
-	};
-};
-
-var lsShowUp = function lsShowUp(path$$1, ls) {
-	return function (dispatch, getState) {
-		var _getOptions2 = getOptions(getState()),
-		    optionsPath = _getOptions2.path;
-
-		var finalPath = path$$1.resolve(optionsPath, '..');
-		ls({ path: finalPath, description: finalPath, command: ls });
-	};
-};
-
 var copyFilesConfirm = function copyFilesConfirm(onDone) {
 	return function (dispatch, getState) {
 		var extraInput = getExtraInput(getState());
@@ -6594,6 +6686,7 @@ module.exports = {
 		var gitLogCheckoutCommand = this.commandFactory(gitLogCheckout);
 		var gitCheckoutCommand = this.commandFactory(gitCheckout);
 		var gitReflogCommand = this.commandFactory(gitReflog);
+		var gitReflogCheckoutCommand = this.commandFactory(gitReflogCheckout);
 		var linesCommand = this.commandFactory(lines);
 		var allLinesCommand = this.commandFactory(allLines);
 		var autocompleteLinesCommand = this.commandFactory(autocompleteLines);
@@ -6602,8 +6695,7 @@ module.exports = {
 		var removeFilesCommand = this.commandFactory(removeFiles);
 		var moveFilesCommand = this.commandFactory(moveFiles);
 		var copyFilesCommand = this.commandFactory(copyFiles);
-		var lsShowCommand = this.commandFactory(lsShow);
-		var lsShowUpCommand = this.commandFactory(lsShowUp);
+		var lsCommand = this.commandFactory(ls);
 
 		var onDone = function onDone(extraInput) {
 			store.dispatch({ type: 'HIDE' });
@@ -6619,12 +6711,12 @@ module.exports = {
 			'sparkling:gitLogCheckout': gitLogCheckoutCommand,
 			'sparkling:gitCheckout': gitCheckoutCommand,
 			'sparkling:gitReflog': gitReflogCommand,
+			'sparkling:gitReflogCheckout': gitReflogCheckoutCommand,
 			'sparkling:lines': linesCommand,
 			'sparkling:allLines': allLinesCommand,
 			'sparkling:autocompleteLines': autocompleteLinesCommand,
 			'sparkling:find': findCommand,
 			'sparkling:replace': replaceCommand,
-			'sparkling:lsUp': lsShowUpCommand,
 			'sparkling:removeFiles': removeFilesCommand,
 			'sparkling:moveFiles': moveFilesCommand,
 			'sparkling:copyFiles': copyFilesCommand,
@@ -6650,7 +6742,15 @@ module.exports = {
 				var activeTextEditor = atom.workspace.getActiveTextEditor();
 				var finalPath = activeTextEditor ? path.dirname(activeTextEditor.getPath()) : atom.project.getPaths()[0];
 
-				store.dispatch(lsShowCommand(finalPath));
+				lsCommand({ path: finalPath, description: finalPath, lsCommand: lsCommand });
+			},
+			'sparkling:lsUp': function sparklingLsUp() {
+				var _getOptions = getOptions(store.getState()),
+				    optionsPath = _getOptions.path;
+
+				var finalPath = path.resolve(optionsPath, '..');
+
+				lsCommand({ path: finalPath, description: finalPath, lsCommand: lsCommand });
 			},
 			'sparkling:moveFilesConfirm': function sparklingMoveFilesConfirm() {
 				return store.dispatch(moveFilesConfirm(onDone));
