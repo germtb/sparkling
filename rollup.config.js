@@ -23,15 +23,7 @@ module.exports = {
 		}),
 		commonJS({
 			include: 'node_modules/**',
-			namedExports: {
-				'node_modules/react/index.js': [
-					'Children',
-					'PureComponent',
-					'Component',
-					'createElement'
-				],
-				'node_modules/react-dom/index.js': ['render']
-			}
+			namedExports: {}
 		}),
 		builtins(),
 		sizes()
