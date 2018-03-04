@@ -225,61 +225,9 @@ var loadData = (function (onData) {
 	};
 });
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var classnames = createCommonjsModule(function (module) {
-/*!
-  Copyright (c) 2016 Jed Watson.
-  Licensed under the MIT License (MIT), see
-  http://jedwatson.github.io/classnames
-*/
-/* global define */
-
-(function () {
-	var hasOwn = {}.hasOwnProperty;
-
-	function classNames () {
-		var classes = [];
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg;
-
-			if (argType === 'string' || argType === 'number') {
-				classes.push(arg);
-			} else if (Array.isArray(arg)) {
-				classes.push(classNames.apply(null, arg));
-			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes.push(key);
-					}
-				}
-			}
-		}
-
-		return classes.join(' ');
-	}
-
-	if ('object' !== 'undefined' && module.exports) {
-		module.exports = classNames;
-	} else if (typeof undefined === 'function' && typeof undefined.amd === 'object' && undefined.amd) {
-		// register as 'classnames', consistent with npm package name
-		undefined('classnames', [], function () {
-			return classNames;
-		});
-	} else {
-		window.classNames = classNames;
-	}
-}());
-});
-
 var defaultRendererFactory = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
 		var item = _ref2.item,
@@ -658,6 +606,7 @@ var loadDataFactory$1 = (function () {
 
 var rendererFactory$2 = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
 		var item = _ref2.item,
@@ -1012,6 +961,7 @@ var gitReflogCheckout = (function (_ref) {
 
 var rendererFactory$3 = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
 		var item = _ref2.item,
@@ -1181,6 +1131,7 @@ var loadDataFactory$2 = (function (store) {
 
 var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
 		var item = _ref2.item,
@@ -1256,6 +1207,7 @@ var find = (function (dependencies) {
 
 var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    wrap = _ref.wrap,
 	    connect = _ref.connect;
 
@@ -1500,7 +1452,8 @@ var commandFactoryFactory = (function (dependencies) {
 });
 
 var InputFactory = (function (_ref) {
-	var React = _ref.React;
+	var React = _ref.React,
+	    classnames = _ref.classnames;
 
 	return function (_React$PureComponent) {
 		inherits(Input, _React$PureComponent);
@@ -1553,6 +1506,7 @@ var InputFactory = (function (_ref) {
 
 var SparklingInputFactory = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    connect = _ref.connect,
 	    components = _ref.components;
 	var Input = components.Input;
@@ -1570,31 +1524,31 @@ var SparklingInputFactory = (function (_ref) {
 		var filteredDataLength = data.length;
 
 		return React.createElement(
-			'div',
-			{ className: 'sparkling-input-container' },
+			"div",
+			{ className: "sparkling-input-container" },
 			React.createElement(
-				'div',
-				{ className: 'sparkling-meta-data' },
+				"div",
+				{ className: "sparkling-meta-data" },
 				React.createElement(
-					'span',
+					"span",
 					null,
-					filteredDataLength + ' / ' + rawDataLength
+					filteredDataLength + " / " + rawDataLength
 				),
 				React.createElement(
-					'span',
-					{ className: 'sparkling-command-description' },
+					"span",
+					{ className: "sparkling-command-description" },
 					description
 				)
 			),
 			React.createElement(Input, {
 				autoFocus: true,
-				id: 'sparkling-input',
+				id: "sparkling-input",
 				tabIndex: 1,
 				className: classnames('sparkling-input', 'native-key-bindings', {
 					'sparkling-input--has-results': filteredDataLength > 0,
 					'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
 				}),
-				placeholder: 'Sparkling fuzzy filter',
+				placeholder: "Sparkling fuzzy filter",
 				value: pattern,
 				setValue: setPattern
 			}),
@@ -1727,6 +1681,7 @@ var SparklingContainer = (function (dependencies) {
 
 var FindContainerFactory = (function (_ref) {
 	var React = _ref.React,
+	    classnames = _ref.classnames,
 	    connect = _ref.connect,
 	    components = _ref.components;
 	var Input = components.Input;
@@ -1747,42 +1702,42 @@ var FindContainerFactory = (function (_ref) {
 		}
 
 		return React.createElement(
-			'div',
-			{ className: 'sparkling-input-container' },
+			"div",
+			{ className: "sparkling-input-container" },
 			React.createElement(
-				'div',
-				{ className: 'sparkling-find-options' },
+				"div",
+				{ className: "sparkling-find-options" },
 				React.createElement(
-					'button',
+					"button",
 					{
 						onClick: toggleSmartCase,
 						className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', smartCase))
 					},
-					'Smart case'
+					"Smart case"
 				),
 				React.createElement(
-					'button',
+					"button",
 					{
 						onClick: toggleLiteralSearch,
 						className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', literalSearch))
 					},
-					'Literal search'
+					"Literal search"
 				)
 			),
 			React.createElement(Input, {
 				tabIndex: 0,
-				className: 'sparkling-find',
+				className: "sparkling-find",
 				autoFocus: true,
 				value: value,
 				setValue: setValue,
-				placeholder: 'Enter to find, shift Enter to replace'
+				placeholder: "Enter to find, shift Enter to replace"
 			}),
 			React.createElement(Input, {
 				tabIndex: 1,
-				className: 'sparkling-scope',
+				className: "sparkling-scope",
 				value: scope,
 				setValue: setScope,
-				placeholder: 'Scope. Leave empty to search whole project'
+				placeholder: "Scope. Leave empty to search whole project"
 			})
 		);
 	};
@@ -2264,6 +2219,10 @@ var dependenciesFactory = (function () {
 	var React = require('react');
 
 	dependencies.React = React;
+
+	var classnames = require('classnames');
+
+	dependencies.classnames = classnames;
 
 	var _require = require('rxjs/Observable'),
 	    Observable = _require.Observable;
