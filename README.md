@@ -37,6 +37,19 @@ This package comes with a lot of Keybindings. I have tried my best to accomodate
 | sparkling:findToggle         | cmd-p cmd-f shift-enter | ag pattern in project | replace              |
 | sparkling:findInBufferToggle | cmd-b cmd-f shift-enter | ag pattern in buffer  | replace              |
 
+| Utils / Navigation       | Keybinding | Effect                                |
+| ------------------------ | ---------- | ------------------------------------- |
+| sparkling:previous       | ctrl-k     | Go up                                 |
+| sparkling:right          | ctrl-l     | Go right                              |
+| sparkling:left           | ctrl-h     | Go left                               |
+| sparkling:next           | ctrl-j     | Go down                               |
+| sparkling:previous       | up         | Go up                                 |
+| sparkling:next           | down       | Go down                               |
+| sparkling:hide           | escape     | Close                                 |
+| sparkling:hide           | cmd-escape | Close                                 |
+| sparkling:accept         | enter      | Activate                              |
+| sparkling:toggleSelfFind | cmd-f      | toggles path of file in active editor |
+
 ## Find files
 
 ![](https://raw.githubusercontent.com/germtb/gifs/master/findFiles.gif)

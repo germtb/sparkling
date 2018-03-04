@@ -24,10 +24,7 @@
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
 	".platform-darwin .sparkling-input": {
-		"alt-k": "sparkling:previous",
-		"alt-l": "sparkling:right",
-		"alt-h": "sparkling:left",
-		"alt-j": "sparkling:next",
+		"cmd-f": "sparkling:toggleSelfFind",
 		"ctrl-k": "sparkling:previous",
 		"ctrl-l": "sparkling:right",
 		"ctrl-h": "sparkling:left",
@@ -67,6 +64,7 @@
 		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
 	},
 	".platform-win32 .sparkling-input, .platform-linux .sparkling-input": {
+		"ctrl-f": "sparkling:toggleSelfFind",
 		"alt-k": "sparkling:previous",
 		"alt-l": "sparkling:right",
 		"alt-h": "sparkling:left",

@@ -2422,6 +2422,17 @@ var moveFilesConfirm = function moveFilesConfirm(onDone) {
 	};
 };
 
+var togglePattern = function togglePattern(_ref2) {
+	var pattern = _ref2.pattern;
+	return function (dispatch, getState) {
+		var currentPattern = getPattern(getState());
+		dispatch({
+			type: 'SET_PATTERN',
+			payload: { pattern: currentPattern === pattern ? '' : pattern }
+		});
+	};
+};
+
 module.exports = {
 	subscriptions: null,
 
@@ -2498,6 +2509,19 @@ module.exports = {
 			'sparkling:removeFiles': removeFilesCommand,
 			'sparkling:moveFiles': moveFilesCommand,
 			'sparkling:copyFiles': copyFilesCommand,
+			'sparkling:toggleSelfFind': function sparklingToggleSelfFind() {
+				var editor = atom.workspace.getActiveTextEditor();
+				var cwd = atom.project.getPaths()[0];
+				var self = editor ? editor.getPath() : atom.project.getPaths()[0];
+
+				var pattern = cwd === self ? cwd : self.replace(cwd, '');
+
+				if (pattern[0] === '/') {
+					pattern = pattern.slice(1);
+				}
+
+				store.dispatch(togglePattern({ pattern: pattern }));
+			},
 			'sparkling:next': function sparklingNext() {
 				return store.dispatch(next());
 			},
