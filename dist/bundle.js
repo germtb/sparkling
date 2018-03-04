@@ -1486,11 +1486,13 @@ var commandFactoryFactory = (function (dependencies) {
 			var extraOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 			var finalOptions = _extends({}, options, extraOptions);
-
 			store.dispatch({
 				type: 'SHOW',
 				payload: finalOptions
 			});
+
+			var sparklingInput = document.getElementById('sparkling-input');
+			sparklingInput && sparklingInput.focus();
 		};
 
 		return command;
