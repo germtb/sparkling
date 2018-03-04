@@ -534,6 +534,11 @@ var relativePathInsert = (function (dependencies) {
 		var dir = path.dirname(originPath);
 		var targetPath = path.resolve(projectPath, value);
 		var relativePath = path.relative(dir, targetPath);
+
+		if (relativePath.slice(-3) === '.js') {
+			relativePath = relativePath.slice(0, -3);
+		}
+
 		store.dispatch({ type: 'HIDE' });
 		editor.insertText(relativePath);
 	};
@@ -564,6 +569,11 @@ var relativePathCopy = (function (dependencies) {
 		var dir = path.dirname(originPath);
 		var targetPath = path.resolve(projectPath, value);
 		var relativePath = path.relative(dir, targetPath);
+
+		if (relativePath.slice(-3) === '.js') {
+			relativePath = relativePath.slice(0, -3);
+		}
+
 		store.dispatch({ type: 'HIDE' });
 		atom.clipboard.write(relativePath);
 	};
