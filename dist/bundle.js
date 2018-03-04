@@ -539,6 +539,10 @@ var relativePathInsert = (function (dependencies) {
 			relativePath = relativePath.slice(0, -3);
 		}
 
+		if (relativePath[0] !== '.') {
+			relativePath = './' + relativePath;
+		}
+
 		store.dispatch({ type: 'HIDE' });
 		editor.insertText(relativePath);
 	};
@@ -572,6 +576,10 @@ var relativePathCopy = (function (dependencies) {
 
 		if (relativePath.slice(-3) === '.js') {
 			relativePath = relativePath.slice(0, -3);
+		}
+
+		if (relativePath[0] !== '.') {
+			relativePath = './' + relativePath;
 		}
 
 		store.dispatch({ type: 'HIDE' });
