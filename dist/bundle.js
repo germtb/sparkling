@@ -1300,8 +1300,9 @@ var rendererFactory$5 = (function (_ref) {
 var replace = (function (dependencies) {
 	var React = dependencies.React,
 	    store = dependencies.store,
-	    Input = dependencies.Input,
+	    components = dependencies.components,
 	    connect = dependencies.connect;
+	var Input = components.Input;
 
 
 	var ReplaceInput = function ReplaceInput(_ref) {
