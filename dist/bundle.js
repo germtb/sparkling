@@ -90,17 +90,7 @@ var inherits = function (subClass, superClass) {
 
 
 
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
 
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
 
 var possibleConstructorReturn = function (self, call) {
   if (!self) {
@@ -1394,9 +1384,10 @@ var render = (function (root, dependencies) {
 	var React = dependencies.React,
 	    store = dependencies.store,
 	    Provider = dependencies.Provider,
-	    Sparkling = dependencies.Sparkling,
-	    FindContainer = dependencies.FindContainer,
-	    ExtraInputContainer = dependencies.ExtraInputContainer;
+	    components = dependencies.components;
+	var Sparkling = components.Sparkling,
+	    FindContainer = components.FindContainer,
+	    ExtraInputContainer = components.ExtraInputContainer;
 
 
 	render(React.createElement(
@@ -1500,7 +1491,9 @@ var InputFactory = (function (_ref) {
 var SparklingInputFactory = (function (_ref) {
 	var React = _ref.React,
 	    connect = _ref.connect,
-	    Input = _ref.Input;
+	    components = _ref.components;
+	var Input = components.Input;
+
 
 	var SparklingInput = function SparklingInput(_ref2) {
 		var options = _ref2.options,
@@ -1652,13 +1645,13 @@ var SparklingContainer = (function (dependencies) {
 	var Sparkling = SparklingFactory(dependencies);
 	var SparklingContainer = function SparklingContainer(_ref) {
 		var visible = _ref.visible,
-		    props = objectWithoutProperties(_ref, ['visible']);
+		    options = _ref.options;
 
 		if (!visible) {
 			return null;
 		}
 
-		return React.createElement(Sparkling, props);
+		return React.createElement(Sparkling, { options: options });
 	};
 
 	return connect(function (state) {
@@ -1672,7 +1665,8 @@ var SparklingContainer = (function (dependencies) {
 var FindContainerFactory = (function (_ref) {
 	var React = _ref.React,
 	    connect = _ref.connect,
-	    Input = _ref.Input;
+	    components = _ref.components;
+	var Input = components.Input;
 
 	var FindContainer = function FindContainer(_ref2) {
 		var visible = _ref2.visible,
@@ -1763,7 +1757,9 @@ var FindContainerFactory = (function (_ref) {
 var ExtraInputContainerFactory = (function (_ref) {
 	var React = _ref.React,
 	    connect = _ref.connect,
-	    Input = _ref.Input;
+	    components = _ref.components;
+	var Input = components.Input;
+
 
 	var ExtraInputContainer = function ExtraInputContainer(_ref2) {
 		var extraInput = _ref2.extraInput,
@@ -1804,13 +1800,11 @@ var ExtraInputContainerFactory = (function (_ref) {
 
 var componentsFactory = (function (dependencies) {
 	var Input = InputFactory(dependencies);
-	var Sparkling = SparklingContainer(_extends({}, dependencies, { Input: Input }));
-	var FindContainer = FindContainerFactory(_extends({}, dependencies, {
-		Input: Input
-	}));
-	var ExtraInputContainer = ExtraInputContainerFactory(_extends({}, dependencies, {
-		Input: Input
-	}));
+	dependencies.components = { Input: Input };
+
+	var Sparkling = SparklingContainer(dependencies);
+	var FindContainer = FindContainerFactory(dependencies);
+	var ExtraInputContainer = ExtraInputContainerFactory(dependencies);
 
 	return {
 		Input: Input,
@@ -1820,7 +1814,7 @@ var componentsFactory = (function (dependencies) {
 	};
 });
 
-var reducerCreator = function reducerCreator(actions) {
+var reducerCreator = function reducerCreator(reducers) {
 	return function (initialState) {
 		return function () {
 			var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
@@ -1828,10 +1822,10 @@ var reducerCreator = function reducerCreator(actions) {
 			var type = _ref.type,
 			    payload = _ref.payload;
 
-			var action = actions[type];
+			var reducer = reducers[type];
 
-			if (action !== null && action !== undefined) {
-				return typeof action === 'function' ? action(state, payload) : action;
+			if (reducer !== null && reducer !== undefined) {
+				return typeof reducer === 'function' ? reducer(state, payload) : reducer;
 			}
 
 			return state;
@@ -1958,26 +1952,23 @@ var scope = reducerCreator({
 	SET_SCOPE: returnPayload('scope')
 })('');
 
-var reducersFactory = (function (_ref5) {
-	var combineReducers = _ref5.combineReducers;
-	return combineReducers({
-		visible: visible,
-		options: options,
-		data: data,
-		sparklingData: sparklingData,
-		index: index,
-		offset: offset,
-		pattern: pattern,
-		findVisible: findVisible,
-		find: find$1,
-		replace: replace$1,
-		extraInput: extraInput,
-		smartCase: smartCase,
-		literalSearch: literalSearch,
-		scope: scope,
-		wholeWord: wholeWord
-	});
-});
+var reducers = {
+	visible: visible,
+	options: options,
+	data: data,
+	sparklingData: sparklingData,
+	index: index,
+	offset: offset,
+	pattern: pattern,
+	findVisible: findVisible,
+	find: find$1,
+	replace: replace$1,
+	extraInput: extraInput,
+	smartCase: smartCase,
+	literalSearch: literalSearch,
+	scope: scope,
+	wholeWord: wholeWord
+};
 
 var fromSelectorFactory = function fromSelectorFactory(_ref) {
 	var store = _ref.store,
@@ -2014,7 +2005,6 @@ var fromActionFactory = function fromActionFactory(_ref2) {
 		if (typeof action === 'function') {
 			action(newDispatch, store.getState);
 		} else {
-			// console.log('action: ', action)
 			oldDispatch(action);
 
 			var _iteratorNormalCompletion = true;
@@ -2063,26 +2053,23 @@ function storeFactory(_ref3) {
 	    createStore = _ref3.createStore,
 	    combineReducers = _ref3.combineReducers;
 
-	var reducers = reducersFactory({ combineReducers: combineReducers });
-	var store = createStore(reducers);
+	var reducers$$1 = combineReducers(reducers);
+	var store = createStore(reducers$$1);
 	var fromAction = fromActionFactory({ store: store, Observable: Observable });
 	var fromSelector = fromSelectorFactory({ store: store, Observable: Observable });
-	store.fromSelector = fromSelector;
-	store.fromAction = fromAction;
 	// store.subscribe(() => {
 	// 	console.log(store.getState())
 	// })
 
-	return store;
+	return { store: store, fromAction: fromAction, fromSelector: fromSelector };
 }
 
 var observablesFactory = (function (_ref) {
 	var store = _ref.store,
+	    fromSelector = _ref.fromSelector,
+	    fromAction = _ref.fromAction,
 	    Observable = _ref.Observable,
 	    filter = _ref.filter;
-	var fromSelector = store.fromSelector,
-	    fromAction = store.fromAction;
-
 
 	var cancelLoadData = null;
 
@@ -2209,7 +2196,11 @@ var fuzzyFilterFactory = (function (_ref2) {
 });
 
 var dependenciesFactory = (function () {
+	var dependencies = {};
+
 	var React = require('react');
+
+	dependencies.React = React;
 
 	var _require = require('rxjs/Observable'),
 	    Observable = _require.Observable;
@@ -2220,55 +2211,51 @@ var dependenciesFactory = (function () {
 	require('rxjs/add/operator/debounceTime');
 	require('rxjs/add/operator/distinctUntilChanged');
 
+	dependencies.Observable = Observable;
+
 	var fuzzysort = require('fuzzysort');
 
 	var _fuzzyFilterFactory = fuzzyFilterFactory({ fuzzysort: fuzzysort }),
 	    filter = _fuzzyFilterFactory.filter,
 	    wrap = _fuzzyFilterFactory.wrap;
 
+	dependencies.filter = filter;
+	dependencies.wrap = wrap;
+
 	var _require2 = require('redux'),
 	    createStore = _require2.createStore,
 	    combineReducers = _require2.combineReducers;
 
-	var store = storeFactory({ Observable: Observable, createStore: createStore, combineReducers: combineReducers });
+	dependencies.createStore = createStore;
+	dependencies.combineReducers = combineReducers;
 
-	observablesFactory({ store: store, Observable: Observable, filter: filter });
+	var _storeFactory = storeFactory(dependencies),
+	    store = _storeFactory.store,
+	    fromAction = _storeFactory.fromAction,
+	    fromSelector = _storeFactory.fromSelector;
+
+	dependencies.store = store;
+	dependencies.fromAction = fromAction;
+	dependencies.fromSelector = fromSelector;
+
+	observablesFactory(dependencies);
 
 	var _require3 = require('react-redux'),
 	    Provider = _require3.Provider,
 	    connect = _require3.connect;
 
-	var components = componentsFactory({
-		React: React,
-		store: store,
-		Observable: Observable,
-		wrap: wrap,
-		filter: filter,
-		Provider: Provider,
-		connect: connect
-	});
+	dependencies.Provider = Provider;
+	dependencies.connect = connect;
 
-	var commandFactory = commandFactoryFactory(_extends({
-		React: React,
-		store: store,
-		Observable: Observable,
-		wrap: wrap,
-		filter: filter,
-		Provider: Provider,
-		connect: connect
-	}, components));
+	var components = componentsFactory(dependencies);
 
-	return _extends({
-		React: React,
-		store: store,
-		Observable: Observable,
-		wrap: wrap,
-		filter: filter,
-		Provider: Provider,
-		connect: connect
-	}, components, {
-		commandFactory: commandFactory
-	});
+	dependencies.components = components;
+
+	var commandFactory = commandFactoryFactory(dependencies);
+
+	dependencies.commandFactory = commandFactory;
+
+	return dependencies;
 });
 
 var next = function next() {
@@ -2282,11 +2269,11 @@ var next = function next() {
 
 		if (index === sliceLength - 1) {
 			var offset = getOffset(state);
-			var value = Math.min(offset + 1, sparklingData.length - sliceLength);
-			dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+			var _value = Math.min(offset + 1, sparklingData.length - sliceLength);
+			dispatch({ type: 'SET_OFFSET', payload: { value: _value } });
 		} else {
-			var _value = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value } });
+			var _value2 = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
+			dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
 		}
 	};
 };
@@ -2298,11 +2285,11 @@ var previous = function previous() {
 
 		if (index === 0) {
 			var offset = getOffset(state);
-			var value = Math.max(offset - 1, 0);
-			dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+			var _value3 = Math.max(offset - 1, 0);
+			dispatch({ type: 'SET_OFFSET', payload: { value: _value3 } });
 		} else {
-			var _value2 = Math.max(index - 1, 0);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
+			var _value4 = Math.max(index - 1, 0);
+			dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
 		}
 	};
 };
@@ -2319,11 +2306,11 @@ var left = function left() {
 
 		if (index === 0) {
 			var offset = getOffset(state);
-			var value = Math.max(offset - rows, 0);
-			dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+			var _value5 = Math.max(offset - rows, 0);
+			dispatch({ type: 'SET_OFFSET', payload: { value: _value5 } });
 		} else {
-			var _value3 = Math.max(index - rows, 0);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value3 } });
+			var _value6 = Math.max(index - rows, 0);
+			dispatch({ type: 'SET_INDEX', payload: { value: _value6 } });
 		}
 	};
 };
@@ -2341,11 +2328,11 @@ var right = function right() {
 
 		if (index === sliceLength - 1) {
 			var offset = getOffset(state);
-			var value = Math.min(offset + rows, sparklingData.length - sliceLength);
-			dispatch({ type: 'SET_OFFSET', payload: { value: value } });
+			var _value7 = Math.min(offset + rows, sparklingData.length - sliceLength);
+			dispatch({ type: 'SET_OFFSET', payload: { value: _value7 } });
 		} else {
-			var _value4 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
+			var _value8 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
+			dispatch({ type: 'SET_INDEX', payload: { value: _value8 } });
 		}
 	};
 };
@@ -2373,7 +2360,7 @@ var accept = function accept() {
 };
 
 var findToggle = function findToggle() {
-	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { find: '', scope: '' },
 	    find = _ref.find,
 	    scope = _ref.scope;
 
@@ -2425,13 +2412,11 @@ module.exports = {
 		var dependencies = dependenciesFactory();
 
 		var store = dependencies.store,
+		    fromAction = dependencies.fromAction,
 		    commandFactory = dependencies.commandFactory;
 
 
 		this.commandFactory = commandFactory;
-
-		var fromAction = store.fromAction;
-
 
 		fromAction('HIDE').subscribe(function () {
 			var editor = atom.workspace.getActiveTextEditor();
