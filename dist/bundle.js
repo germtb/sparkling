@@ -571,6 +571,66 @@ var removeFiles = (function (dependencies) {
 	};
 });
 
+var relativePathInsert = (function (dependencies) {
+	var renderer = rendererFactory(dependencies);
+
+	var store = dependencies.store;
+
+
+	var accept = function accept(_ref) {
+		var value = _ref.value;
+
+		var editor = atom.workspace.getActiveTextEditor();
+		var projectPath = atom.project.getPaths()[0];
+		var originPath = editor.getPath();
+		var dir = path.dirname(originPath);
+		var targetPath = path.resolve(projectPath, value);
+		var relativePath = path.relative(dir, targetPath);
+		store.dispatch({ type: 'HIDE' });
+		editor.insertText(relativePath);
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Copy relative path',
+		id: 'sparkling-copy-relative-path'
+	};
+});
+
+var relativePathCopy = (function (dependencies) {
+	var renderer = rendererFactory(dependencies);
+
+	var store = dependencies.store;
+
+
+	var accept = function accept(_ref) {
+		var value = _ref.value;
+
+		var editor = atom.workspace.getActiveTextEditor();
+		var projectPath = atom.project.getPaths()[0];
+		var originPath = editor.getPath();
+		var dir = path.dirname(originPath);
+		var targetPath = path.resolve(projectPath, value);
+		var relativePath = path.relative(dir, targetPath);
+		store.dispatch({ type: 'HIDE' });
+		atom.clipboard.write(relativePath);
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 20,
+		columns: 4,
+		description: 'Copy relative path',
+		id: 'sparkling-copy-relative-path'
+	};
+});
+
 var loadDataFactory$1 = (function () {
 	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 	    hideDeletedFiles = _ref.hideDeletedFiles;
@@ -2431,6 +2491,8 @@ module.exports = {
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
 		var filesCommand = this.commandFactory(files);
+		var relativePathInsertCommand = this.commandFactory(relativePathInsert);
+		var relativePathCopyCommand = this.commandFactory(relativePathCopy);
 		var gitFilesCommand = this.commandFactory(gitFiles);
 		var gitStageCommand = this.commandFactory(gitStage);
 		var gitBranchesCommand = this.commandFactory(gitBranches);
@@ -2456,6 +2518,8 @@ module.exports = {
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:files': filesCommand,
+			'sparkling:relativePathInsert': relativePathInsertCommand,
+			'sparkling:relativePathCopy': relativePathCopyCommand,
 			'sparkling:gitFiles': gitFilesCommand,
 			'sparkling:gitStage': gitStageCommand,
 			'sparkling:gitBranches': gitBranchesCommand,

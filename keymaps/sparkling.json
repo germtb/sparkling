@@ -18,6 +18,8 @@
 		"cmd-b cmd-f": "sparkling:findInBufferToggle"
 	},
 	".platform-darwin atom-text-editor": {
+		"cmd-p cmd-r": "sparkling:relativePathInsert",
+		"cmd-p cmd-R": "sparkling:relativePathCopy",
 		"cmd-l cmd-l": "sparkling:lines",
 		"cmd-l cmd-a": "sparkling:autocompleteLines"
 	},
@@ -45,8 +47,11 @@
 		"ctrl-g ctrl-f": "sparkling:gitFiles",
 		"ctrl-g ctrl-s": "sparkling:gitStage",
 		"ctrl-g ctrl-b": "sparkling:gitBranches",
-		"ctrl-g ctrl-c": "sparkling:gitLogCheckout",
 		"ctrl-g ctrl-l": "sparkling:gitLog",
+		"ctrl-g ctrl-L": "sparkling:gitLogCheckout",
+		"ctrl-g ctrl--": "sparkling:gitCheckout",
+		"ctrl-g ctrl-r": "sparkling:gitReflog",
+		"ctrl-g ctrl-R": "sparkling:gitReflogCheckout",
 		"ctrl-l ctrl-L": "sparkling:allLines",
 		"ctrl-l ctrl-s": "sparkling:ls",
 		"ctrl-p ctrl-D": "sparkling:removeFiles",
@@ -56,6 +61,8 @@
 		"ctrl-b ctrl-f": "sparkling:findInBufferToggle"
 	},
 	".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
+		"ctrl-p ctrl-r": "sparkling:relativePathInsert",
+		"ctrl-p ctrl-R": "sparkling:relativePathCopy",
 		"ctrl-l ctrl-l": "sparkling:lines",
 		"ctrl-l ctrl-a": "sparkling:autocompleteLines"
 	},
