@@ -437,6 +437,76 @@ var ls = (function (dependencies) {
 	};
 });
 
+var loadEmojiFactory = (function () {
+	return function (onData) {
+		var emoji = require('../db/emoji.json');
+		onData(emoji.map(function (_ref) {
+			var emoji = _ref.emoji,
+			    category = _ref.category,
+			    tags = _ref.tags,
+			    aliases = _ref.aliases,
+			    description = _ref.description;
+			return {
+				emoji: emoji,
+				value: category + ' ' + tags + ' ' + aliases + ' ' + description
+			};
+		}));
+
+		return function () {};
+	};
+});
+
+var rendererFactory$2 = (function (_ref) {
+	var React = _ref.React,
+	    classnames = _ref.classnames;
+
+	return function (_ref2) {
+		var item = _ref2.item,
+		    index = _ref2.index,
+		    selectedIndex = _ref2.selectedIndex;
+		var emoji = item.emoji;
+
+
+		return React.createElement(
+			'div',
+			{
+				className: classnames('sparkling-emoji', {
+					'sparkling-emoji-highlight': index === selectedIndex
+				})
+			},
+			emoji
+		);
+	};
+});
+
+var emoji = (function (dependencies) {
+	var store = dependencies.store;
+
+
+	var renderer = rendererFactory$2(dependencies);
+
+	var loadData = loadEmojiFactory(store);
+
+	var accept = function accept(_ref) {
+		var emoji = _ref.emoji;
+
+		var editor = atom.workspace.getActiveTextEditor();
+
+		store.dispatch({ type: 'HIDE' });
+		editor.insertText(emoji);
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 100,
+		columns: 20,
+		description: 'Emoji insertion',
+		id: 'sparkling-emoji'
+	};
+});
+
 var copyFiles = (function (dependencies) {
 	var renderer = rendererFactory(dependencies);
 
@@ -544,7 +614,6 @@ var relativePathInsert = (function (dependencies) {
 		}
 
 		store.dispatch({ type: 'HIDE' });
-		// store.dispatch({ type: 'SET_DATA', payload: { data: [{ value: '1234' }] } })
 		editor.insertText(relativePath);
 	};
 
@@ -623,7 +692,7 @@ var loadDataFactory$1 = (function () {
 	};
 });
 
-var rendererFactory$2 = (function (_ref) {
+var rendererFactory$3 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
@@ -745,7 +814,7 @@ var gitFiles = (function (dependencies) {
 	var store = dependencies.store;
 
 
-	var renderer = rendererFactory$2(dependencies);
+	var renderer = rendererFactory$3(dependencies);
 
 	var loadData = loadDataFactory$1({ hideDeletedFiles: true });
 
@@ -862,7 +931,7 @@ var gitStage = (function (dependencies) {
 	var store = dependencies.store;
 
 
-	var renderer = rendererFactory$2(dependencies);
+	var renderer = rendererFactory$3(dependencies);
 
 	var loadData = loadDataFactory$1({ hideDeletedFiles: false });
 
@@ -900,7 +969,7 @@ var gitCheckout = (function (dependencies) {
 	var store = dependencies.store;
 
 
-	var renderer = rendererFactory$2(dependencies);
+	var renderer = rendererFactory$3(dependencies);
 
 	var loadData = loadDataFactory$1();
 
@@ -978,7 +1047,7 @@ var gitReflogCheckout = (function (_ref) {
 	};
 });
 
-var rendererFactory$3 = (function (_ref) {
+var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
@@ -1012,7 +1081,7 @@ var lines = (function (dependencies) {
 	var store = dependencies.store;
 
 
-	var renderer = rendererFactory$3(dependencies);
+	var renderer = rendererFactory$4(dependencies);
 
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
@@ -1148,7 +1217,7 @@ var loadDataFactory$2 = (function (store) {
 	};
 });
 
-var rendererFactory$4 = (function (_ref) {
+var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
@@ -1183,7 +1252,7 @@ var find = (function (dependencies) {
 	var store = dependencies.store;
 
 
-	var renderer = rendererFactory$4(dependencies);
+	var renderer = rendererFactory$5(dependencies);
 
 	var loadData = loadDataFactory$2(store);
 
@@ -1224,7 +1293,7 @@ var find = (function (dependencies) {
 	};
 });
 
-var rendererFactory$5 = (function (_ref) {
+var rendererFactory$6 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap,
@@ -1301,7 +1370,7 @@ var replace = (function (dependencies) {
 		};
 	})(ReplaceInput);
 
-	var renderer = rendererFactory$5(dependencies);
+	var renderer = rendererFactory$6(dependencies);
 
 	var loadData = loadDataFactory$2(store);
 
@@ -2478,6 +2547,8 @@ module.exports = {
 		return this.commandFactory;
 	},
 	bootstrap: function bootstrap() {
+		var _this = this;
+
 		var dependencies = dependenciesFactory();
 
 		var store = dependencies.store,
@@ -2499,52 +2570,40 @@ module.exports = {
 
 		atom.workspace.addBottomPanel({ item: reactRoot, model: {} });
 
-		var filesCommand = this.commandFactory(files);
-		var relativePathInsertCommand = this.commandFactory(relativePathInsert);
-		var relativePathCopyCommand = this.commandFactory(relativePathCopy);
-		var gitFilesCommand = this.commandFactory(gitFiles);
-		var gitStageCommand = this.commandFactory(gitStage);
-		var gitBranchesCommand = this.commandFactory(gitBranches);
-		var gitLogCommand = this.commandFactory(gitLog);
-		var gitLogCheckoutCommand = this.commandFactory(gitLogCheckout);
-		var gitCheckoutCommand = this.commandFactory(gitCheckout);
-		var gitReflogCommand = this.commandFactory(gitReflog);
-		var gitReflogCheckoutCommand = this.commandFactory(gitReflogCheckout);
-		var linesCommand = this.commandFactory(lines);
-		var allLinesCommand = this.commandFactory(allLines);
-		var autocompleteLinesCommand = this.commandFactory(autocompleteLines);
-		var findCommand = this.commandFactory(find);
-		var replaceCommand = this.commandFactory(replace);
-		var removeFilesCommand = this.commandFactory(removeFiles);
-		var moveFilesCommand = this.commandFactory(moveFiles);
-		var copyFilesCommand = this.commandFactory(copyFiles);
-		var lsCommand = this.commandFactory(ls);
-
 		var onDone = function onDone(extraInput) {
 			store.dispatch({ type: 'HIDE' });
 			atom.workspace.open(extraInput.value);
 		};
 
+		var add = function add(name, commandFactoryOptions) {
+			var command = commandFactory(commandFactoryOptions);
+			_this.subscriptions.add(atom.commands.add('atom-workspace', defineProperty({}, 'sparkling:' + name, command)));
+		};
+
+		add('files', files);
+		add('emoji', emoji);
+		add('relativePathInsert', relativePathInsert);
+		add('relativePathCopy', relativePathCopy);
+		add('gitFiles', gitFiles);
+		add('gitStage', gitStage);
+		add('gitBranches', gitBranches);
+		add('gitLog', gitLog);
+		add('gitLogCheckout', gitLogCheckout);
+		add('gitCheckout', gitCheckout);
+		add('gitReflog', gitReflog);
+		add('gitReflogCheckout', gitReflogCheckout);
+		add('lines', lines);
+		add('allLines', allLines);
+		add('autocompleteLines', autocompleteLines);
+		add('find', find);
+		add('replace', replace);
+		add('removeFiles', removeFiles);
+		add('moveFiles', moveFiles);
+		add('copyFiles', copyFiles);
+
+		var lsCommand = commandFactory(ls);
+
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
-			'sparkling:files': filesCommand,
-			'sparkling:relativePathInsert': relativePathInsertCommand,
-			'sparkling:relativePathCopy': relativePathCopyCommand,
-			'sparkling:gitFiles': gitFilesCommand,
-			'sparkling:gitStage': gitStageCommand,
-			'sparkling:gitBranches': gitBranchesCommand,
-			'sparkling:gitLog': gitLogCommand,
-			'sparkling:gitLogCheckout': gitLogCheckoutCommand,
-			'sparkling:gitCheckout': gitCheckoutCommand,
-			'sparkling:gitReflog': gitReflogCommand,
-			'sparkling:gitReflogCheckout': gitReflogCheckoutCommand,
-			'sparkling:lines': linesCommand,
-			'sparkling:allLines': allLinesCommand,
-			'sparkling:autocompleteLines': autocompleteLinesCommand,
-			'sparkling:find': findCommand,
-			'sparkling:replace': replaceCommand,
-			'sparkling:removeFiles': removeFilesCommand,
-			'sparkling:moveFiles': moveFilesCommand,
-			'sparkling:copyFiles': copyFilesCommand,
 			'sparkling:toggleSelfFind': function sparklingToggleSelfFind() {
 				var editor = atom.workspace.getActiveTextEditor();
 				var cwd = atom.project.getPaths()[0];
@@ -2614,7 +2673,7 @@ module.exports = {
 		}));
 	},
 	activate: function activate() {
-		var _this = this;
+		var _this2 = this;
 
 		this.subscriptions = new atom$1.CompositeDisposable();
 
@@ -2622,7 +2681,7 @@ module.exports = {
 			this.bootstrap();
 		} else {
 			this.subscriptions.add(atom.packages.onDidActivateInitialPackages(function () {
-				return _this.bootstrap();
+				return _this2.bootstrap();
 			}));
 		}
 	},
