@@ -544,6 +544,7 @@ var relativePathInsert = (function (dependencies) {
 		}
 
 		store.dispatch({ type: 'HIDE' });
+		// store.dispatch({ type: 'SET_DATA', payload: { data: [{ value: '1234' }] } })
 		editor.insertText(relativePath);
 	};
 
