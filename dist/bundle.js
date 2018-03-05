@@ -193,7 +193,7 @@ var setFileIconsService = function setFileIconsService(service) {
 };
 
 var iconClassForPath = function iconClassForPath(path$$1) {
-	return fileIconsService.iconClassForPath(path$$1);
+	return fileIconsService ? fileIconsService.iconClassForPath(path$$1) : '';
 };
 
 var escapeHTML = function escapeHTML(str) {
