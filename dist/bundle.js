@@ -504,7 +504,7 @@ var removeFiles = (function (dependencies) {
 
 		store.dispatch({
 			type: 'REMOVE_ITEM',
-			payload: file
+			payload: { file: file }
 		});
 	};
 
@@ -1854,14 +1854,12 @@ var reducerCreator = function reducerCreator(reducers) {
 	return function (initialState) {
 		return function () {
 			var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
-			var _ref = arguments[1];
-			var type = _ref.type,
-			    payload = _ref.payload;
+			var action = arguments[1];
 
-			var reducer = reducers[type];
+			var reducer = reducers[action.type];
 
 			if (reducer !== null && reducer !== undefined) {
-				return typeof reducer === 'function' ? reducer(state, payload) : reducer;
+				return typeof reducer === 'function' ? reducer(state, action) : reducer;
 			}
 
 			return state;
@@ -1870,8 +1868,9 @@ var reducerCreator = function reducerCreator(reducers) {
 };
 
 var returnPayload = function returnPayload(field) {
-	return function (state, payload) {
-		return field ? payload[field] : payload;
+	return function (state, _ref) {
+		var payload = _ref.payload;
+		return payload[field];
 	};
 };
 
@@ -1899,19 +1898,31 @@ var replace$1 = reducerCreator({
 })('');
 
 var options = reducerCreator({
-	SHOW: returnPayload()
-})({});
+	SHOW: function SHOW(state, _ref2) {
+		var payload = _ref2.payload;
+		return payload;
+	}
+})({
+	loadData: function loadData() {},
+	accept: function accept() {},
+	renderer: function renderer() {},
+	sliceLength: 20,
+	columns: 4,
+	description: '',
+	id: ''
+});
 
 var data = reducerCreator({
-	APPEND_DATA: function APPEND_DATA(state, _ref2) {
-		var data = _ref2.data;
+	APPEND_DATA: function APPEND_DATA(state, _ref3) {
+		var data = _ref3.payload.data;
 		return state.concat(data);
 	},
 	SHOW: [],
 	HIDE: [],
 	SHOW_SEARCH: [],
 	RELOAD: [],
-	REMOVE_ITEM: function REMOVE_ITEM(state, item) {
+	REMOVE_ITEM: function REMOVE_ITEM(state, _ref4) {
+		var item = _ref4.payload.item;
 		return state.filter(function (x) {
 			return x !== item;
 		});
@@ -1924,7 +1935,8 @@ var sparklingData = reducerCreator({
 	HIDE: [],
 	SHOW_SEARCH: [],
 	RELOAD: [],
-	REMOVE_ITEM: function REMOVE_ITEM(state, item) {
+	REMOVE_ITEM: function REMOVE_ITEM(state, _ref5) {
+		var item = _ref5.payload.item;
 		return state.filter(function (x) {
 			return x !== item;
 		});
@@ -1932,9 +1944,11 @@ var sparklingData = reducerCreator({
 })([]);
 
 var pattern = reducerCreator({
-	SET_PATTERN: function SET_PATTERN(state, _ref3) {
-		var pattern = _ref3.pattern;
-		return _extends({}, state, { value: pattern });
+	SET_PATTERN: function SET_PATTERN(state, _ref6) {
+		var pattern = _ref6.payload.pattern;
+		return _extends({}, state, {
+			value: pattern
+		});
 	},
 	SHOW: function SHOW(state) {
 		return _extends({}, state, { value: '' });
@@ -1957,9 +1971,12 @@ var offset = reducerCreator({
 })(0);
 
 var extraInput = reducerCreator({
-	SHOW_INPUT: returnPayload(),
-	SET_EXTRA_INPUT_VALUE: function SET_EXTRA_INPUT_VALUE(state, _ref4) {
-		var value = _ref4.value;
+	SHOW_INPUT: function SHOW_INPUT(state, _ref7) {
+		var payload = _ref7.payload;
+		return payload;
+	},
+	SET_EXTRA_INPUT_VALUE: function SET_EXTRA_INPUT_VALUE(state, _ref8) {
+		var value = _ref8.value;
 		return _extends({}, state, { value: value });
 	},
 	HIDE: { value: '', id: null }
