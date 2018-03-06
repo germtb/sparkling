@@ -515,7 +515,7 @@ var copyFiles = (function (dependencies) {
 
 	var accept = function accept(file) {
 		store.dispatch({
-			type: 'SHOW_INPUT',
+			type: 'SHOW_EXTRA_INPUT',
 			payload: {
 				id: 'sparkling-copy-file-confirm',
 				originPath: file.value,
@@ -543,7 +543,7 @@ var moveFiles = (function (dependencies) {
 
 	var accept = function accept(file) {
 		store.dispatch({
-			type: 'SHOW_INPUT',
+			type: 'SHOW_EXTRA_INPUT',
 			payload: {
 				id: 'sparkling-move-file-confirm',
 				originPath: file.value,
@@ -569,12 +569,12 @@ var removeFiles = (function (dependencies) {
 
 	var renderer = rendererFactory(dependencies);
 
-	var accept = function accept(file) {
-		spawnInProject('rm', [file.value]);
+	var accept = function accept(item) {
+		spawnInProject('rm', [item.value]);
 
 		store.dispatch({
 			type: 'REMOVE_ITEM',
-			payload: { file: file }
+			payload: { item: item }
 		});
 	};
 
@@ -973,14 +973,13 @@ var gitCheckout = (function (dependencies) {
 
 	var loadData = loadDataFactory$1();
 
-	var accept = function accept(_ref) {
-		var path$$1 = _ref.path;
-
-		var cmdProcess = spawnInProject('git', ['checkout', '--', path$$1]);
+	var accept = function accept(item) {
+		var cmdProcess = spawnInProject('git', ['checkout', '--', item.path]);
 
 		cmdProcess.on('exit', function () {
 			store.dispatch({
-				type: 'RELOAD'
+				type: 'REMOVE_ITEM',
+				payload: { item: item }
 			});
 		});
 	};
@@ -1860,6 +1859,8 @@ var FindContainerFactory = (function (_ref) {
 	})(FindContainer);
 });
 
+// @lflow
+
 var ExtraInputContainerFactory = (function (_ref) {
 	var React = _ref.React,
 	    connect = _ref.connect,
@@ -1898,7 +1899,7 @@ var ExtraInputContainerFactory = (function (_ref) {
 	}, function (dispatch) {
 		return {
 			setValue: function setValue(value) {
-				return dispatch({ type: 'SET_EXTRA_INPUT_VALUE', payload: { value: value } });
+				return dispatch({ type: 'SET_EXTRA_INPUT', payload: { value: value } });
 			}
 		};
 	})(ExtraInputContainer);
@@ -1948,7 +1949,7 @@ var visible = reducerCreator({
 	SHOW: true,
 	HIDE: false,
 	SHOW_SEARCH: false,
-	SHOW_INPUT: false
+	SHOW_EXTRA_INPUT: false
 })(false);
 
 var findVisible = reducerCreator({
@@ -2041,16 +2042,16 @@ var offset = reducerCreator({
 })(0);
 
 var extraInput = reducerCreator({
-	SHOW_INPUT: function SHOW_INPUT(state, _ref7) {
+	SHOW_EXTRA_INPUT: function SHOW_EXTRA_INPUT(state, _ref7) {
 		var payload = _ref7.payload;
-		return payload;
+		return _extends({}, state, payload);
 	},
-	SET_EXTRA_INPUT_VALUE: function SET_EXTRA_INPUT_VALUE(state, _ref8) {
-		var value = _ref8.value;
-		return _extends({}, state, { value: value });
+	SET_EXTRA_INPUT: function SET_EXTRA_INPUT(state, _ref8) {
+		var payload = _ref8.payload;
+		return _extends({}, state, payload);
 	},
-	HIDE: { value: '', id: null }
-})({ value: '', id: null });
+	HIDE: {}
+})({});
 
 var smartCase = reducerCreator({
 	TOGGLE_SMART_CASE: function TOGGLE_SMART_CASE(state) {
