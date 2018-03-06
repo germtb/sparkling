@@ -518,8 +518,8 @@ var copyFiles = (function (dependencies) {
 			type: 'SHOW_EXTRA_INPUT',
 			payload: {
 				id: 'sparkling-copy-file-confirm',
-				originPath: file.value,
-				value: file.value
+				value: file.value,
+				originPath: file.value
 			}
 		});
 	};
@@ -831,7 +831,8 @@ var gitFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		columns: 3,
+		columns: 4,
+		sliceLength: 20,
 		description: 'Find git status files',
 		id: 'sparkling-git-files'
 	};
@@ -852,7 +853,7 @@ var gitBranches = (function (_ref) {
 	var store = _ref.store;
 
 	var accept = function accept(branch) {
-		var value = branch.value.trim(0);
+		var value = branch.value.trim();
 
 		if (/^\*/.test(value)) {
 			return;
@@ -870,6 +871,7 @@ var gitBranches = (function (_ref) {
 		loadData: loadData$1,
 		accept: accept,
 		columns: 3,
+		sliceLength: 9,
 		description: 'Checkout git branches',
 		id: 'sparkling-git-branches'
 	};
@@ -900,6 +902,8 @@ var gitLog = (function (_ref) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
+		columns: 1,
+		sliceLength: 10,
 		description: 'git log - Copy git commit hash to clipboard',
 		id: 'sparkling-git-log'
 	};
@@ -922,6 +926,8 @@ var gitLogCheckout = (function (_ref) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
+		sliceLength: 10,
+		columns: 1,
 		description: 'git log - Checkout git commit',
 		id: 'sparkling-git-commit'
 	};
@@ -988,6 +994,7 @@ var gitCheckout = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
+		sliceLength: 9,
 		columns: 3,
 		description: 'git checkout -- files',
 		id: 'sparkling-git-checkout'
@@ -1041,6 +1048,8 @@ var gitReflogCheckout = (function (_ref) {
 	return {
 		loadData: loadData$3,
 		accept: accept,
+		columns: 1,
+		sliceLength: 10,
 		description: 'git reflog - Checkout git commit',
 		id: 'sparkling-git-reflog'
 	};
@@ -1277,6 +1286,7 @@ var find = (function (dependencies) {
 		description: 'Find pattern in project',
 		id: 'sparkling-project-find',
 		sliceLength: 10,
+		columns: 1,
 		onValue: function onValue(value) {
 			var scope = getScope(store.getState());
 			var cwd = atom.project.getPaths()[0];
@@ -1453,6 +1463,8 @@ var allLines = (function (_ref) {
 	return {
 		loadData: loadData$4,
 		accept: accept,
+		columns: 1,
+		sliceLength: 10,
 		description: 'Find lines in project',
 		id: 'sparkling-project-lines'
 	};
@@ -1470,6 +1482,8 @@ var autocompleteLines = (function (_ref) {
 	return {
 		loadData: loadData$4,
 		accept: accept,
+		columns: 1,
+		sliceLength: 10,
 		description: 'Autocomplete lines from project',
 		id: 'sparkling-autocomplete-lines'
 	};
@@ -1747,6 +1761,7 @@ var SparklingContainer = (function (dependencies) {
 
 
 	var Sparkling = SparklingFactory(dependencies);
+
 	var SparklingContainer = function SparklingContainer(_ref) {
 		var visible = _ref.visible,
 		    options = _ref.options;
@@ -1758,12 +1773,14 @@ var SparklingContainer = (function (dependencies) {
 		return React.createElement(Sparkling, { options: options });
 	};
 
-	return connect(function (state) {
+	var mapStateToProps = function mapStateToProps(state) {
 		return {
 			visible: isVisible(state),
 			options: getOptions(state)
 		};
-	})(SparklingContainer);
+	};
+
+	return connect(mapStateToProps)(SparklingContainer);
 });
 
 var FindContainerFactory = (function (_ref) {
@@ -1974,7 +1991,9 @@ var options = reducerCreator({
 		return payload;
 	}
 })({
-	loadData: function loadData() {},
+	loadData: function loadData() {
+		return function () {};
+	},
 	accept: function accept() {},
 	renderer: function renderer() {},
 	sliceLength: 20,
@@ -2143,7 +2162,7 @@ var fromActionFactory = function fromActionFactory(_ref2) {
 
 
 					if (actionType === action.type) {
-						observer.next(actionType);
+						observer.next();
 					}
 				}
 			} catch (err) {
@@ -2542,6 +2561,8 @@ var togglePattern = function togglePattern(_ref2) {
 module.exports = {
 	subscriptions: null,
 
+	rxSubscription: null,
+
 	config: config,
 
 	provideSparkling: function provideSparkling() {
@@ -2559,7 +2580,7 @@ module.exports = {
 
 		this.commandFactory = commandFactory;
 
-		fromAction('HIDE').subscribe(function () {
+		this.rxSubscription = fromAction('HIDE').subscribe(function () {
 			var editor = atom.workspace.getActiveTextEditor();
 			var view = editor && atom.views.getView(editor);
 			view && view.focus();
@@ -2646,7 +2667,7 @@ module.exports = {
 				var _getOptions = getOptions(store.getState()),
 				    optionsPath = _getOptions.path;
 
-				var finalPath = path.resolve(optionsPath, '..');
+				var finalPath = path.resolve(optionsPath || '.', '..');
 
 				lsCommand({ path: finalPath, description: finalPath, lsCommand: lsCommand });
 			},
@@ -2687,6 +2708,7 @@ module.exports = {
 		}
 	},
 	deactivate: function deactivate() {
+		this.rxSubscription.unsubscribe();
 		this.subscriptions.dispose();
 		this.subscriptions = null;
 	},
