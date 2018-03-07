@@ -5,7 +5,7 @@ import builtins from 'rollup-plugin-node-builtins'
 import sizes from 'rollup-plugin-sizes'
 
 module.exports = {
-	input: './lib/sparkling.js',
+	input: './lib/entry.js',
 	output: {
 		format: 'cjs',
 		file: './dist/bundle.js'
@@ -23,7 +23,15 @@ module.exports = {
 		}),
 		commonJS({
 			include: 'node_modules/**',
-			namedExports: {}
+			namedExports: {
+				'./node_modules/react/index.js': [
+					'cloneElement',
+					'createElement',
+					'PropTypes',
+					'Children',
+					'Component'
+				]
+			}
 		}),
 		builtins(),
 		sizes()
