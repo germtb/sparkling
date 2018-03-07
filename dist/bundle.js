@@ -239,7 +239,7 @@ var defaultRendererFactory = (function (_ref) {
 		var value = item.value;
 
 
-		var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+		var finalClassName = classnames(className, 'sparkling-row', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
 
 		var wrappedValue = wrap(value, pattern);
 
@@ -341,7 +341,133 @@ var isWholeWord = function isWholeWord(state) {
 	return state.wholeWord;
 };
 
-var loadDataFactory = (function (store) {
+var loadDataFactory = (function (_ref) {
+	var store = _ref.store;
+	return function (onData) {
+		var options = getOptions(store.getState());
+		var activeElement = options.activeElement;
+
+
+		var commands = atom.commands.findCommands({
+			target: activeElement
+		});
+
+		var keybindings = atom.keymaps.findKeyBindings({
+			target: activeElement
+		});
+
+		var keybindingsMap = keybindings.reduce(function (acc, keybinding) {
+			acc[keybinding.command] = keybinding;
+			return acc;
+		}, {});
+
+		onData(commands.sort(function (a, b) {
+			if (a.name < b.name) {
+				return -1;
+			} else if (a.name > b.name) {
+				return 1;
+			}
+
+			return 0;
+		}).map(function (_ref2) {
+			var displayName = _ref2.displayName,
+			    name = _ref2.name;
+
+			var keybinding = keybindingsMap[name];
+
+			return {
+				value: displayName,
+				name: name,
+				keybinding: keybinding,
+				activeElement: activeElement
+			};
+		}));
+		return function () {};
+	};
+});
+
+var iconMap = {
+	alt: '⌥',
+	cmd: '⌘',
+	shift: '⇧',
+	ctrl: '⌃',
+	tab: '⇥',
+	up: '↑',
+	down: '↓',
+	left: '←',
+	right: '→',
+	enter: '↵',
+	escape: 'esc'
+};
+
+var commands = (function (dependencies) {
+	var React = dependencies.React,
+	    classnames = dependencies.classnames,
+	    wrap = dependencies.wrap,
+	    store = dependencies.store;
+
+
+	var loadData = loadDataFactory(dependencies);
+
+	var accept = function accept(item) {
+		atom.commands.dispatch(item.activeElement, item.name);
+		store.dispatch({ type: 'HIDE' });
+	};
+
+	var renderer = function renderer(_ref) {
+		var item = _ref.item,
+		    index = _ref.index,
+		    selectedIndex = _ref.selectedIndex,
+		    pattern = _ref.pattern;
+
+		var keybinding = item.keybinding;
+		var finalClassName = classnames('sparkling-row', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+
+		var wrappedValue = wrap(item.value, pattern);
+
+		return React.createElement(
+			'div',
+			{
+				className: finalClassName,
+				'aria-role': 'button',
+				onClick: function onClick() {
+					return accept(item);
+				},
+				style: { display: 'flex', justifyContent: 'space-between' }
+			},
+			React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedValue } }),
+			keybinding && React.createElement(
+				'span',
+				null,
+				keybinding.keystrokeArray.map(function (keystroke) {
+					return React.createElement(
+						'span',
+						{ className: 'sparkling-keystroke' },
+						keystroke.split('-').map(function (key) {
+							if (iconMap[key]) {
+								return iconMap[key];
+							}
+
+							return key;
+						}).join(' ')
+					);
+				})
+			)
+		);
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		sliceLength: 12,
+		columns: 2,
+		description: 'Run commands',
+		id: 'sparkling-commands'
+	};
+});
+
+var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
 		var path$$1 = options.path;
@@ -410,7 +536,7 @@ var ls = (function (dependencies) {
 
 	var renderer = rendererFactory$1(dependencies);
 
-	var loadData = loadDataFactory(store);
+	var loadData = loadDataFactory$1(store);
 
 	var accept = function accept(_ref) {
 		var absolutePath = _ref.absolutePath;
@@ -667,7 +793,7 @@ var relativePathCopy = (function (dependencies) {
 	};
 });
 
-var loadDataFactory$1 = (function () {
+var loadDataFactory$2 = (function () {
 	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 	    hideDeletedFiles = _ref.hideDeletedFiles;
 
@@ -816,7 +942,7 @@ var gitFiles = (function (dependencies) {
 
 	var renderer = rendererFactory$3(dependencies);
 
-	var loadData = loadDataFactory$1({ hideDeletedFiles: true });
+	var loadData = loadDataFactory$2({ hideDeletedFiles: true });
 
 	var accept = function accept(_ref) {
 		var path$$1 = _ref.path;
@@ -939,7 +1065,7 @@ var gitStage = (function (dependencies) {
 
 	var renderer = rendererFactory$3(dependencies);
 
-	var loadData = loadDataFactory$1({ hideDeletedFiles: false });
+	var loadData = loadDataFactory$2({ hideDeletedFiles: false });
 
 	var accept = function accept(_ref) {
 		var path$$1 = _ref.path,
@@ -977,7 +1103,7 @@ var gitCheckout = (function (dependencies) {
 
 	var renderer = rendererFactory$3(dependencies);
 
-	var loadData = loadDataFactory$1();
+	var loadData = loadDataFactory$2();
 
 	var accept = function accept(item) {
 		var cmdProcess = spawnInProject('git', ['checkout', '--', item.path]);
@@ -1121,7 +1247,7 @@ var lines = (function (dependencies) {
 	};
 });
 
-var loadDataFactory$2 = (function (store) {
+var loadDataFactory$3 = (function (store) {
 	return function (onData) {
 		var state = store.getState();
 		var find = getFind(state);
@@ -1262,7 +1388,7 @@ var find = (function (dependencies) {
 
 	var renderer = rendererFactory$5(dependencies);
 
-	var loadData = loadDataFactory$2(store);
+	var loadData = loadDataFactory$3(store);
 
 	var accept = function accept(value) {
 		var scope = getScope(store.getState());
@@ -1381,7 +1507,7 @@ var replace = (function (dependencies) {
 
 	var renderer = rendererFactory$6(dependencies);
 
-	var loadData = loadDataFactory$2(store);
+	var loadData = loadDataFactory$3(store);
 
 	var accept = function accept(item) {
 		var replace = getReplace(store.getState());
@@ -1533,11 +1659,10 @@ var commandFactoryFactory = (function (dependencies) {
 			renderer: defaultRenderer
 		};
 
-		var options = _extends({}, defaults$$1, optionsFactory(dependencies));
+		var partialOptions = optionsFactory(dependencies);
+		var options = _extends({}, defaults$$1, partialOptions);
 
-		var command = function command() {
-			var extraOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
+		var command = function command(extraOptions) {
 			var finalOptions = _extends({}, options, extraOptions);
 			store.dispatch({
 				type: 'SHOW',
@@ -2624,6 +2749,7 @@ module.exports = {
 		add('copyFiles', copyFiles);
 
 		var lsCommand = commandFactory(ls);
+		var commandsCommand = commandFactory(commands);
 
 		this.subscriptions.add(atom.commands.add('atom-workspace', {
 			'sparkling:toggleSelfFind': function sparklingToggleSelfFind() {
@@ -2656,6 +2782,9 @@ module.exports = {
 			},
 			'sparkling:hide': function sparklingHide() {
 				return store.dispatch(hide());
+			},
+			'sparkling:commands': function sparklingCommands() {
+				commandsCommand({ activeElement: document.activeElement });
 			},
 			'sparkling:ls': function sparklingLs() {
 				var activeTextEditor = atom.workspace.getActiveTextEditor();

@@ -14,29 +14,30 @@ https://github.com/ggreer/the_silver_searcher
 
 This package comes with a lot of Keybindings. I have tried my best to accomodate them semantically without disturbing native atom Keybindings. However, if this does not suit you, you can disable them in the package settings and create your own. Also, the table below is valid for windows/linux by using ctrl instead of cmd.
 
-| Command                      | Keybinding              | Data source           | On activate          |
-| ---------------------------- | ----------------------- | --------------------- | -------------------- |
-| sparkling:files              | cmd-p cmd-p             | ripgrep project files | go to                |
-| sparkling:relativePathInsert | cmd-p cmd-r             | ripgrep project files | insert relative path |
-| sparkling:relativePathCopy   | cmd-p cmd-R             | ripgrep project files | Copy relative path   |
-| sparkling:emoji              | cmd-e cmd-a             | emoji                 | Insert               |
-| sparkling:gitFiles           | cmd-g cmd-f             | git status            | go to                |
-| sparkling:gitStage           | cmd-g cmd-s             | git status            | stage / unstage      |
-| sparkling:gitCheckout        | cmd-g cmd--             | git status            | checkout --          |
-| sparkling:gitBranches        | cmd-g cmd-b             | git branches          | checkout             |
-| sparkling:gitLog             | cmd-g cmd-l             | git log               | copy git hash        |
-| sparkling:gitLogCheckout     | cmd-g cmd-L             | git log               | checkout             |
-| sparkling:gitReflog          | cmd-g cmd-r             | git reflog            | copy git hash        |
-| sparkling:gitReflogCheckout  | cmd-g cmd-R             | git reflog            | checkout             |
-| sparkling:allLines           | cmd-l cmd-L             | ripgrep project lines | go to                |
-| sparkling:ls                 | cmd-l cmd-s             | ls                    | go to / dive         |
-| sparkling:removeFiles        | cmd-p cmd-D             | ripgrep project files | rm                   |
-| sparkling:copyFiles          | cmd-p cmd-c             | ripgrep project files | cp                   |
-| sparkling:moveFiles          | cmd-p cmd-m             | ripgrep project files | mv                   |
-| sparkling:findToggle         | cmd-p cmd-f enter       | ag pattern in project | go to                |
-| sparkling:findInBufferToggle | cmd-b cmd-f enter       | ag pattern in buffer  | go to                |
-| sparkling:findToggle         | cmd-p cmd-f shift-enter | ag pattern in project | replace              |
-| sparkling:findInBufferToggle | cmd-b cmd-f shift-enter | ag pattern in buffer  | replace              |
+| Command                      | Keybinding              | Data source                | On activate          |
+| ---------------------------- | ----------------------- | -------------------------- | -------------------- |
+| sparkling:files              | cmd-p cmd-p             | ripgrep project files      | Go to                |
+| sparkling:commands           | cmd-shift-p             | Commands on active element | Run command          |
+| sparkling:relativePathInsert | cmd-p cmd-r             | ripgrep project files      | Insert relative path |
+| sparkling:relativePathCopy   | cmd-p cmd-R             | ripgrep project files      | Copy relative path   |
+| sparkling:emoji              | cmd-e cmd-a             | emoji                      | Insert               |
+| sparkling:gitFiles           | cmd-g cmd-f             | git status                 | Go to                |
+| sparkling:gitStage           | cmd-g cmd-s             | git status                 | Stage / unstage      |
+| sparkling:gitCheckout        | cmd-g cmd--             | git status                 | Checkout --          |
+| sparkling:gitBranches        | cmd-g cmd-b             | git branches               | Checkout             |
+| sparkling:gitLog             | cmd-g cmd-l             | git log                    | Copy git hash        |
+| sparkling:gitLogCheckout     | cmd-g cmd-L             | git log                    | Checkout             |
+| sparkling:gitReflog          | cmd-g cmd-r             | git reflog                 | Copy git hash        |
+| sparkling:gitReflogCheckout  | cmd-g cmd-R             | git reflog                 | Checkout             |
+| sparkling:allLines           | cmd-l cmd-L             | ripgrep project lines      | Go to                |
+| sparkling:ls                 | cmd-l cmd-s             | ls                         | Go to / dive         |
+| sparkling:removeFiles        | cmd-p cmd-D             | ripgrep project files      | rm                   |
+| sparkling:copyFiles          | cmd-p cmd-c             | ripgrep project files      | cp                   |
+| sparkling:moveFiles          | cmd-p cmd-m             | ripgrep project files      | mv                   |
+| sparkling:findToggle         | cmd-p cmd-f enter       | ag pattern in project      | Go to                |
+| sparkling:findInBufferToggle | cmd-b cmd-f enter       | ag pattern in buffer       | Go to                |
+| sparkling:findToggle         | cmd-p cmd-f shift-enter | ag pattern in project      | Replace              |
+| sparkling:findInBufferToggle | cmd-b cmd-f shift-enter | ag pattern in buffer       | Replace              |
 
 | Utils / Navigation       | Keybinding | Effect                                |
 | ------------------------ | ---------- | ------------------------------------- |

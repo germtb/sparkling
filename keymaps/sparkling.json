@@ -1,6 +1,7 @@
 {
 	".platform-darwin atom-workspace": {
 		"cmd-p cmd-p": "sparkling:files",
+		"cmd-shift-p": "sparkling:commands",
 		"cmd-g cmd-f": "sparkling:gitFiles",
 		"cmd-g cmd-s": "sparkling:gitStage",
 		"cmd-g cmd-b": "sparkling:gitBranches",

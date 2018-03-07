@@ -1,3 +1,5 @@
+// @flow
+
 type Cursor = {}
 
 type Editor = {
@@ -35,8 +37,23 @@ type Clipboard = {
 
 type Subscription = {}
 
+type Command = {
+	displayName: string,
+	name: string
+}
+
 type Commands = {
-	add: (string, { [string]: any }) => Subscription
+	add: (string, { [string]: any }) => Subscription,
+	dispatch: (element: *, name: string) => void,
+	findCommands: ({ target: * }) => Array<Command>
+}
+
+type Keymap = {
+	command: string
+}
+
+type Keymaps = {
+	findKeyBindings: ({ target: * }) => Array<Keymap>
 }
 
 type Packages = {
@@ -50,6 +67,7 @@ declare var atom: {
 	views: Views,
 	clipboard: Clipboard,
 	commands: Commands,
+	keymaps: Keymaps,
 	packages: Packages
 }
 
