@@ -9934,10 +9934,16 @@ var entry = (function (_ref) {
 	    commandFactory = dependencies.commandFactory;
 
 
-	fromAction('HIDE').subscribe(function () {
+	var rxjsSubscription = fromAction('HIDE').subscribe(function () {
 		var editor = atom.workspace.getActiveTextEditor();
 		var view = editor && atom.views.getView(editor);
 		view && view.focus();
+	});
+
+	subscriptions.add({
+		dispose: function dispose() {
+			return rxjsSubscription.unsubscribe();
+		}
 	});
 
 	var reactRoot = document.createElement('div');
