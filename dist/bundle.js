@@ -199,7 +199,7 @@ var spawnInProject = function spawnInProject(cmd, args) {
 };
 
 var loadData = (function (onData) {
-	var cmdProcess = spawnInProject('rg', ['--files']);
+	var cmdProcess = spawnInProject('rg', ['--files', '--hidden', '--glob', '!.git/*']);
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').filter(function (s) {
 			return s.length > 1;
@@ -1542,7 +1542,7 @@ var replace = (function (dependencies) {
 });
 
 var loadData$4 = (function (onData) {
-	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K']);
+	var cmdProcess = spawnInProject('rg', ['^.*$', '-n', '--max-filesize', '100K', '--glob', '!.git/*']);
 
 	cmdProcess.stdout.on('data', function (data) {
 		onData(data.toString('utf-8').split('\n').reduce(function (acc, value) {

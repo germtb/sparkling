@@ -1,4 +1,3 @@
-* [ ] Fix file preview
 * [ ] Multiline search with ag
-* [ ] Revisit plugin architecture, which is probably outdated
+* [ ] Fix file preview
 * [ ] Find good previews for other commands
