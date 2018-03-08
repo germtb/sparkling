@@ -1,7 +1,7 @@
 {
   "name": "sparkling",
   "main": "./lib/sparkling",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "activationEvents": [
     "sparkling:files",
     "sparkling:gitFiles",
