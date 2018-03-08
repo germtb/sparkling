@@ -9006,38 +9006,40 @@ var SparklingInputFactory = (function (_ref) {
 		    data = _ref2.data,
 		    rawDataLength = _ref2.rawDataLength,
 		    pattern = _ref2.pattern,
-		    setPattern = _ref2.setPattern;
+		    setPattern = _ref2.setPattern,
+		    selectedValue = _ref2.selectedValue;
 		var description = options.description,
 		    childrenRenderer = options.childrenRenderer;
 
 		var filteredDataLength = data.length;
+		var value = selectedValue ? selectedValue.value : '';
 
 		return React.createElement(
-			"div",
-			{ className: "sparkling-input-container" },
+			'div',
+			{ className: 'sparkling-input-container' },
 			React.createElement(
-				"div",
-				{ className: "sparkling-meta-data" },
+				'div',
+				{ className: 'sparkling-meta-data' },
 				React.createElement(
-					"span",
+					'span',
 					null,
-					filteredDataLength + " / " + rawDataLength
+					filteredDataLength + ' / ' + rawDataLength
 				),
 				React.createElement(
-					"span",
-					{ className: "sparkling-command-description" },
-					description
+					'span',
+					{ className: 'sparkling-command-description' },
+					description + ' - ' + value
 				)
 			),
 			React.createElement(Input, {
 				autoFocus: true,
-				id: "sparkling-input",
+				id: 'sparkling-input',
 				tabIndex: 1,
 				className: classnames('sparkling-input', 'native-key-bindings', {
 					'sparkling-input--has-results': filteredDataLength > 0,
-					'sparkling-input--no-results': filteredDataLength === 0 && rawDataLength > 0
+					'sparkling-input--no-results': rawDataLength && !filteredDataLength
 				}),
-				placeholder: "Sparkling fuzzy filter",
+				placeholder: 'Sparkling fuzzy filter',
 				value: pattern,
 				setValue: setPattern
 			}),
@@ -9050,7 +9052,8 @@ var SparklingInputFactory = (function (_ref) {
 			data: getSparklingData(state),
 			options: getOptions(state),
 			rawDataLength: getRawDataLength(state),
-			pattern: getPattern(state)
+			pattern: getPattern(state),
+			selectedValue: getSelectedValue(state)
 		};
 	}, function (dispatch) {
 		return {
