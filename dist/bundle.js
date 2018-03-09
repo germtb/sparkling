@@ -540,19 +540,22 @@ var tokens = (function (dependencies) {
 		}));
 	};
 
-	var TokenSideEffect = withSideEffect(fromSelector(getSelectedValue))(function (token) {
+	var onToken = function onToken(token) {
 		if (!token || !token.range) {
 			return;
 		}
 
 		var editor = atom.workspace.getActiveTextEditor();
 		editor.setSelectedBufferRange(token.range);
-	})(function () {
+	};
+
+	var TokenSideEffect = withSideEffect(fromSelector(getSelectedValue))(onToken)(function () {
 		return null;
 	});
 
-	var accept = function accept() {
+	var accept = function accept(token) {
 		store.dispatch({ type: 'HIDE' });
+		onToken(token);
 	};
 
 	return {
@@ -1304,11 +1307,7 @@ var lines = (function (dependencies) {
 		onData(lines);
 	};
 
-	var accept = function accept() {
-		store.dispatch({ type: 'HIDE' });
-	};
-
-	var LineSideEffect = withSideEffect(fromSelector(getSelectedValue))(function (line) {
+	var onLine = function onLine(line) {
 		if (!line) {
 			return;
 		}
@@ -1317,7 +1316,14 @@ var lines = (function (dependencies) {
 		editor.setCursorBufferPosition([line.lineNumber, 0]);
 		editor.moveToFirstCharacterOfLine();
 		editor.selectToEndOfLine();
-	})(function () {
+	};
+
+	var accept = function accept(line) {
+		onLine(line);
+		store.dispatch({ type: 'HIDE' });
+	};
+
+	var LineSideEffect = withSideEffect(fromSelector(getSelectedValue))(onLine)(function () {
 		return null;
 	});
 
