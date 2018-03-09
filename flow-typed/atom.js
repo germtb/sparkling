@@ -2,12 +2,19 @@
 
 type Cursor = {}
 
+type Location = [number, number]
+
+type Range = [Location, Location]
+
 type Editor = {
 	getPath: () => string,
+	getText: () => string,
 	getSelectedText: () => string,
 	insertText: string => void,
 	cursors: () => Array<Cursor>,
-	setCursorBufferPosition: ([number, number]) => void
+	setCursorBufferPosition: ([number, number]) => void,
+	getTextInBufferRange: Range => string,
+	setSelectedBufferRange: Range => void
 }
 
 type Workspace = {

@@ -198,6 +198,65 @@ var spawnInProject = function spawnInProject(cmd, args) {
 	});
 };
 
+
+
+var parse = function parse(text) {
+	var _require = require('babylon'),
+	    parse = _require.parse;
+
+	var tokens = [];
+
+	try {
+		var ast = parse(text, {
+			sourceType: 'module',
+			plugins: ['objectRestSpread', 'asyncGenerators', 'jsx', 'flow', 'classProperties', 'exportExtensions']
+		});
+		tokens = ast.tokens;
+	} catch (e) {
+		tokens = sillyParse(text);
+	}
+
+	return tokens;
+};
+
+var sillyParse = function sillyParse(text) {
+	var tokens = [];
+	var match = void 0;
+	var lines = text.split('\n');
+	lines.forEach(function (line, lineNumber) {
+		var tokenRegex = /(("|'|`)([^"'`])*\2)|([^\s,\[\]\(\)\:{}=\.;]+|,|\[|\]|\(|\)|\:|{|}|=\>|=|\.|;)/g;
+		while (match = tokenRegex.exec(line)) {
+			if (!match) {
+				break;
+			}
+			tokens.push({
+				type: {
+					label: match[0]
+				},
+				loc: {
+					start: {
+						line: lineNumber + 1,
+						column: match.index
+					},
+					end: {
+						line: lineNumber + 1,
+						column: match.index + match[0].length
+					}
+				}
+			});
+		}
+	});
+
+	return tokens;
+};
+
+function toAtomRange(_ref2) {
+	var start = _ref2.start,
+	    end = _ref2.end;
+
+	return [[start.line - 1, start.column], [end.line - 1, end.column]];
+}
+
 var loadData = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['--files', '--hidden', '--glob', '!.git/*']);
 	cmdProcess.stdout.on('data', function (data) {
@@ -455,6 +514,57 @@ var commands = (function (dependencies) {
 		columns: 2,
 		description: 'Run commands',
 		id: 'sparkling-commands'
+	};
+});
+
+var tokens = (function (dependencies) {
+	var React = dependencies.React,
+	    store = dependencies.store,
+	    fromSelector = dependencies.fromSelector,
+	    withSideEffect = dependencies.components.withSideEffect;
+
+
+	var loadData = function loadData(onData) {
+		var editor = atom.workspace.getActiveTextEditor();
+		var text = editor.getText();
+		var tokens = parse(text);
+
+		onData(tokens.map(function (token) {
+			var range = toAtomRange(token.loc);
+			return {
+				value: editor.getTextInBufferRange(range),
+				range: range
+			};
+		}).filter(function (token) {
+			return token.value && token.value.length > 3;
+		}));
+	};
+
+	var TokenSideEffect = withSideEffect(fromSelector(getSelectedValue))(function (token) {
+		if (!token || !token.range) {
+			return;
+		}
+
+		var editor = atom.workspace.getActiveTextEditor();
+		editor.setSelectedBufferRange(token.range);
+	})(function () {
+		return null;
+	});
+
+	var accept = function accept() {
+		store.dispatch({ type: 'HIDE' });
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		childrenRenderer: function childrenRenderer() {
+			return React.createElement(TokenSideEffect, null);
+		},
+		description: 'Find tokens in current buffer',
+		id: 'sparkling-buffer-tokens',
+		columns: 15,
+		sliceLength: 60
 	};
 });
 
@@ -827,7 +937,7 @@ var rendererFactory$3 = (function (_ref) {
 		    status = item.status;
 
 
-		var finalClassName = classnames(className, ['icon'].concat(toConsumableArray(iconClassForPath(value))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+		var finalClassName = classnames(className, 'sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(value))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
 
 		var wrappedValue = wrap(value, pattern);
 
@@ -1175,41 +1285,12 @@ var gitReflogCheckout = (function (_ref) {
 	};
 });
 
-var rendererFactory$4 = (function (_ref) {
-	var React = _ref.React,
-	    classnames = _ref.classnames,
-	    wrap = _ref.wrap;
-	return function (_ref2) {
-		var item = _ref2.item,
-		    pattern = _ref2.pattern,
-		    className = _ref2.className,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
-		    accept = _ref2.accept;
-		var value = item.value;
-
-		var start = 0;
-		var end = value.indexOf(':');
-		var wrappedValue = wrap(value.replace(':', ''), pattern, start, end, 'sparkling-line-number');
-
-		var finalClassName = classnames(className, index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
-
-		return React.createElement('div', {
-			className: finalClassName,
-			'aria-role': 'button',
-			onClick: function onClick() {
-				return accept(item);
-			},
-			dangerouslySetInnerHTML: { __html: wrappedValue }
-		});
-	};
-});
-
 var lines = (function (dependencies) {
-	var store = dependencies.store;
+	var store = dependencies.store,
+	    React = dependencies.React,
+	    fromSelector = dependencies.fromSelector,
+	    withSideEffect = dependencies.components.withSideEffect;
 
-
-	var renderer = rendererFactory$4(dependencies);
 
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
@@ -1223,21 +1304,32 @@ var lines = (function (dependencies) {
 		onData(lines);
 	};
 
-	var accept = function accept(line) {
+	var accept = function accept() {
 		store.dispatch({ type: 'HIDE' });
+	};
+
+	var LineSideEffect = withSideEffect(fromSelector(getSelectedValue))(function (line) {
+		if (!line) {
+			return;
+		}
+
 		var editor = atom.workspace.getActiveTextEditor();
 		editor.setCursorBufferPosition([line.lineNumber, 0]);
-		var cursor = editor.cursors[0];
-		cursor.moveToFirstCharacterOfLine();
-	};
+		editor.moveToFirstCharacterOfLine();
+		editor.selectToEndOfLine();
+	})(function () {
+		return null;
+	});
 
 	return {
 		loadData: loadData,
 		accept: accept,
+		childrenRenderer: function childrenRenderer() {
+			return React.createElement(LineSideEffect, null);
+		},
 		description: 'Find lines in current buffer',
 		id: 'sparkling-buffer-lines',
-		sliceLength: 10,
-		renderer: renderer
+		sliceLength: 10
 	};
 });
 
@@ -1311,6 +1403,7 @@ var loadDataFactory$3 = (function (store) {
 								match: line.slice(column, column + length),
 								path: path$$1,
 								lineNumber: lineNumber,
+								length: length,
 								column: parseInt(startStr),
 								start: start,
 								end: end
@@ -1345,7 +1438,7 @@ var loadDataFactory$3 = (function (store) {
 	};
 });
 
-var rendererFactory$5 = (function (_ref) {
+var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap,
@@ -1364,7 +1457,7 @@ var rendererFactory$5 = (function (_ref) {
 
 		var wrappedValue = wrap(value, pattern, start, end, 'find-highlight');
 
-		var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+		var finalClassName = classnames('sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
 
 		return React.createElement('div', {
 			className: finalClassName,
@@ -1378,10 +1471,13 @@ var rendererFactory$5 = (function (_ref) {
 });
 
 var find = (function (dependencies) {
-	var store = dependencies.store;
+	var React = dependencies.React,
+	    store = dependencies.store,
+	    fromSelector = dependencies.fromSelector,
+	    withSideEffect = dependencies.components.withSideEffect;
 
 
-	var renderer = rendererFactory$5(dependencies);
+	var renderer = rendererFactory$4(dependencies);
 
 	var loadData = loadDataFactory$3(store);
 
@@ -1400,6 +1496,31 @@ var find = (function (dependencies) {
 		});
 	};
 
+	var FindSideEffect = withSideEffect(fromSelector(getSelectedValue))(function (result) {
+		if (!result) {
+			return;
+		}
+
+		var lineNumber = result.lineNumber,
+		    column = result.column,
+		    length = result.length,
+		    path$$1 = result.path;
+
+
+		var editor = atom.workspace.getActiveTextEditor();
+
+		var cwd = atom.project.getPaths()[0];
+		var absolutePath = path.resolve(cwd, './' + path$$1);
+
+		if (absolutePath !== editor.getPath()) {
+			return;
+		}
+
+		editor.setSelectedBufferRange([[lineNumber - 1, column], [lineNumber - 1, column + length]]);
+	})(function () {
+		return null;
+	});
+
 	return {
 		loadData: loadData,
 		accept: accept,
@@ -1408,22 +1529,13 @@ var find = (function (dependencies) {
 		id: 'sparkling-project-find',
 		sliceLength: 10,
 		columns: 1,
-		onValue: function onValue(value) {
-			var scope = getScope(store.getState());
-			var cwd = atom.project.getPaths()[0];
-			var absolutePath = path.resolve(cwd, '.' + scope);
-
-			if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
-				var editor = atom.workspace.getActiveTextEditor();
-				editor.setCursorBufferPosition([value.lineNumber - 1, value.column]);
-				var cursor = editor.cursors[0];
-				cursor.moveToFirstCharacterOfLine();
-			}
+		childrenRenderer: function childrenRenderer() {
+			return React.createElement(FindSideEffect, null);
 		}
 	};
 });
 
-var rendererFactory$6 = (function (_ref) {
+var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap,
@@ -1445,7 +1557,7 @@ var rendererFactory$6 = (function (_ref) {
 
 		var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + escapeHTML(replace) + '</span>');
 
-		var finalClassName = classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), index === selectedIndex ? 'sparkling-row selected' : 'sparkling-row');
+		var finalClassName = classnames('sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
 
 		return React.createElement('div', {
 			className: finalClassName,
@@ -1501,7 +1613,7 @@ var replace = (function (dependencies) {
 		};
 	})(ReplaceInput);
 
-	var renderer = rendererFactory$6(dependencies);
+	var renderer = rendererFactory$5(dependencies);
 
 	var loadData = loadDataFactory$3(store);
 
@@ -9314,6 +9426,46 @@ var ExtraInputContainerFactory = (function (_ref) {
 });
 
 var componentsFactory = (function (dependencies) {
+	var React = dependencies.React;
+
+
+	var withSideEffect = function withSideEffect(observable) {
+		return function (onValue) {
+			return function (BaseComponent) {
+				return function (_React$PureComponent) {
+					inherits(SideEffect, _React$PureComponent);
+
+					function SideEffect() {
+						classCallCheck(this, SideEffect);
+
+						var _this = possibleConstructorReturn(this, (SideEffect.__proto__ || Object.getPrototypeOf(SideEffect)).call(this));
+
+						_this.subscription = null;
+						return _this;
+					}
+
+					createClass(SideEffect, [{
+						key: 'componentDidMount',
+						value: function componentDidMount() {
+							this.subscription = observable.subscribe(onValue);
+						}
+					}, {
+						key: 'componentWillUnmount',
+						value: function componentWillUnmount() {
+							this.subscription.unsubscribe();
+						}
+					}, {
+						key: 'render',
+						value: function render() {
+							return React.createElement(BaseComponent, this.props);
+						}
+					}]);
+					return SideEffect;
+				}(React.PureComponent);
+			};
+		};
+	};
+
 	var Input = InputFactory(dependencies);
 	dependencies.components = { Input: Input };
 
@@ -9325,7 +9477,8 @@ var componentsFactory = (function (dependencies) {
 		Input: Input,
 		Sparkling: Sparkling,
 		FindContainer: FindContainer,
-		ExtraInputContainer: ExtraInputContainer
+		ExtraInputContainer: ExtraInputContainer,
+		withSideEffect: withSideEffect
 	};
 });
 
@@ -9606,13 +9759,6 @@ var observablesFactory = (function (_ref) {
 	    filter = _ref.filter;
 
 	var cancelLoadData = null;
-
-	fromSelector(getSelectedValue).debounceTime(100).subscribe(function (selectedValue) {
-		var options = getOptions(store.getState());
-		var onValue = options.onValue;
-
-		onValue && onValue(selectedValue);
-	});
 
 	Observable.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref2) {
 		var _ref3 = slicedToArray(_ref2, 2),
@@ -9966,6 +10112,7 @@ var entry = (function (_ref) {
 	};
 
 	add('files', files);
+	add('tokens', tokens);
 	add('emoji', emoji);
 	add('relativePathInsert', relativePathInsert);
 	add('relativePathCopy', relativePathCopy);

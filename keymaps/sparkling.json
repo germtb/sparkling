@@ -16,7 +16,8 @@
 		"cmd-p cmd-c": "sparkling:copyFiles",
 		"cmd-p cmd-m": "sparkling:moveFiles",
 		"cmd-p cmd-f": "sparkling:findToggle",
-		"cmd-b cmd-f": "sparkling:findInBufferToggle"
+		"cmd-b cmd-f": "sparkling:findInBufferToggle",
+		"cmd-b cmd-t": "sparkling:tokens"
 	},
 	".platform-darwin atom-text-editor": {
 		"cmd-p cmd-r": "sparkling:relativePathInsert",

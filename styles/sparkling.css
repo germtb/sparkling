@@ -25,6 +25,11 @@
 	white-space: nowrap;
 }
 
+.sparkling-row--selected {
+	background-color: #3f4252;
+	color: white;
+}
+
 .sparkling-row .highlight {
 	font-weight: normal;
 	background-color: inherit;
@@ -39,10 +44,6 @@
 	color: white;
 	padding-left: 1px;
 	padding-right: 1px;
-}
-
-.sparkling-row--selected {
-	background-color: #3f4252;
 }
 
 .sparkling-input-container {

@@ -55,6 +55,7 @@
     }
   },
   "dependencies": {
+    "babylon": "^6.18.0",
     "classnames": "^2.2.5",
     "fuzzysort": "^1.0.5",
     "react": "^16.2.0",
