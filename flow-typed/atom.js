@@ -6,6 +6,10 @@ type Location = [number, number]
 
 type Range = [Location, Location]
 
+type Buffer = {
+	getLines: () => Array<string>
+}
+
 type Editor = {
 	getPath: () => string,
 	getText: () => string,
@@ -14,7 +18,10 @@ type Editor = {
 	cursors: () => Array<Cursor>,
 	setCursorBufferPosition: ([number, number]) => void,
 	getTextInBufferRange: Range => string,
-	setSelectedBufferRange: Range => void
+	setSelectedBufferRange: Range => void,
+	getBuffer: () => Buffer,
+	moveToFirstCharacterOfLine: () => void,
+	selectToEndOfLine: () => void
 }
 
 type Workspace = {
