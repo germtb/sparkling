@@ -210,12 +210,11 @@ var ackmateDFA = {
 		if (regexMatch) {
 			var startLine = state.startLine;
 			var endLine = parseInt(regexMatch[1]);
-			var endColumn = parseInt(regexMatch[2]) + 1;
+			var startColumn = parseInt(regexMatch[2]);
 			var matchLength = parseInt(regexMatch[3]);
 			var fileLine = regexMatch[4];
-			state.lines.push(fileLine);
-			var joinedLines = state.lines.join('\n');
-			var startColumn = joinedLines.length - fileLine.slice(endColumn).length - matchLength;
+			var endColumn = matchLength - state.lines.join('\n').length;
+			var joinedLines = [].concat(toConsumableArray(state.lines), [fileLine]).join('\n');
 			var match = joinedLines.slice(startColumn, startColumn + matchLength);
 
 			state.processedData.push({
@@ -1561,7 +1560,7 @@ var loadDataFactory$3 = (function (store) {
 var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    wrap = _ref.wrap,
+	    single = _ref.single,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
 		var item = _ref2.item,
@@ -1575,15 +1574,98 @@ var rendererFactory$4 = (function (_ref) {
 		    path$$1 = item.path;
 
 
-		var lines = value.split('\n').map(function (l, index, lines) {
-			var start = index === 0 ? startColumn : 0;
-			var end = index === lines.length - 1 ? endColumn : l.length;
-			var wrappedLine = wrap(l, '', start, end, 'find-highlight');
-			return React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedLine } });
-		});
+		var match = single(pattern, value);
+		var indexes = match ? match.indexes : [];
 
-		// const test = 'foof'
-		// const test = 'boob'
+		debugger;
+		debugger;
+
+		var lines = value.split('').map(function (c, index) {
+			if (c === '\t') {
+				c = React.createElement('span', {
+					style: {
+						display: 'inline-block',
+						width: '20px'
+					}
+				});
+			}
+
+			if (indexes.includes(index)) {
+				return React.createElement(
+					'span',
+					{ className: 'highlight' },
+					c
+				);
+			}
+
+			return c;
+		}).reduce(function (lines, character) {
+			if (character === '\n') {
+				lines.push([]);
+			} else {
+				lines[lines.length - 1].push(character);
+			}
+
+			return lines;
+		}, [[]]).map(function (line, index, lines) {
+			if (index === 0 && lines.length === 1) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						null,
+						line.slice(0, startColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'find-highlight' },
+						line.slice(startColumn, endColumn)
+					),
+					React.createElement(
+						'span',
+						null,
+						line.slice(endColumn)
+					)
+				);
+			} else if (index === 0) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						null,
+						line.slice(0, startColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'find-highlight' },
+						line.slice(startColumn)
+					)
+				);
+			} else if (index === lines.length - 1) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						{ className: 'find-highlight' },
+						line.slice(0, endColumn)
+					),
+					React.createElement(
+						'span',
+						null,
+						line.slice(endColumn)
+					)
+				);
+			}
+
+			return React.createElement(
+				'div',
+				{ className: 'find-highlight' },
+				line
+			);
+		});
 
 		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
 
@@ -10008,7 +10090,10 @@ var fuzzyFilterFactory = (function (_ref2) {
 		});
 	};
 
-	return { wrap: wrap, filter: filter };
+	var single = fuzzysort.single;
+
+
+	return { wrap: wrap, filter: filter, single: single };
 });
 
 var dependenciesFactory = (function (_ref) {
@@ -10028,10 +10113,12 @@ var dependenciesFactory = (function (_ref) {
 
 	var _fuzzyFilterFactory = fuzzyFilterFactory({ fuzzysort: fuzzysort }),
 	    filter = _fuzzyFilterFactory.filter,
-	    wrap = _fuzzyFilterFactory.wrap;
+	    wrap = _fuzzyFilterFactory.wrap,
+	    single = _fuzzyFilterFactory.single;
 
 	dependencies.filter = filter;
 	dependencies.wrap = wrap;
+	dependencies.single = single;
 
 	var _storeFactory = storeFactory(dependencies),
 	    store = _storeFactory.store,
