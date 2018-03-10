@@ -198,7 +198,160 @@ var spawnInProject = function spawnInProject(cmd, args) {
 	});
 };
 
+var endOfMultilineMatchRegex = /(\d+);(\d+) (\d+):(.*)/;
 
+var ackmateDFA = {
+	initial: function initial(line, state) {
+		return line[0] === ':' ? { type: 'inFile', state: _extends({}, state, { fileName: line.slice(1) }) } : { type: 'error', state: state };
+	},
+	inMultilineMatch: function inMultilineMatch(line, state) {
+		var regexMatch = endOfMultilineMatchRegex.exec(line);
+
+		if (regexMatch) {
+			var startLine = state.startLine;
+			var endLine = parseInt(regexMatch[1]);
+			var endColumn = parseInt(regexMatch[2]) + 1;
+			var matchLength = parseInt(regexMatch[3]);
+			var fileLine = regexMatch[4];
+			state.lines.push(fileLine);
+			var joinedLines = state.lines.join('\n');
+			var startColumn = joinedLines.length - fileLine.slice(endColumn).length - matchLength;
+			var match = joinedLines.slice(startColumn, startColumn + matchLength);
+
+			state.processedData.push({
+				value: joinedLines,
+				match: match,
+				path: state.fileName,
+				startLine: startLine,
+				startColumn: startColumn,
+				endLine: endLine,
+				endColumn: endColumn
+			});
+
+			return { type: 'inFile', state: state };
+		}
+
+		var _line$split = line.split(';'),
+		    _line$split2 = toArray(_line$split),
+		    splitRestDataLine = _line$split2.slice(1);
+
+		return {
+			type: 'inMultilineMatch',
+			state: _extends({}, state, {
+				lines: [splitRestDataLine[0]]
+			})
+		};
+	},
+	inFile: function inFile(line, state) {
+		if (line === '\n') {
+			return {
+				type: 'initial',
+				state: state
+			};
+		}
+
+		var regex = /(\d+);((\d+ \d+,?)+):(.*)/;
+
+		var regexMatch = regex.exec(line);
+
+		if (!regexMatch) {
+			return {
+				type: 'inMultilineMatch',
+				state: _extends({}, state, {
+					lines: [line.split(';').slice(1).join('')],
+					startLine: parseInt(line.split(';')[0])
+				})
+			};
+		}
+
+		var startLine = parseInt(regexMatch[1]);
+		var endLine = startLine;
+		var matches = regexMatch[2].split(',');
+		var fileLine = regexMatch[regexMatch.length - 1];
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = matches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var match = _step.value;
+
+				var _match$split = match.split(' '),
+				    _match$split2 = slicedToArray(_match$split, 2),
+				    startStr = _match$split2[0],
+				    lengthStr = _match$split2[1];
+
+				var startColumn = parseInt(startStr);
+				var endColumn = parseInt(lengthStr) + startColumn;
+
+				state.processedData.push({
+					value: fileLine,
+					match: fileLine.slice(startColumn, endColumn),
+					path: state.fileName,
+					startLine: startLine,
+					startColumn: startColumn,
+					endLine: endLine,
+					endColumn: endColumn
+				});
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		return { type: 'inFile', state: state };
+	},
+	error: function error(line, state) {
+		return { type: 'error', state: state };
+	}
+};
+
+var ackmateParser = function ackmateParser(lines) {
+	var node = {
+		type: 'initial',
+		state: {
+			processedData: []
+		}
+	};
+
+	var _iteratorNormalCompletion2 = true;
+	var _didIteratorError2 = false;
+	var _iteratorError2 = undefined;
+
+	try {
+		for (var _iterator2 = lines[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+			var _line = _step2.value;
+
+			node = ackmateDFA[node.type](_line, node.state);
+		}
+	} catch (err) {
+		_didIteratorError2 = true;
+		_iteratorError2 = err;
+	} finally {
+		try {
+			if (!_iteratorNormalCompletion2 && _iterator2.return) {
+				_iterator2.return();
+			}
+		} finally {
+			if (_didIteratorError2) {
+				throw _iteratorError2;
+			}
+		}
+	}
+
+	return node.state.processedData;
+};
 
 var parse = function parse(text) {
 	var _require = require('babylon'),
@@ -268,7 +421,7 @@ var loadData = (function (onData) {
 	});
 
 	return function () {
-		cmdProcess.stdin.pause();
+		// cmdProcess.stdin.pause()
 		cmdProcess.kill();
 	};
 });
@@ -303,13 +456,14 @@ var defaultRendererFactory = (function (_ref) {
 });
 
 var rendererFactory = (function (dependencies) {
-	var iconClassForPath = dependencies.utils.iconClassForPath;
+	var classnames = dependencies.classnames,
+	    iconClassForPath = dependencies.utils.iconClassForPath;
 
 	var defaultRenderer = defaultRendererFactory(dependencies);
 
 	return function (props) {
 		return defaultRenderer(_extends({}, props, {
-			className: ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value)))
+			className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value))))
 		}));
 	};
 });
@@ -538,6 +692,8 @@ var tokens = (function (dependencies) {
 		}).filter(function (token) {
 			return token.value && token.value.length > 3;
 		}));
+
+		return function () {};
 	};
 
 	var onToken = function onToken(token) {
@@ -616,7 +772,7 @@ var loadDataFactory$1 = (function (store) {
 		});
 
 		return function () {
-			cmdProcess.stdin.pause();
+			// cmdProcess.stdin.pause()
 			cmdProcess.kill();
 		};
 	};
@@ -717,7 +873,7 @@ var emoji = (function (dependencies) {
 
 	var renderer = rendererFactory$2(dependencies);
 
-	var loadData = loadEmojiFactory(store);
+	var loadData = loadEmojiFactory();
 
 	var accept = function accept(_ref) {
 		var emoji = _ref.emoji;
@@ -841,6 +997,10 @@ var relativePathInsert = (function (dependencies) {
 			relativePath = relativePath.slice(0, -3);
 		}
 
+		if (relativePath.slice(-6) === '/index') {
+			relativePath = relativePath.slice(0, -6);
+		}
+
 		if (relativePath[0] !== '.') {
 			relativePath = './' + relativePath;
 		}
@@ -921,6 +1081,11 @@ var loadDataFactory$2 = (function () {
 				return acc;
 			}, []));
 		});
+
+		return function () {
+			// cmdProcess.stdin.pause()
+			cmdProcess.kill();
+		};
 	};
 });
 
@@ -1080,6 +1245,11 @@ var loadData$1 = (function (onData) {
 			return { value: value };
 		}));
 	});
+
+	return function () {
+		// cmdProcess.stdin.pause()
+		cmdProcess.kill();
+	};
 });
 
 var gitBranches = (function (_ref) {
@@ -1119,6 +1289,11 @@ var loadData$2 = (function (onData) {
 			return { value: value };
 		}));
 	});
+
+	return function () {
+		// cmdProcess.stdin.pause()
+		cmdProcess.kill();
+	};
 });
 
 var gitLog = (function (_ref) {
@@ -1243,6 +1418,11 @@ var loadData$3 = (function (onData) {
 			return { value: value };
 		}));
 	});
+
+	return function () {
+		// cmdProcess.stdin.pause()
+		cmdProcess.kill();
+	};
 });
 
 var gitReflog = (function (_ref) {
@@ -1304,7 +1484,10 @@ var lines = (function (dependencies) {
 				lineNumber: lineNumber
 			};
 		});
+
 		onData(lines);
+
+		return function () {};
 	};
 
 	var onLine = function onLine(line) {
@@ -1351,94 +1534,25 @@ var loadDataFactory$3 = (function (store) {
 		var cmdProcess = spawnInProject('ag', [find, '--ackmate'].concat(toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(literalSearch ? ['--literal'] : []), toConsumableArray(wholeWord ? ['--word-regexp'] : [])));
 
 		cmdProcess.stdout.on('data', function (data) {
-			var dataLines = data.toString('utf-8').split('\n');
-			// console.log('data.toString("utf-8"): ', data.toString('utf-8'))
-			// console.log('dataLines: ', dataLines)
-			var processedData = [];
+			var lines = data.toString('utf-8').split('\n');
 
-			var path$$1 = '';
-			var i = 0;
+			// processedData.push({
+			// 	value: `${preValue} ${line}`,
+			// 	line,
+			// 	match: line.slice(column, column + length),
+			// 	path,
+			// 	lineNumber,
+			// 	length,
+			// 	column: parseInt(startStr),
+			// 	start,
+			// 	end
+			// })
 
-			while (i < dataLines.length) {
-				var dataLine = dataLines[i];
-
-				if (!dataLine || !dataLine.length) {
-					i++;
-					continue;
-				} else if (dataLine[0] === ':') {
-					path$$1 = dataLine.slice(1);
-				} else {
-					var _dataLine$split = dataLine.split(';'),
-					    _dataLine$split2 = toArray(_dataLine$split),
-					    lineNumberStr = _dataLine$split2[0],
-					    splitRestDataLine = _dataLine$split2.slice(1);
-
-					var restDataLine = splitRestDataLine.join(';');
-
-					var _restDataLine$split = restDataLine.split(':'),
-					    _restDataLine$split2 = toArray(_restDataLine$split),
-					    matches = _restDataLine$split2[0],
-					    splitLine = _restDataLine$split2.slice(1);
-
-					var line = splitLine.join(':');
-					var lineNumber = parseInt(lineNumberStr);
-					var splitMatches = matches.split(',');
-					var preValue = [path$$1, lineNumber].join(':');
-
-					var _iteratorNormalCompletion = true;
-					var _didIteratorError = false;
-					var _iteratorError = undefined;
-
-					try {
-						for (var _iterator = splitMatches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-							var match = _step.value;
-
-							var _match$split = match.split(' '),
-							    _match$split2 = slicedToArray(_match$split, 2),
-							    startStr = _match$split2[0],
-							    lengthStr = _match$split2[1];
-
-							var column = parseInt(startStr);
-							var length = parseInt(lengthStr);
-							var start = preValue.length + 1 + column;
-							var end = length + start - 1;
-
-							processedData.push({
-								value: preValue + ' ' + line,
-								line: line,
-								match: line.slice(column, column + length),
-								path: path$$1,
-								lineNumber: lineNumber,
-								length: length,
-								column: parseInt(startStr),
-								start: start,
-								end: end
-							});
-						}
-					} catch (err) {
-						_didIteratorError = true;
-						_iteratorError = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-							}
-						} finally {
-							if (_didIteratorError) {
-								throw _iteratorError;
-							}
-						}
-					}
-				}
-
-				i++;
-			}
-
-			onData(processedData);
+			onData(ackmateParser(lines));
 		});
 
 		return function () {
-			cmdProcess.stdin.pause();
+			// cmdProcess.stdin.pause()
 			cmdProcess.kill();
 		};
 	};
@@ -1455,24 +1569,39 @@ var rendererFactory$4 = (function (_ref) {
 		    index = _ref2.index,
 		    selectedIndex = _ref2.selectedIndex,
 		    accept = _ref2.accept;
-		var start = item.start,
-		    end = item.end,
+		var startColumn = item.startColumn,
+		    endColumn = item.endColumn,
 		    value = item.value,
 		    path$$1 = item.path;
 
 
-		var wrappedValue = wrap(value, pattern, start, end, 'find-highlight');
-
-		var finalClassName = classnames('sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
-
-		return React.createElement('div', {
-			className: finalClassName,
-			'aria-role': 'button',
-			onClick: function onClick() {
-				return accept(item);
-			},
-			dangerouslySetInnerHTML: { __html: wrappedValue }
+		var lines = value.split('\n').map(function (l, index, lines) {
+			var start = index === 0 ? startColumn : 0;
+			var end = index === lines.length - 1 ? endColumn : l.length;
+			var wrappedLine = wrap(l, '', start, end, 'find-highlight');
+			return React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedLine } });
 		});
+
+		// const test = 'foof'
+		// const test = 'boob'
+
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+
+		return React.createElement(
+			'div',
+			{
+				className: finalClassName,
+				'aria-role': 'button',
+				onClick: function onClick() {
+					return accept(item);
+				} },
+			React.createElement(
+				'span',
+				{ className: classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				path$$1
+			),
+			lines
+		);
 	};
 });
 
@@ -1497,8 +1626,8 @@ var find = (function (dependencies) {
 		}
 
 		atom.workspace.open(value.path, {
-			initialLine: value.lineNumber - 1,
-			initialColumn: value.column
+			initialLine: value.startLine - 1,
+			initialColumn: value.startColumn
 		});
 	};
 
@@ -1507,9 +1636,10 @@ var find = (function (dependencies) {
 			return;
 		}
 
-		var lineNumber = result.lineNumber,
-		    column = result.column,
-		    length = result.length,
+		var startLine = result.startLine,
+		    startColumn = result.startColumn,
+		    endLine = result.endLine,
+		    endColumn = result.endColumn,
 		    path$$1 = result.path;
 
 
@@ -1522,7 +1652,7 @@ var find = (function (dependencies) {
 			return;
 		}
 
-		editor.setSelectedBufferRange([[lineNumber - 1, column], [lineNumber - 1, column + length]]);
+		editor.setSelectedBufferRange([[startLine - 1, startColumn], [endLine - 1, endColumn]]);
 	})(function () {
 		return null;
 	});

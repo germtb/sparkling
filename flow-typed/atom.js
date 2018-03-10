@@ -4,7 +4,7 @@ type Cursor = {}
 
 type Location = [number, number]
 
-type Range = [Location, Location]
+export type Range = [Location, Location]
 
 type Buffer = {
 	getLines: () => Array<string>
