@@ -1576,9 +1576,6 @@ var rendererFactory$4 = (function (_ref) {
 		var match = single(pattern, value);
 		var indexes = match ? match.indexes : [];
 
-		debugger;
-		debugger;
-
 		var lines = value.split('').map(function (c, index) {
 			if (c === '\t') {
 				c = React.createElement('span', {
