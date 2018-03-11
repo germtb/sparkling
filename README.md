@@ -10,6 +10,17 @@ https://github.com/BurntSushi/ripgrep
 
 https://github.com/ggreer/the_silver_searcher
 
+## Key features
+
+* Super fast fuzzy file selection via ripgrep
+* Multiline regex search via the silver searcher
+* Insert emoji
+* Autocomplete lines
+* Common file operations: copy, move, delete
+* Common git operations: checkout branch, checked -- file, stage file, checkout commit, copy commit hash...
+* Folder navigation via ls
+* Replace (work in progress)
+
 ## Keybindings
 
 This package comes with a lot of Keybindings. I have tried my best to accomodate them semantically without disturbing native atom Keybindings. However, if this does not suit you, you can disable them in the package settings and create your own. Also, the table below is valid for windows/linux by using ctrl instead of cmd.

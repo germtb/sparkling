@@ -245,7 +245,7 @@ var ackmateDFA = {
 		return {
 			type: 'inMultilineMatch',
 			state: _extends({}, state, {
-				lines: [splitRestDataLine[0]]
+				lines: [].concat(toConsumableArray(state.lines || []), [splitRestDataLine.join(';')])
 			})
 		};
 	},
