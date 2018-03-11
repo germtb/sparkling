@@ -29,7 +29,7 @@ type Workspace = {
 	open: (
 		url: string,
 		options?: { initialLine?: number, initialColumn?: number }
-	) => void,
+	) => Promise<Editor>,
 	addBottomPanel: ({ item: any, model: {} }) => void
 }
 

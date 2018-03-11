@@ -207,24 +207,32 @@ var ackmateDFA = {
 	inMultilineMatch: function inMultilineMatch(line, state) {
 		var regexMatch = endOfMultilineMatchRegex.exec(line);
 
+		var startLine = state.startLine,
+		    fileName = state.fileName,
+		    lines = state.lines;
+
+
+		if (!lines || startLine === undefined || startLine === null || !fileName) {
+			throw new Error('Error during parsing of ackmate format');
+		}
+
 		if (regexMatch) {
-			var startLine = state.startLine;
-			var endLine = parseInt(regexMatch[1]);
-			var startColumn = parseInt(regexMatch[2]);
+			var _endLine = parseInt(regexMatch[1]);
+			var _startColumn = parseInt(regexMatch[2]);
 			var matchLength = parseInt(regexMatch[3]);
 			var fileLine = regexMatch[4];
-			var endColumn = matchLength - state.lines.join('\n').length;
-			var joinedLines = [].concat(toConsumableArray(state.lines), [fileLine]).join('\n');
-			var match = joinedLines.slice(startColumn, startColumn + matchLength);
+			var _endColumn = matchLength + _startColumn - lines.join('\n').length - 1;
+			var joinedLines = [].concat(toConsumableArray(lines), [fileLine]).join('\n');
+			var _match = joinedLines.slice(_startColumn, _startColumn + matchLength);
 
 			state.processedData.push({
 				value: joinedLines,
-				match: match,
-				path: state.fileName,
+				match: _match,
+				path: fileName,
 				startLine: startLine,
-				startColumn: startColumn,
-				endLine: endLine,
-				endColumn: endColumn
+				startColumn: _startColumn,
+				endLine: _endLine,
+				endColumn: _endColumn
 			});
 
 			return { type: 'inFile', state: state };
@@ -274,25 +282,30 @@ var ackmateDFA = {
 
 		try {
 			for (var _iterator = matches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var match = _step.value;
+				var _match2 = _step.value;
 
-				var _match$split = match.split(' '),
-				    _match$split2 = slicedToArray(_match$split, 2),
-				    startStr = _match$split2[0],
-				    lengthStr = _match$split2[1];
+				var _match2$split = _match2.split(' '),
+				    _match2$split2 = slicedToArray(_match2$split, 2),
+				    startStr = _match2$split2[0],
+				    lengthStr = _match2$split2[1];
 
-				var startColumn = parseInt(startStr);
-				var endColumn = parseInt(lengthStr) + startColumn;
+				var _startColumn2 = parseInt(startStr);
+				var _endColumn2 = parseInt(lengthStr) + _startColumn2;
+				var _fileName = state.fileName;
 
-				state.processedData.push({
-					value: fileLine,
-					match: fileLine.slice(startColumn, endColumn),
-					path: state.fileName,
-					startLine: startLine,
-					startColumn: startColumn,
-					endLine: endLine,
-					endColumn: endColumn
-				});
+				if (_fileName) {
+					state.processedData.push({
+						value: fileLine,
+						match: fileLine.slice(_startColumn2, _endColumn2),
+						path: _fileName,
+						startLine: startLine,
+						startColumn: _startColumn2,
+						endLine: endLine,
+						endColumn: _endColumn2
+					});
+				} else {
+					throw new Error('Error during parsing of ackmate format');
+				}
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -636,8 +649,7 @@ var commands = (function (dependencies) {
 				onClick: function onClick() {
 					return accept(item);
 				},
-				style: { display: 'flex', justifyContent: 'space-between' }
-			},
+				style: { display: 'flex', justifyContent: 'space-between' } },
 			React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedValue } }),
 			keybinding && React.createElement(
 				'span',
@@ -1588,6 +1600,13 @@ var rendererFactory$4 = (function (_ref) {
 						width: '20px'
 					}
 				});
+			} else if (c === ' ') {
+				c = React.createElement('span', {
+					style: {
+						display: 'inline-block',
+						width: '10px'
+					}
+				});
 			}
 
 			if (indexes.includes(index)) {
@@ -1687,6 +1706,7 @@ var rendererFactory$4 = (function (_ref) {
 	};
 });
 
+// import fs from 'fs'
 var find = (function (dependencies) {
 	var React = dependencies.React,
 	    store = dependencies.store,
@@ -1698,18 +1718,22 @@ var find = (function (dependencies) {
 
 	var loadData = loadDataFactory$3(store);
 
-	var accept = function accept(value) {
-		var scope = getScope(store.getState());
-		var cwd = atom.project.getPaths()[0];
-		var absolutePath = path.resolve(cwd, '.' + scope);
+	var accept = function accept(result) {
+		var startLine = result.startLine,
+		    startColumn = result.startColumn,
+		    endLine = result.endLine,
+		    endColumn = result.endColumn,
+		    path$$1 = result.path;
+		// const scope = getScope(store.getState())
+		// const cwd = atom.project.getPaths()[0]
+		// const absolutePath = nodePath.resolve(cwd, `.${scope}`)
 
-		if (value && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
-			store.dispatch({ type: 'HIDE' });
-		}
+		// if (result && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
+		// 	store.dispatch({ type: 'HIDE' })
+		// }
 
-		atom.workspace.open(value.path, {
-			initialLine: value.startLine - 1,
-			initialColumn: value.startColumn
+		atom.workspace.open(path$$1).then(function (editor) {
+			editor.setSelectedBufferRange([[startLine - 1, startColumn], [endLine - 1, endColumn]]);
 		});
 	};
 
