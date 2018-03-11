@@ -1546,20 +1546,6 @@ var loadDataFactory$3 = (function (store) {
 
 		cmdProcess.stdout.on('data', function (data) {
 			var lines = data.toString('utf-8').split('\n');
-			console.log('lines: ', lines);
-
-			// processedData.push({
-			// 	value: `${preValue} ${line}`,
-			// 	line,
-			// 	match: line.slice(column, column + length),
-			// 	path,
-			// 	lineNumber,
-			// 	length,
-			// 	column: parseInt(startStr),
-			// 	start,
-			// 	end
-			// })
-
 			onData(ackmateParser(lines));
 		});
 
@@ -1708,8 +1694,6 @@ var rendererFactory$4 = (function (_ref) {
 });
 
 // import fs from 'fs'
-// import { getScope, getSelectedValue } from '../selectors'
-
 var find = (function (dependencies) {
 	var React = dependencies.React,
 	    store = dependencies.store,
