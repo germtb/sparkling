@@ -1764,45 +1764,157 @@ var find = (function (dependencies) {
 var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    wrap = _ref.wrap,
+	    single = _ref.single,
 	    connect = _ref.connect,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 
-	var replaceRenderer = function replaceRenderer(_ref2) {
+	var Replace = function Replace(_ref2) {
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    index = _ref2.index,
 		    selectedIndex = _ref2.selectedIndex,
 		    accept = _ref2.accept,
 		    replace = _ref2.replace;
-		var start = item.start,
-		    end = item.end,
+		var startColumn = item.startColumn,
+		    endColumn = item.endColumn,
 		    value = item.value,
 		    path$$1 = item.path;
 
 
-		var wrappedValue = wrap(value, pattern, start, end, 'replace-downlight', '<span class="replace-highlight">' + escapeHTML(replace) + '</span>');
+		var match = single(pattern, value);
+		var indexes = match ? match.indexes : [];
 
-		var finalClassName = classnames('sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(path$$1))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var lines = value.split('').map(function (c, index) {
+			if (c === '\t') {
+				c = React.createElement('span', {
+					style: {
+						display: 'inline-block',
+						width: '20px'
+					}
+				});
+			} else if (c === ' ') {
+				c = React.createElement('span', {
+					style: {
+						display: 'inline-block',
+						width: '10px'
+					}
+				});
+			}
 
-		return React.createElement('div', {
-			className: finalClassName,
-			'aria-role': 'button',
-			onClick: function onClick() {
-				return accept(item);
-			},
-			dangerouslySetInnerHTML: { __html: wrappedValue }
+			if (indexes.includes(index)) {
+				return React.createElement(
+					'span',
+					{ className: 'highlight' },
+					c
+				);
+			}
+
+			return c;
+		}).reduce(function (lines, character) {
+			if (character === '\n') {
+				lines.push([]);
+			} else {
+				lines[lines.length - 1].push(character);
+			}
+
+			return lines;
+		}, [[]]).map(function (line, index, lines) {
+			if (index === 0 && lines.length === 1) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						null,
+						line.slice(0, startColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'replace-downlight' },
+						line.slice(startColumn, endColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'replace-highlight' },
+						replace
+					),
+					React.createElement(
+						'span',
+						null,
+						line.slice(endColumn)
+					)
+				);
+			} else if (index === 0) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						null,
+						line.slice(0, startColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'replace-downlight' },
+						line.slice(startColumn)
+					)
+				);
+			} else if (index === lines.length - 1) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						{ className: 'replace-downlight' },
+						line.slice(0, endColumn)
+					),
+					React.createElement(
+						'span',
+						{ className: 'replace-highlight' },
+						replace
+					),
+					React.createElement(
+						'span',
+						null,
+						line.slice(endColumn)
+					)
+				);
+			}
+
+			return React.createElement(
+				'div',
+				{ className: 'replace-downlight' },
+				line
+			);
 		});
+
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+
+		return React.createElement(
+			'div',
+			{
+				className: finalClassName,
+				'aria-role': 'button',
+				onClick: function onClick() {
+					return accept(item);
+				} },
+			React.createElement(
+				'span',
+				{ className: classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				path$$1
+			),
+			lines
+		);
 	};
 
-	var Replace = connect(function (state) {
+	var ReplaceWithConnect = connect(function (state) {
 		return {
 			replace: getReplace(state)
 		};
-	})(replaceRenderer);
+	})(Replace);
 
 	return function (props) {
-		return React.createElement(Replace, props);
+		return React.createElement(ReplaceWithConnect, props);
 	};
 });
 
