@@ -51,6 +51,7 @@
     "context": true,
     "document": true,
     "Set": true,
-    "Promise": true
+    "Promise": true,
+    "console": true
   }
 }

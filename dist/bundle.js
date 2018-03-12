@@ -167,21 +167,57 @@ var toConsumableArray = function (arr) {
 
 var fileReplace = async function fileReplace(_ref) {
 	var path$$1 = _ref.path,
-	    line = _ref.line,
-	    lineNumber = _ref.lineNumber,
-	    match = _ref.match,
-	    replace = _ref.replace,
-	    column = _ref.column;
+	    endColumn = _ref.endColumn,
+	    endLine = _ref.endLine,
+	    startColumn = _ref.startColumn,
+	    startLine = _ref.startLine,
+	    replace = _ref.replace;
 
-	var newLine = line.slice(0, column) + replace.replace('\\', '\\\\').replace('/', '\\/') + line.slice(column + match.length);
+	var nodePath = require('path');
+	var fs$$1 = require('fs');
 
-	// note: escape newLine
-	var sedRegex = lineNumber + ',' + lineNumber + 's/^.*$/' + newLine + '/';
-	var cmdProcess = spawnInProject('sed', ['-i', '', '-e', sedRegex, path$$1]);
-	await new Promise(function (resolve) {
-		cmdProcess.on('exit', function () {
-			resolve();
-		});
+	var _require = require('stream'),
+	    Transform = _require.Transform;
+
+	var cwd = atom.project.getPaths()[0];
+	var absolutePath = nodePath.resolve(cwd, './' + path$$1);
+
+	var linesLength = 1;
+
+	var replaceStream = new Transform({
+		transform: function transform(chunk, encoding, callback) {
+			var splitChunk = chunk.toString('utf-8').split('\n');
+
+			var lines = splitChunk.reduce(function (lines, line, index) {
+				var lineIndex = index + linesLength;
+
+				if (lineIndex === startLine && lineIndex === endLine) {
+					lines.push([line.slice(0, startColumn) + replace + line.slice(endColumn)]);
+				} else if (lineIndex === startLine) {
+					lines.push([line.slice(0, startColumn)]);
+				} else if (lineIndex > startLine && lineIndex < endLine) {
+					// Ignore
+				} else if (lineIndex === endLine) {
+					lines.push(replace + line.slice(endColumn));
+				} else {
+					lines.push(line);
+				}
+
+				return lines;
+			}, []);
+
+			linesLength += lines.length;
+
+			callback(null, lines.join('\n'));
+		}
+	});
+
+	var readStream = fs$$1.createReadStream(absolutePath);
+	var writeStream = fs$$1.createWriteStream(absolutePath + '.tempWithAReallyLongHash');
+
+	readStream.pipe(replaceStream).pipe(writeStream).on('finish', function () {
+		spawnInProject('rm', [absolutePath]);
+		spawnInProject('mv', [absolutePath + '.tempWithAReallyLongHash', absolutePath]);
 	});
 };
 
@@ -366,8 +402,8 @@ var ackmateParser = function ackmateParser(lines) {
 };
 
 var parse = function parse(text) {
-	var _require = require('babylon'),
-	    parse = _require.parse;
+	var _require2 = require('babylon'),
+	    parse = _require2.parse;
 
 	var tokens = [];
 
@@ -1713,7 +1749,8 @@ var find = (function (dependencies) {
 		// const absolutePath = nodePath.resolve(cwd, `.${scope}`)
 
 		// if (result && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
-		// 	store.dispatch({ type: 'HIDE' })
+
+		store.dispatch({ type: 'HIDE' });
 		// }
 
 		atom.workspace.open(path$$1).then(function (editor) {
@@ -1957,19 +1994,19 @@ var replace = (function (dependencies) {
 
 	var accept = function accept(item) {
 		var replace = getReplace(store.getState());
-		var lineNumber = item.lineNumber,
-		    path$$1 = item.path,
-		    match = item.match,
-		    column = item.column,
-		    line = item.line;
+		var path$$1 = item.path,
+		    endColumn = item.endColumn,
+		    endLine = item.endLine,
+		    startColumn = item.startColumn,
+		    startLine = item.startLine;
 
 
 		fileReplace({
-			line: line,
-			lineNumber: lineNumber,
 			path: path$$1,
-			column: column,
-			match: match,
+			endColumn: endColumn,
+			endLine: endLine,
+			startColumn: startColumn,
+			startLine: startLine,
 			replace: replace
 		}).then(function () {
 			store.dispatch({
