@@ -52,6 +52,7 @@
     "document": true,
     "Set": true,
     "Promise": true,
-    "console": true
+    "console": true,
+    "beforeEach": true
   }
 }
