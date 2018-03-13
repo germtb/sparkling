@@ -6982,6 +6982,10 @@ var find = (function (dependencies) {
 
 		var editor = atom.workspace.getActiveTextEditor();
 
+		if (!editor) {
+			return;
+		}
+
 		var cwd = atom.project.getPaths()[0];
 		var absolutePath = path.resolve(cwd, './' + path$$1);
 
@@ -7201,6 +7205,10 @@ var replace = (function (dependencies) {
 
 
 		var editor = atom.workspace.getActiveTextEditor();
+
+		if (!editor) {
+			return;
+		}
 
 		var cwd = atom.project.getPaths()[0];
 		var absolutePath = path.resolve(cwd, './' + path$$1);
