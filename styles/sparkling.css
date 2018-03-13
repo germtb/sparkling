@@ -192,6 +192,10 @@
 
 .sparkling-row__find {
 	display: flex;
+	margin-right: 10px;
+}
+
+.sparkling-row__find--multiline {
 	flex-direction: column;
 }
 

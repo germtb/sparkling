@@ -21,7 +21,6 @@
 	},
 	".platform-darwin atom-text-editor": {
 		"cmd-p cmd-r": "sparkling:relativePathInsert",
-		"cmd-p cmd-R": "sparkling:relativePathCopy",
 		"cmd-l cmd-l": "sparkling:lines",
 		"cmd-l cmd-a": "sparkling:autocompleteLines",
 		"cmd-e cmd-a": "sparkling:emoji"

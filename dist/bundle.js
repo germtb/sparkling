@@ -5664,6 +5664,18 @@ var spawnSyncInProject = function spawnSyncInProject(cmd, args) {
 	});
 };
 
+var split = function split(splitValue) {
+	return function (acc, value) {
+		if (value === splitValue) {
+			acc.push([]);
+		} else {
+			acc[acc.length - 1].push(value);
+		}
+
+		return acc;
+	};
+};
+
 var loadData = (function (onData) {
 	var cmdProcess = spawnInProject('rg', ['--files', '--hidden', '--glob', '!.git/*']);
 	cmdProcess.stdout.on('data', function (data) {
@@ -5933,6 +5945,12 @@ var tokens = (function (dependencies) {
 
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
+
+		if (!editor) {
+			onData([]);
+			return function () {};
+		}
+
 		var text = editor.getText();
 		var tokens = parse(text);
 
@@ -5955,7 +5973,9 @@ var tokens = (function (dependencies) {
 		}
 
 		var editor = atom.workspace.getActiveTextEditor();
-		editor.setSelectedBufferRange(token.range);
+		if (editor) {
+			editor.setSelectedBufferRange(token.range);
+		}
 	};
 
 	var TokenSideEffect = withSideEffect(fromSelector(getSelectedValue))(onToken)(function () {
@@ -6080,6 +6100,7 @@ var ls = (function (dependencies) {
 
 var loadEmojiFactory = (function () {
 	return function (onData) {
+		// $FlowFixMe
 		var emoji = require('../db/emoji.json');
 		onData(emoji.map(function (_ref) {
 			var emoji = _ref.emoji,
@@ -6132,9 +6153,11 @@ var emoji = (function (dependencies) {
 		var emoji = _ref.emoji;
 
 		var editor = atom.workspace.getActiveTextEditor();
+		if (editor) {
+			editor.insertText(emoji);
+		}
 
 		store.dispatch({ type: 'HIDE' });
-		editor.insertText(emoji);
 	};
 
 	return {
@@ -6155,6 +6178,11 @@ var copyFiles = (function (dependencies) {
 
 
 	var accept = function accept(file) {
+		if (!file) {
+			store.dispatch({ type: 'HIDE' });
+			return;
+		}
+
 		store.dispatch({
 			type: 'SHOW_EXTRA_INPUT',
 			payload: {
@@ -6260,45 +6288,6 @@ var relativePathInsert = (function (dependencies) {
 
 		store.dispatch({ type: 'HIDE' });
 		editor.insertText(relativePath);
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
-		description: 'Copy relative path',
-		id: 'sparkling-copy-relative-path'
-	};
-});
-
-var relativePathCopy = (function (dependencies) {
-	var renderer = rendererFactory(dependencies);
-
-	var store = dependencies.store;
-
-
-	var accept = function accept(_ref) {
-		var value = _ref.value;
-
-		var editor = atom.workspace.getActiveTextEditor();
-		var projectPath = atom.project.getPaths()[0];
-		var originPath = editor.getPath();
-		var dir = path.dirname(originPath);
-		var targetPath = path.resolve(projectPath, value);
-		var relativePath = path.relative(dir, targetPath);
-
-		if (relativePath.slice(-3) === '.js') {
-			relativePath = relativePath.slice(0, -3);
-		}
-
-		if (relativePath[0] !== '.') {
-			relativePath = './' + relativePath;
-		}
-
-		store.dispatch({ type: 'HIDE' });
-		atom.clipboard.write(relativePath);
 	};
 
 	return {
@@ -6730,6 +6719,11 @@ var lines = (function (dependencies) {
 
 	var loadData = function loadData(onData) {
 		var editor = atom.workspace.getActiveTextEditor();
+		if (!editor) {
+			onData([]);
+			return function () {};
+		}
+
 		var buffer = editor.getBuffer();
 		var lines = buffer.getLines().map(function (value, lineNumber) {
 			return {
@@ -6749,6 +6743,10 @@ var lines = (function (dependencies) {
 		}
 
 		var editor = atom.workspace.getActiveTextEditor();
+		if (!editor) {
+			return;
+		}
+
 		editor.setCursorBufferPosition([line.lineNumber, 0]);
 		editor.moveToFirstCharacterOfLine();
 		editor.selectToEndOfLine();
@@ -6815,6 +6813,8 @@ var rendererFactory$4 = (function (_ref) {
 	    single = _ref.single,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
+		var _classnames2;
+
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    index = _ref2.index,
@@ -6829,28 +6829,16 @@ var rendererFactory$4 = (function (_ref) {
 		var match = single(pattern, value);
 		var indexes = match ? match.indexes : [];
 
-		var wrapChar = function wrapChar(c, index) {
+		var wrapCharacter = function wrapCharacter(c, index) {
 			var _classnames;
 
-			return indexes.includes(index) ? React.createElement(
+			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
 				'span',
 				{
-					className: classnames('highlight', (_classnames = {}, defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
+					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
 				},
 				c
 			) : c;
-		};
-
-		var split = function split(splitValue) {
-			return function (acc, value) {
-				if (value === splitValue) {
-					acc.push([]);
-				} else {
-					acc[acc.length - 1].push(value);
-				}
-
-				return acc;
-			};
 		};
 
 		var wrapLine = function wrapLine(line, index, lines) {
@@ -6913,9 +6901,9 @@ var rendererFactory$4 = (function (_ref) {
 			);
 		};
 
-		var lines = value.split('').map(wrapChar).reduce(split('\n'), [[]]).map(wrapLine);
+		var lines = value.split('').map(wrapCharacter).reduce(split('\n'), [[]]).map(wrapLine);
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames2 = {}, defineProperty(_classnames2, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames2, 'sparkling-row__find--multiline', lines.length > 1), _classnames2));
 
 		return React.createElement(
 			'div',
@@ -6928,7 +6916,7 @@ var rendererFactory$4 = (function (_ref) {
 			},
 			React.createElement(
 				'span',
-				{ className: classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				{ className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
 				path$$1
 			),
 			lines
@@ -7020,6 +7008,8 @@ var rendererFactory$5 = (function (_ref) {
 	    iconClassForPath = _ref.utils.iconClassForPath;
 
 	var Replace = function Replace(_ref2) {
+		var _classnames2;
+
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    index = _ref2.index,
@@ -7035,41 +7025,19 @@ var rendererFactory$5 = (function (_ref) {
 		var match = single(pattern, value);
 		var indexes = match ? match.indexes : [];
 
-		var lines = value.split('').map(function (c, index) {
-			if (c === '\t') {
-				c = React.createElement('span', {
-					style: {
-						display: 'inline-block',
-						width: '20px'
-					}
-				});
-			} else if (c === ' ') {
-				c = React.createElement('span', {
-					style: {
-						display: 'inline-block',
-						width: '10px'
-					}
-				});
-			}
+		var wrapCharacter = function wrapCharacter(c, index) {
+			var _classnames;
 
-			if (indexes.includes(index)) {
-				return React.createElement(
-					'span',
-					{ className: 'highlight' },
-					c
-				);
-			}
+			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
+				'span',
+				{
+					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
+				},
+				c
+			) : c;
+		};
 
-			return c;
-		}).reduce(function (lines, character) {
-			if (character === '\n') {
-				lines.push([]);
-			} else {
-				lines[lines.length - 1].push(character);
-			}
-
-			return lines;
-		}, [[]]).map(function (line, index, lines) {
+		var wrapLine = function wrapLine(line, index, lines) {
 			if (index === 0 && lines.length === 1) {
 				return React.createElement(
 					'div',
@@ -7137,9 +7105,11 @@ var rendererFactory$5 = (function (_ref) {
 				{ className: 'replace-downlight' },
 				line
 			);
-		});
+		};
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var lines = value.split('').map(wrapCharacter).reduce(split('\n'), [[]]).map(wrapLine);
+
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames2 = {}, defineProperty(_classnames2, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames2, 'sparkling-row__find--multiline', lines.length > 1), _classnames2));
 
 		return React.createElement(
 			'div',
@@ -7148,10 +7118,11 @@ var rendererFactory$5 = (function (_ref) {
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept(item);
-				} },
+				}
+			},
 			React.createElement(
 				'span',
-				{ className: classnames(['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				{ className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
 				path$$1
 			),
 			lines
@@ -7329,7 +7300,9 @@ var autocompleteLines = (function (_ref) {
 	var accept = function accept(item) {
 		store.dispatch({ type: 'HIDE' });
 		var editor = atom.workspace.getActiveTextEditor();
-		editor.insertText(item.line);
+		if (editor) {
+			editor.insertText(item.line);
+		}
 	};
 
 	return {
@@ -15739,7 +15712,6 @@ var entry = (function (_ref) {
 	add('tokens', tokens);
 	add('emoji', emoji);
 	add('relativePathInsert', relativePathInsert);
-	add('relativePathCopy', relativePathCopy);
 	add('gitFiles', gitFiles);
 	add('gitStage', gitStage);
 	add('gitBranches', gitBranches);

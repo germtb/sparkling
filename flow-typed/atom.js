@@ -25,7 +25,7 @@ type Editor = {
 }
 
 type Workspace = {
-	getActiveTextEditor: () => Editor,
+	getActiveTextEditor: () => ?Editor,
 	open: (
 		url: string,
 		options?: { initialLine?: number, initialColumn?: number }
