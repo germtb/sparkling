@@ -6920,7 +6920,7 @@ var rendererFactory$4 = (function (_ref) {
 			},
 			React.createElement(
 				'span',
-				{ className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				{ className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
 				path$$1
 			),
 			lines
