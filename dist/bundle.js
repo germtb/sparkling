@@ -7156,6 +7156,7 @@ var replace = (function (dependencies) {
 		return React.createElement(Input, {
 			autoFocus: true,
 			tabIndex: 0,
+			id: 'sparkling-replace',
 			className: 'sparkling-replace',
 			placeholder: 'Replace',
 			setValue: setValue,
@@ -14626,9 +14627,6 @@ var commandFactoryFactory = (function (dependencies) {
 				type: 'SHOW',
 				payload: finalOptions
 			});
-
-			var sparklingInput = document.getElementById('sparkling-input');
-			sparklingInput && sparklingInput.focus();
 		};
 
 		return command;
@@ -14845,7 +14843,7 @@ var SparklingFactory = (function (dependencies) {
 			'div',
 			{ className: 'sparkling', id: id },
 			React.createElement(SparklingResults, null),
-			React.createElement(SparklingInput, null)
+			React.createElement(SparklingInput, { key: id })
 		);
 	};
 });
@@ -14925,6 +14923,7 @@ var FindContainerFactory = (function (_ref) {
 			),
 			React.createElement(Input, {
 				tabIndex: 0,
+				id: "sparkling-find",
 				className: "sparkling-find",
 				autoFocus: true,
 				value: value,
@@ -14933,6 +14932,7 @@ var FindContainerFactory = (function (_ref) {
 			}),
 			React.createElement(Input, {
 				tabIndex: 1,
+				id: "sparkling-scope",
 				className: "sparkling-scope",
 				value: scope,
 				setValue: setScope,
