@@ -6,6 +6,59 @@ var path = _interopDefault(require('path'));
 var fs = _interopDefault(require('fs'));
 var child_process = require('child_process');
 
+var isVisible = function isVisible(state) {
+	return state.visible;
+};
+
+var getOptions = function getOptions(state) {
+	return state.options;
+};
+var getData = function getData(state) {
+	return state.data;
+};
+var getIndex = function getIndex(state) {
+	return state.index;
+};
+var getOffset = function getOffset(state) {
+	return state.offset;
+};
+var getPattern = function getPattern(state) {
+	return state.pattern.value;
+};
+var getSelectedValue = function getSelectedValue(state) {
+	return getSparklingData(state)[getOffset(state) + getIndex(state)];
+};
+var getRawDataLength = function getRawDataLength(state) {
+	return state.data.length;
+};
+var getSparklingData = function getSparklingData(state) {
+	return state.sparklingData;
+};
+var getFind = function getFind(state) {
+	return state.find;
+};
+var isFindVisible = function isFindVisible(state) {
+	return state.findVisible;
+};
+var getReplace = function getReplace(state) {
+	return state.replace;
+};
+var getExtraInput = function getExtraInput(state) {
+	return state.extraInput;
+};
+var isSmartCase = function isSmartCase(state) {
+	return state.smartCase;
+};
+var getScope = function getScope(state) {
+	return state.scope;
+};
+var isLiteralSearch = function isLiteralSearch(state) {
+	return state.literalSearch;
+};
+var isWholeWord = function isWholeWord(state) {
+	return state.wholeWord;
+};
+
 var domain;
 
 // This constructor is used to store event handlers. Instantiating this is
@@ -5652,6 +5705,10 @@ var escapeHTML = function escapeHTML(str) {
 	});
 };
 
+var escapeRegExp = function escapeRegExp(str) {
+	return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+};
+
 var spawnInProject = function spawnInProject(cmd, args) {
 	var cwd = atom.project.getPaths()[0];
 	return child_process.spawn(cmd, args, {
@@ -5759,59 +5816,6 @@ var files = (function (dependencies) {
 		id: 'sparkling-files'
 	};
 });
-
-var isVisible = function isVisible(state) {
-	return state.visible;
-};
-
-var getOptions = function getOptions(state) {
-	return state.options;
-};
-var getData = function getData(state) {
-	return state.data;
-};
-var getIndex = function getIndex(state) {
-	return state.index;
-};
-var getOffset = function getOffset(state) {
-	return state.offset;
-};
-var getPattern = function getPattern(state) {
-	return state.pattern.value;
-};
-var getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getOffset(state) + getIndex(state)];
-};
-var getRawDataLength = function getRawDataLength(state) {
-	return state.data.length;
-};
-var getSparklingData = function getSparklingData(state) {
-	return state.sparklingData;
-};
-var getFind = function getFind(state) {
-	return state.find;
-};
-var isFindVisible = function isFindVisible(state) {
-	return state.findVisible;
-};
-var getReplace = function getReplace(state) {
-	return state.replace;
-};
-var getExtraInput = function getExtraInput(state) {
-	return state.extraInput;
-};
-var isSmartCase = function isSmartCase(state) {
-	return state.smartCase;
-};
-var getScope = function getScope(state) {
-	return state.scope;
-};
-var isLiteralSearch = function isLiteralSearch(state) {
-	return state.literalSearch;
-};
-var isWholeWord = function isWholeWord(state) {
-	return state.wholeWord;
-};
 
 var loadDataFactory = (function (_ref) {
 	var store = _ref.store;
@@ -15788,15 +15792,20 @@ var entry = (function (_ref) {
 			return store.dispatch(copyFilesConfirm(onDone));
 		},
 		'sparkling:findToggle': function sparklingFindToggle() {
+			var literalSearch = isLiteralSearch(store.getState());
 			var editor = atom.workspace.getActiveTextEditor();
-			var find$$1 = editor ? editor.getSelectedText() : '';
+			var selectedText = editor ? editor.getSelectedText() : '';
+			var find$$1 = literalSearch ? selectedText : escapeRegExp(selectedText);
 			var scope = '';
 
 			store.dispatch(findToggle({ find: find$$1, scope: scope }));
 		},
 		'sparkling:findInBufferToggle': function sparklingFindInBufferToggle() {
+			var literalSearch = isLiteralSearch(store.getState());
 			var editor = atom.workspace.getActiveTextEditor();
-			var find$$1 = editor ? editor.getSelectedText() : '';
+			var selectedText = editor ? editor.getSelectedText() : '';
+			var find$$1 = literalSearch ? selectedText : escapeRegExp(selectedText);
+
 			var cwd = atom.project.getPaths()[0];
 			var scope = editor ? editor.getPath().replace(cwd, '') : '';
 
