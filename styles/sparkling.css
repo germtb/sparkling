@@ -30,6 +30,15 @@
 	color: white;
 }
 
+.sparkling-row--selected.sparkling-row--multi-selected {
+	background-color: #3f4252;
+}
+
+.sparkling-row--multi-selected {
+	background-color: #383a46;
+	color: white;
+}
+
 .sparkling-row .highlight {
 	font-weight: normal;
 	background-color: inherit;

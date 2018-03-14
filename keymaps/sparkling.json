@@ -35,7 +35,8 @@
 		"down": "sparkling:next",
 		"escape": "sparkling:hide",
 		"cmd-escape": "sparkling:hide",
-		"enter": "sparkling:accept"
+		"enter": "sparkling:accept",
+		"shift-enter": "sparkling:select"
 	},
 	".platform-darwin #sparkling-ls .sparkling-input": {
 		"cmd-l cmd-s": "sparkling:lsUp"

@@ -58,6 +58,9 @@ var isLiteralSearch = function isLiteralSearch(state) {
 var isWholeWord = function isWholeWord(state) {
 	return state.wholeWord;
 };
+var getMultiselected = function getMultiselected(state) {
+	return state.multiselected;
+};
 
 var domain;
 
@@ -5756,16 +5759,19 @@ var defaultRendererFactory = (function (_ref) {
 	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
+		var _classnames;
+
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    className = _ref2.className,
 		    index = _ref2.index,
 		    selectedIndex = _ref2.selectedIndex,
-		    accept = _ref2.accept;
+		    accept = _ref2.accept,
+		    multiselected = _ref2.multiselected;
 		var value = item.value;
 
 
-		var finalClassName = classnames(className, 'sparkling-row', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var finalClassName = classnames(className, 'sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames));
 
 		var wrappedValue = wrap(value, pattern);
 
@@ -5799,8 +5805,32 @@ var files = (function (dependencies) {
 
 	var renderer = rendererFactory(dependencies);
 
-	var accept = function accept(file) {
-		atom.workspace.open(file.value);
+	var accept = function accept(files) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var f = _step.value;
+
+				atom.workspace.open(f.value);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
 		store.dispatch({
 			type: 'HIDE'
 		});
@@ -5813,7 +5843,8 @@ var files = (function (dependencies) {
 		sliceLength: 20,
 		columns: 4,
 		description: 'Find files in project',
-		id: 'sparkling-files'
+		id: 'sparkling-files',
+		multiselect: true
 	};
 });
 
@@ -5885,9 +5916,32 @@ var commands = (function (dependencies) {
 
 	var loadData = loadDataFactory(dependencies);
 
-	var accept = function accept(item) {
-		atom.commands.dispatch(item.activeElement, item.name);
-		store.dispatch({ type: 'HIDE' });
+	var accept = function accept(items) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var item = _step.value;
+
+				atom.commands.dispatch(item.activeElement, item.name);
+				store.dispatch({ type: 'HIDE' });
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
 	};
 
 	var renderer = function renderer(_ref) {
@@ -5909,7 +5963,8 @@ var commands = (function (dependencies) {
 				onClick: function onClick() {
 					return accept(item);
 				},
-				style: { display: 'flex', justifyContent: 'space-between' } },
+				style: { display: 'flex', justifyContent: 'space-between' }
+			},
 			React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedValue } }),
 			keybinding && React.createElement(
 				'span',
@@ -5938,7 +5993,8 @@ var commands = (function (dependencies) {
 		sliceLength: 12,
 		columns: 2,
 		description: 'Run commands',
-		id: 'sparkling-commands'
+		id: 'sparkling-commands',
+		multiselect: true
 	};
 });
 
@@ -6155,12 +6211,34 @@ var emoji = (function (dependencies) {
 
 	var loadData = loadEmojiFactory();
 
-	var accept = function accept(_ref) {
-		var emoji = _ref.emoji;
-
+	var accept = function accept(items) {
 		var editor = atom.workspace.getActiveTextEditor();
+
 		if (editor) {
-			editor.insertText(emoji);
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var item = _step.value;
+
+					editor.insertText(item.emoji);
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
 		}
 
 		store.dispatch({ type: 'HIDE' });
@@ -6173,7 +6251,8 @@ var emoji = (function (dependencies) {
 		sliceLength: 100,
 		columns: 20,
 		description: 'Emoji insertion',
-		id: 'sparkling-emoji'
+		id: 'sparkling-emoji',
+		multiselect: true
 	};
 });
 
@@ -6920,7 +6999,9 @@ var rendererFactory$4 = (function (_ref) {
 			},
 			React.createElement(
 				'span',
-				{ className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+				{
+					className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1))))
+				},
 				path$$1
 			),
 			lines
@@ -14619,7 +14700,8 @@ var commandFactoryFactory = (function (dependencies) {
 			preview: null,
 			sliceLength: DEFAULT_SLICE_LENGTH,
 			columns: 1,
-			renderer: defaultRenderer
+			renderer: defaultRenderer,
+			multiselect: false
 		};
 
 		var partialOptions = optionsFactory(dependencies);
@@ -14780,7 +14862,8 @@ var SparklingResultsFactory = (function (_ref) {
 		    data = _ref2.data,
 		    selectedIndex = _ref2.selectedIndex,
 		    offset = _ref2.offset,
-		    pattern = _ref2.pattern;
+		    pattern = _ref2.pattern,
+		    multiselected = _ref2.multiselected;
 		var preview = options.preview,
 		    renderer = options.renderer,
 		    accept = options.accept,
@@ -14807,7 +14890,8 @@ var SparklingResultsFactory = (function (_ref) {
 						index: index,
 						selectedIndex: selectedIndex,
 						accept: accept,
-						pattern: pattern
+						pattern: pattern,
+						multiselected: multiselected.includes(item)
 					});
 				})
 			),
@@ -14826,7 +14910,8 @@ var SparklingResultsFactory = (function (_ref) {
 			selectedIndex: getIndex(state),
 			selectedValue: getSelectedValue(state),
 			offset: getOffset(state),
-			pattern: getPattern(state)
+			pattern: getPattern(state),
+			multiselected: getMultiselected(state)
 		};
 	})(SparklingResults);
 });
@@ -15139,7 +15224,8 @@ var options = reducerCreator({
 	sliceLength: 20,
 	columns: 4,
 	description: '',
-	id: ''
+	id: '',
+	multiselect: false
 });
 
 var data = reducerCreator({
@@ -15235,6 +15321,16 @@ var scope = reducerCreator({
 	SET_SCOPE: returnPayload('scope')
 })('');
 
+var multiselected = reducerCreator({
+	SHOW: [],
+	SELECT: function SELECT(state, _ref9) {
+		var item = _ref9.payload.item;
+		return state.includes(item) ? state.filter(function (x) {
+			return x !== item;
+		}) : [].concat(toConsumableArray(state), [item]);
+	}
+})([]);
+
 var reducers = {
 	visible: visible,
 	options: options,
@@ -15250,7 +15346,8 @@ var reducers = {
 	smartCase: smartCase,
 	literalSearch: literalSearch,
 	scope: scope,
-	wholeWord: wholeWord
+	wholeWord: wholeWord,
+	multiselected: multiselected
 };
 
 var fromSelectorFactory = function fromSelectorFactory(_ref) {
@@ -15608,16 +15705,24 @@ var hide = function hide() {
 var accept = function accept() {
 	return function (dispatch, getState) {
 		var state = getState();
-		var value = getSelectedValue(state);
-
-		if (value === null || value === undefined) {
-			return;
-		}
+		var item = getSelectedValue(state);
 
 		var _getOptions = getOptions(state),
-		    accept = _getOptions.accept;
+		    accept = _getOptions.accept,
+		    multiselect = _getOptions.multiselect;
 
-		accept(value);
+		if (multiselect) {
+			var multiselected = getMultiselected(state);
+
+			if (item) {
+				var set$$1 = multiselected.includes(item) ? multiselected : [].concat(toConsumableArray(multiselected), [item]);
+				accept(set$$1);
+			} else {
+				accept(multiselected);
+			}
+		} else if (item) {
+			accept(item);
+		}
 	};
 };
 
@@ -15670,6 +15775,19 @@ var togglePattern = function togglePattern(_ref2) {
 			type: 'SET_PATTERN',
 			payload: { pattern: currentPattern === pattern ? '' : pattern }
 		});
+	};
+};
+
+var select = function select() {
+	return function (dispatch, getState) {
+		var state = getState();
+		var item = getSelectedValue(state);
+		var options = getOptions(state);
+
+		if (options.multiselect) {
+			dispatch({ type: 'SELECT', payload: { item: item } });
+			dispatch(next());
+		}
 	};
 };
 
@@ -15737,6 +15855,9 @@ var entry = (function (_ref) {
 	var commandsCommand = commandFactory(commands);
 
 	subscriptions.add(atom.commands.add('atom-workspace', {
+		'sparkling:select': function sparklingSelect() {
+			return store.dispatch(select());
+		},
 		'sparkling:toggleSelfFind': function sparklingToggleSelfFind() {
 			var editor = atom.workspace.getActiveTextEditor();
 			var cwd = atom.project.getPaths()[0];
