@@ -166,7 +166,7 @@ declare module 'eslint-plugin-flowtype/dist/rules/typeIdMatch' {
   declare module.exports: any;
 }
 
-declare module 'eslint-plugin-flowtype/dist/rules/typeImportStyle' {
+declare module 'eslint-plugin-flowtype/dist/rules/typehelloStyle' {
   declare module.exports: any;
 }
 

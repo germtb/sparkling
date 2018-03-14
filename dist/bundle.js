@@ -5610,7 +5610,9 @@ var ackmateParserFactory = function ackmateParserFactory() {
 			}
 		}
 
-		return node.state.processedData;
+		var result = node.state.processedData;
+		node.state.processedData = [];
+		return result;
 	};
 };
 
@@ -6786,22 +6788,20 @@ var loadDataFactory$3 = (function (store) {
 
 		var ackmateParser = ackmateParserFactory();
 
-		var data = [];
+		var acc = '';
 
 		cmdProcess.stdout.on('data', function (chunk) {
-			data.push(chunk);
+			var lines = chunk.toString('utf-8').split('\n');
+			lines[0] = acc + lines[0];
+			acc = lines[lines.length - 1];
+			onData(ackmateParser(lines.slice(0, -1)));
 		});
 
 		cmdProcess.on('close', function () {
-			var lines = data.map(function (data) {
-				return data.toString('utf-8');
-			}).join('').split('\n');
-
-			onData(ackmateParser(lines));
+			onData(ackmateParser([acc]));
 		});
 
 		return function () {
-			// cmdProcess.stdin.pause()
 			cmdProcess.kill();
 		};
 	};
