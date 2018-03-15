@@ -6188,18 +6188,19 @@ var rendererFactory$2 = (function (_ref) {
 	    classnames = _ref.classnames;
 
 	return function (_ref2) {
+		var _classnames;
+
 		var item = _ref2.item,
 		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex;
+		    selectedIndex = _ref2.selectedIndex,
+		    multiselected = _ref2.multiselected;
 		var emoji = item.emoji;
 
 
 		return React.createElement(
 			'div',
 			{
-				className: classnames('sparkling-emoji', {
-					'sparkling-emoji-highlight': index === selectedIndex
-				})
+				className: classnames('sparkling-emoji', (_classnames = {}, defineProperty(_classnames, 'sparkling-emoji-highlight', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames))
 			},
 			emoji
 		);
@@ -6425,17 +6426,20 @@ var rendererFactory$3 = (function (_ref) {
 	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
+		var _ref3;
+
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    className = _ref2.className,
 		    index = _ref2.index,
 		    selectedIndex = _ref2.selectedIndex,
-		    accept = _ref2.accept;
+		    accept = _ref2.accept,
+		    multiselected = _ref2.multiselected;
 		var value = item.value,
 		    status = item.status;
 
 
-		var finalClassName = classnames(className, 'sparkling-row', ['icon'].concat(toConsumableArray(iconClassForPath(value))), defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var finalClassName = classnames.apply(undefined, [className, 'sparkling-row', 'icon'].concat(toConsumableArray(iconClassForPath(value)), [(_ref3 = {}, defineProperty(_ref3, 'sparkling-row--multi-selected', multiselected), defineProperty(_ref3, 'sparkling-row--selected', index === selectedIndex), _ref3)]));
 
 		var wrappedValue = wrap(value, pattern);
 
@@ -6546,10 +6550,32 @@ var gitFiles = (function (dependencies) {
 
 	var loadData = loadDataFactory$2({ hideDeletedFiles: true });
 
-	var accept = function accept(_ref) {
-		var path$$1 = _ref.path;
+	var accept = function accept(items) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
 
-		atom.workspace.open(path$$1);
+		try {
+			for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var item = _step.value;
+
+				atom.workspace.open(item.path);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
 		store.dispatch({
 			type: 'HIDE'
 		});
@@ -6562,7 +6588,8 @@ var gitFiles = (function (dependencies) {
 		columns: 4,
 		sliceLength: 20,
 		description: 'Find git status files',
-		id: 'sparkling-git-files'
+		id: 'sparkling-git-files',
+		multiselect: true
 	};
 });
 
