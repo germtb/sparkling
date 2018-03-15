@@ -5945,13 +5945,16 @@ var commands = (function (dependencies) {
 	};
 
 	var renderer = function renderer(_ref) {
+		var _classnames;
+
 		var item = _ref.item,
 		    index = _ref.index,
 		    selectedIndex = _ref.selectedIndex,
-		    pattern = _ref.pattern;
+		    pattern = _ref.pattern,
+		    multiselected = _ref.multiselected;
 
 		var keybinding = item.keybinding;
-		var finalClassName = classnames('sparkling-row', defineProperty({}, 'sparkling-row--selected', index === selectedIndex));
+		var finalClassName = classnames('sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames));
 
 		var wrappedValue = wrap(item.value, pattern);
 
