@@ -5520,22 +5520,22 @@ var ackmateDFA = {
 		}
 
 		if (regexMatch) {
-			var _endLine = parseInt(regexMatch[1]) - 1;
-			var _startColumn = parseInt(regexMatch[2]);
+			var endLine = parseInt(regexMatch[1]) - 1;
+			var startColumn = parseInt(regexMatch[2]);
 			var matchLength = parseInt(regexMatch[3]);
 			var fileLine = regexMatch[4];
-			var _endColumn = matchLength + _startColumn - lines.join('\n').length - 1;
+			var endColumn = matchLength + startColumn - lines.join('\n').length - 1;
 			var joinedLines = [].concat(toConsumableArray(lines), [fileLine]).join('\n');
-			var _match = joinedLines.slice(_startColumn, _startColumn + matchLength);
+			var match = joinedLines.slice(startColumn, startColumn + matchLength);
 
 			state.processedData.push({
 				value: joinedLines,
-				match: _match,
+				match: match,
 				path: fileName,
 				startLine: startLine,
-				startColumn: _startColumn,
-				endLine: _endLine,
-				endColumn: _endColumn
+				startColumn: startColumn,
+				endLine: endLine,
+				endColumn: endColumn
 			});
 
 			return { type: 'inFile', state: state };
@@ -5585,26 +5585,26 @@ var ackmateDFA = {
 
 		try {
 			for (var _iterator = matches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var _match2 = _step.value;
+				var match = _step.value;
 
-				var _match2$split = _match2.split(' '),
-				    _match2$split2 = slicedToArray(_match2$split, 2),
-				    startStr = _match2$split2[0],
-				    lengthStr = _match2$split2[1];
+				var _match$split = match.split(' '),
+				    _match$split2 = slicedToArray(_match$split, 2),
+				    startStr = _match$split2[0],
+				    lengthStr = _match$split2[1];
 
-				var _startColumn2 = parseInt(startStr);
-				var _endColumn2 = parseInt(lengthStr) + _startColumn2;
+				var startColumn = parseInt(startStr);
+				var endColumn = parseInt(lengthStr) + startColumn;
 				var _fileName = state.fileName;
 
 				if (_fileName) {
 					state.processedData.push({
 						value: fileLine,
-						match: fileLine.slice(_startColumn2, _endColumn2),
+						match: fileLine.slice(startColumn, endColumn),
 						path: _fileName,
 						startLine: startLine,
-						startColumn: _startColumn2,
+						startColumn: startColumn,
 						endLine: endLine,
-						endColumn: _endColumn2
+						endColumn: endColumn
 					});
 				} else {
 					throw new Error('Error during parsing of ackmate format');
@@ -5702,11 +5702,7 @@ var fileReplace = async function fileReplace(_ref) {
 	});
 };
 
-var escapeHTML = function escapeHTML(str) {
-	return str.replace(/[\u00A0-\u9999<>\&]/gim, function (i) {
-		return '&#' + i.charCodeAt(0) + ';';
-	});
-};
+
 
 var escapeRegExp = function escapeRegExp(str) {
 	return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
@@ -5775,14 +5771,17 @@ var defaultRendererFactory = (function (_ref) {
 
 		var wrappedValue = wrap(value, pattern);
 
-		return React.createElement('div', {
-			className: finalClassName,
-			'aria-role': 'button',
-			onClick: function onClick() {
-				return accept(item);
+		return React.createElement(
+			'div',
+			{
+				className: finalClassName,
+				'aria-role': 'button',
+				onClick: function onClick() {
+					return accept(item);
+				}
 			},
-			dangerouslySetInnerHTML: { __html: wrappedValue }
-		});
+			wrappedValue
+		);
 	};
 });
 
@@ -5964,11 +5963,15 @@ var commands = (function (dependencies) {
 				className: finalClassName,
 				'aria-role': 'button',
 				onClick: function onClick() {
-					return accept(item);
+					return accept([item]);
 				},
 				style: { display: 'flex', justifyContent: 'space-between' }
 			},
-			React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedValue } }),
+			React.createElement(
+				'span',
+				null,
+				wrappedValue
+			),
 			keybinding && React.createElement(
 				'span',
 				null,
@@ -6110,7 +6113,6 @@ var loadDataFactory$1 = (function (store) {
 		});
 
 		return function () {
-			// cmdProcess.stdin.pause()
 			cmdProcess.kill();
 		};
 	};
@@ -6254,7 +6256,7 @@ var emoji = (function (dependencies) {
 		renderer: renderer,
 		sliceLength: 100,
 		columns: 20,
-		description: 'Emoji insertion',
+		description: 'Insert emoji',
 		id: 'sparkling-emoji',
 		multiselect: true
 	};
@@ -6288,7 +6290,7 @@ var copyFiles = (function (dependencies) {
 		renderer: renderer,
 		sliceLength: 20,
 		columns: 4,
-		description: 'Copy files in project',
+		description: 'Copy files',
 		id: 'sparkling-copy-files'
 	};
 });
@@ -6342,7 +6344,7 @@ var removeFiles = (function (dependencies) {
 		renderer: renderer,
 		sliceLength: 20,
 		columns: 4,
-		description: 'Remove files in project',
+		description: 'rm',
 		id: 'sparkling-files'
 	};
 });
@@ -6385,7 +6387,7 @@ var relativePathInsert = (function (dependencies) {
 		renderer: renderer,
 		sliceLength: 20,
 		columns: 4,
-		description: 'Copy relative path',
+		description: 'Insert path relative to',
 		id: 'sparkling-copy-relative-path'
 	};
 });
@@ -6408,13 +6410,12 @@ var loadDataFactory$2 = (function () {
 					return acc;
 				}
 
-				acc.push({ value: path$$1, status: status, path: path$$1 });
+				acc.push({ value: path$$1, status: status });
 				return acc;
 			}, []));
 		});
 
 		return function () {
-			// cmdProcess.stdin.pause()
 			cmdProcess.kill();
 		};
 	};
@@ -6537,7 +6538,11 @@ var rendererFactory$3 = (function (_ref) {
 				{ className: 'git-status' },
 				statusLabel
 			),
-			React.createElement('span', { dangerouslySetInnerHTML: { __html: wrappedValue } })
+			React.createElement(
+				'span',
+				null,
+				wrappedValue
+			)
 		);
 	};
 });
@@ -6559,7 +6564,7 @@ var gitFiles = (function (dependencies) {
 			for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				var item = _step.value;
 
-				atom.workspace.open(item.path);
+				atom.workspace.open(item.value);
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -6632,7 +6637,7 @@ var gitBranches = (function (_ref) {
 		accept: accept,
 		columns: 3,
 		sliceLength: 9,
-		description: 'Checkout git branches',
+		description: 'git checkout',
 		id: 'sparkling-git-branches'
 	};
 });
@@ -6648,7 +6653,6 @@ var loadData$2 = (function (onData) {
 	});
 
 	return function () {
-		// cmdProcess.stdin.pause()
 		cmdProcess.kill();
 	};
 });
@@ -6707,16 +6711,16 @@ var gitStage = (function (dependencies) {
 	var loadData = loadDataFactory$2({ hideDeletedFiles: false });
 
 	var accept = function accept(_ref) {
-		var path$$1 = _ref.path,
+		var value = _ref.value,
 		    status = _ref.status;
 
 		var cmdProcess = void 0;
 		var unstaged = [' M', 'MM', '??', ' D', 'AD', 'DD', ' A'];
 
 		if (unstaged.includes(status)) {
-			cmdProcess = spawnInProject('git', ['add', path$$1]);
+			cmdProcess = spawnInProject('git', ['add', value]);
 		} else {
-			cmdProcess = spawnInProject('git', ['reset', path$$1]);
+			cmdProcess = spawnInProject('git', ['reset', value]);
 		}
 
 		cmdProcess.on('exit', function () {
@@ -6745,7 +6749,7 @@ var gitCheckout = (function (dependencies) {
 	var loadData = loadDataFactory$2();
 
 	var accept = function accept(item) {
-		var cmdProcess = spawnInProject('git', ['checkout', '--', item.path]);
+		var cmdProcess = spawnInProject('git', ['checkout', '--', item.value]);
 
 		cmdProcess.on('exit', function () {
 			store.dispatch({
@@ -6897,7 +6901,7 @@ var loadDataFactory$3 = (function (store) {
 		var literalSearch = isLiteralSearch(state);
 		var wholeWord = isWholeWord(state);
 
-		var cmdProcess = spawnInProject('ag', [find, '--ackmate'].concat(toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(literalSearch ? ['--literal'] : []), toConsumableArray(wholeWord ? ['--word-regexp'] : [])));
+		var cmdProcess = spawnInProject('ag', [find, '--ackmate', '--width', '500'].concat(toConsumableArray(scope === '' ? [] : ['-G', scope]), toConsumableArray(smartCase ? ['--smart-case'] : []), toConsumableArray(literalSearch ? ['--literal'] : []), toConsumableArray(wholeWord ? ['--word-regexp'] : [])));
 
 		var ackmateParser = ackmateParserFactory();
 
@@ -6923,10 +6927,10 @@ var loadDataFactory$3 = (function (store) {
 var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    single = _ref.single,
+	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
-		var _classnames2;
+		var _classnames;
 
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
@@ -6938,21 +6942,6 @@ var rendererFactory$4 = (function (_ref) {
 		    value = item.value,
 		    path$$1 = item.path;
 
-
-		var match = single(pattern, value);
-		var indexes = match ? match.indexes : [];
-
-		var wrapCharacter = function wrapCharacter(c, index) {
-			var _classnames;
-
-			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
-				'span',
-				{
-					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
-				},
-				c
-			) : c;
-		};
 
 		var wrapLine = function wrapLine(line, index, lines) {
 			if (index === 0 && lines.length === 1) {
@@ -7014,9 +7003,9 @@ var rendererFactory$4 = (function (_ref) {
 			);
 		};
 
-		var lines = value.split('').map(wrapCharacter).reduce(split('\n'), [[]]).map(wrapLine);
+		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames2 = {}, defineProperty(_classnames2, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames2, 'sparkling-row__find--multiline', lines.length > 1), _classnames2));
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row__find--multiline', lines.length > 1), _classnames));
 
 		return React.createElement(
 			'div',
@@ -7118,12 +7107,12 @@ var find = (function (dependencies) {
 var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    single = _ref.single,
+	    wrap = _ref.wrap,
 	    connect = _ref.connect,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 
 	var Replace = function Replace(_ref2) {
-		var _classnames2;
+		var _classnames;
 
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
@@ -7136,21 +7125,6 @@ var rendererFactory$5 = (function (_ref) {
 		    value = item.value,
 		    path$$1 = item.path;
 
-
-		var match = single(pattern, value);
-		var indexes = match ? match.indexes : [];
-
-		var wrapCharacter = function wrapCharacter(c, index) {
-			var _classnames;
-
-			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
-				'span',
-				{
-					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
-				},
-				c
-			) : c;
-		};
 
 		var wrapLine = function wrapLine(line, index, lines) {
 			if (index === 0 && lines.length === 1) {
@@ -7222,9 +7196,9 @@ var rendererFactory$5 = (function (_ref) {
 			);
 		};
 
-		var lines = value.split('').map(wrapCharacter).reduce(split('\n'), [[]]).map(wrapLine);
+		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames2 = {}, defineProperty(_classnames2, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames2, 'sparkling-row__find--multiline', lines.length > 1), _classnames2));
+		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row__find--multiline', lines.length > 1), _classnames));
 
 		return React.createElement(
 			'div',
@@ -15255,7 +15229,7 @@ var options = reducerCreator({
 	columns: 4,
 	description: '',
 	id: '',
-	multiselect: false
+	multiselect: true
 });
 
 var data = reducerCreator({
@@ -15536,54 +15510,36 @@ var observablesFactory = (function (_ref) {
 });
 
 var wrapFactory = function wrapFactory(_ref) {
-	var fuzzysort = _ref.fuzzysort;
+	var classnames = _ref.classnames,
+	    fuzzysort = _ref.fuzzysort,
+	    React = _ref.React;
+	return function (data, pattern) {
+		var match = fuzzysort.single(pattern, data);
+		var indexes = match ? match.indexes : [];
+		var wrapCharacter = function wrapCharacter(c, index) {
+			var _classnames;
 
-	return function (str) {
-		var pattern = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-		var start = arguments[2];
-		var end = arguments[3];
-		var className = arguments[4];
-		var replace = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
+			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
+				'span',
+				{
+					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
+				},
+				c
+			) : c;
+		};
 
-		var match = fuzzysort.single(pattern, str);
-		var indexes = match && match.indexes ? match.indexes : [];
-		var styleHash = indexes.reduce(function (acc, x) {
-			acc[x] = 'fuzzy';
-			return acc;
-		}, {});
-
-		styleHash[start] = styleHash[start] ? 'styledAndFuzzy' : 'styled';
-		styleHash[end] = styleHash[end] ? 'closeStyledAndFuzzy' : 'closeStyled';
-
-		var wrappedStr = '';
-		for (var i = 0; i < str.length; i++) {
-			var c = escapeHTML(str[i]);
-
-			if (styleHash[i] === 'fuzzy') {
-				wrappedStr += '<span class="highlight">' + c + '</span>';
-			} else if (styleHash[i] === 'styledAndFuzzy') {
-				wrappedStr += '<span class="' + className + '"><span class="highlight">' + c + '</span>';
-			} else if (styleHash[i] === 'styled') {
-				wrappedStr += '<span class="' + className + '">' + c;
-			} else if (styleHash[i] === 'closeStyled') {
-				wrappedStr += c + '</span>' + replace;
-			} else if (styleHash[i] === 'closeStyledAndFuzzy') {
-				wrappedStr += '<span class="highlight">' + c + '</span></span>' + replace;
-			} else {
-				wrappedStr += c;
-			}
-		}
-
-		return wrappedStr;
+		return data.split('').map(wrapCharacter);
 	};
 };
 
 var fuzzyFilterFactory = (function (_ref2) {
-	var fuzzysort = _ref2.fuzzysort;
+	var fuzzysort = _ref2.fuzzysort,
+	    React = _ref2.React,
+	    classnames = _ref2.classnames;
 
 	var promise = null;
 
-	var wrap = wrapFactory({ fuzzysort: fuzzysort });
+	var wrap = wrapFactory({ fuzzysort: fuzzysort, React: React, classnames: classnames });
 
 	var filter = function filter(pattern, data) {
 		promise && promise.cancel();
@@ -15595,10 +15551,7 @@ var fuzzyFilterFactory = (function (_ref2) {
 		});
 	};
 
-	var single = fuzzysort.single;
-
-
-	return { wrap: wrap, filter: filter, single: single };
+	return { wrap: wrap, filter: filter };
 });
 
 var dependenciesFactory = (function (_ref) {
@@ -15610,20 +15563,19 @@ var dependenciesFactory = (function (_ref) {
 		classnames: classnames,
 		Observable: Observable_2,
 		createStore: createStore,
-		combineReducers: combineReducers
+		combineReducers: combineReducers,
+		fuzzysort: fuzzysort
 	};
 
 	var utils = utilsFactory(dependencies);
 	dependencies.utils = utils;
 
-	var _fuzzyFilterFactory = fuzzyFilterFactory({ fuzzysort: fuzzysort }),
+	var _fuzzyFilterFactory = fuzzyFilterFactory(dependencies),
 	    filter = _fuzzyFilterFactory.filter,
-	    wrap = _fuzzyFilterFactory.wrap,
-	    single = _fuzzyFilterFactory.single;
+	    wrap = _fuzzyFilterFactory.wrap;
 
 	dependencies.filter = filter;
 	dependencies.wrap = wrap;
-	dependencies.single = single;
 
 	var _storeFactory = storeFactory(dependencies),
 	    store = _storeFactory.store,
@@ -15929,8 +15881,9 @@ var entry = (function (_ref) {
 			lsCommand({ path: finalPath, description: finalPath, lsCommand: lsCommand });
 		},
 		'sparkling:lsUp': function sparklingLsUp() {
-			var _getOptions = getOptions(store.getState()),
-			    optionsPath = _getOptions.path;
+			var options = getOptions(store.getState());
+			var _ref2 = options,
+			    optionsPath = _ref2.path;
 
 			var finalPath = path.resolve(optionsPath || '.', '..');
 

@@ -36,7 +36,7 @@
 		"escape": "sparkling:hide",
 		"cmd-escape": "sparkling:hide",
 		"enter": "sparkling:accept",
-		"shift-enter": "sparkling:select"
+		"ctrl-enter": "sparkling:select"
 	},
 	".platform-darwin #sparkling-ls .sparkling-input": {
 		"cmd-l cmd-s": "sparkling:lsUp"
@@ -80,7 +80,8 @@
 		"down": "sparkling:next",
 		"escape": "sparkling:hide",
 		"ctrl-escape": "sparkling:hide",
-		"enter": "sparkling:accept"
+		"enter": "sparkling:accept",
+		"ctrl-enter": "sparkling:select"
 	},
 	".platform-win32 #sparkling-ls .sparkling-input, .platform-linux #sparkling-ls .sparkling-input": {
 		"ctrl-l ctrl-s": "sparkling:lsUp"
