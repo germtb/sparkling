@@ -53,6 +53,9 @@
     "Set": true,
     "Promise": true,
     "console": true,
-    "beforeEach": true
+    "beforeEach": true,
+    "$Exact": true,
+    "HTMLElement": true,
+    "Range": true
   }
 }
