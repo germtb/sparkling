@@ -23,6 +23,7 @@
 	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
 	overflow: hidden;
 	white-space: nowrap;
+	flex: 1;
 }
 
 .sparkling-row--selected {
