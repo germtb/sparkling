@@ -5752,34 +5752,21 @@ var loadData = (function (onData) {
 
 var defaultRendererFactory = (function (_ref) {
 	var React = _ref.React,
-	    classnames = _ref.classnames,
 	    wrap = _ref.wrap;
 	return function (_ref2) {
-		var _classnames;
-
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    className = _ref2.className,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
-		    accept = _ref2.accept,
-		    multiselected = _ref2.multiselected;
+		    accept = _ref2.accept;
 		var value = item.value;
-
-
-		var finalClassName = classnames(className, 'sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames));
 
 		var wrappedValue = wrap(value, pattern);
 
 		return React.createElement(
 			'div',
-			{
-				className: finalClassName,
-				'aria-role': 'button',
-				onClick: function onClick() {
+			{ className: className, 'aria-role': 'button', onClick: function onClick() {
 					return accept(item);
-				}
-			},
+				} },
 			wrappedValue
 		);
 	};
@@ -5793,7 +5780,7 @@ var rendererFactory = (function (dependencies) {
 
 	return function (props) {
 		return defaultRenderer(_extends({}, props, {
-			className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(props.item.value))))
+			className: classnames.apply(undefined, [props.className, 'icon'].concat(toConsumableArray(iconClassForPath(props.item.value))))
 		}));
 	};
 });
@@ -5908,7 +5895,6 @@ var iconMap = {
 
 var commands = (function (dependencies) {
 	var React = dependencies.React,
-	    classnames = dependencies.classnames,
 	    wrap = dependencies.wrap,
 	    store = dependencies.store;
 
@@ -5944,29 +5930,22 @@ var commands = (function (dependencies) {
 	};
 
 	var renderer = function renderer(_ref) {
-		var _classnames;
-
 		var item = _ref.item,
-		    index = _ref.index,
-		    selectedIndex = _ref.selectedIndex,
 		    pattern = _ref.pattern,
-		    multiselected = _ref.multiselected;
+		    className = _ref.className;
 
 		var keybinding = item.keybinding;
-		var finalClassName = classnames('sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames));
-
 		var wrappedValue = wrap(item.value, pattern);
 
 		return React.createElement(
 			'div',
 			{
-				className: finalClassName,
+				className: className,
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept([item]);
 				},
-				style: { display: 'flex', justifyContent: 'space-between' }
-			},
+				style: { display: 'flex', justifyContent: 'space-between' } },
 			React.createElement(
 				'span',
 				null,
@@ -6123,11 +6102,12 @@ var rendererFactory$1 = (function (dependencies) {
 
 	var defaultRenderer = defaultRendererFactory(dependencies);
 	return function (props) {
+		var className = props.className;
 		var absolutePath = props.item.absolutePath;
 
 
 		return defaultRenderer(_extends({}, props, {
-			className: ['icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+			className: [className, 'icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
 		}));
 	};
 });
@@ -6190,21 +6170,12 @@ var rendererFactory$2 = (function (_ref) {
 	    classnames = _ref.classnames;
 
 	return function (_ref2) {
-		var _classnames;
-
 		var item = _ref2.item,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
-		    multiselected = _ref2.multiselected;
-		var emoji = item.emoji;
-
-
+		    className = _ref2.className;
 		return React.createElement(
 			'div',
-			{
-				className: classnames('sparkling-emoji', (_classnames = {}, defineProperty(_classnames, 'sparkling-emoji-highlight', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected), _classnames))
-			},
-			emoji
+			{ className: classnames('sparkling-emoji', className) },
+			item.emoji
 		);
 	};
 });
@@ -6427,20 +6398,15 @@ var rendererFactory$3 = (function (_ref) {
 	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
-		var _ref3;
-
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
 		    className = _ref2.className,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
-		    accept = _ref2.accept,
-		    multiselected = _ref2.multiselected;
+		    accept = _ref2.accept;
 		var value = item.value,
 		    status = item.status;
 
 
-		var finalClassName = classnames.apply(undefined, [className, 'sparkling-row', 'icon'].concat(toConsumableArray(iconClassForPath(value)), [(_ref3 = {}, defineProperty(_ref3, 'sparkling-row--multi-selected', multiselected), defineProperty(_ref3, 'sparkling-row--selected', index === selectedIndex), _ref3)]));
+		var finalClassName = classnames.apply(undefined, [className, 'icon'].concat(toConsumableArray(iconClassForPath(value))));
 
 		var wrappedValue = wrap(value, pattern);
 
@@ -6531,8 +6497,7 @@ var rendererFactory$3 = (function (_ref) {
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept(item);
-				}
-			},
+				} },
 			React.createElement(
 				'span',
 				{ className: 'git-status' },
@@ -6930,12 +6895,9 @@ var rendererFactory$4 = (function (_ref) {
 	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
-		var _classnames;
-
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
+		    className = _ref2.className,
 		    accept = _ref2.accept;
 		var startColumn = item.startColumn,
 		    endColumn = item.endColumn,
@@ -7005,22 +6967,18 @@ var rendererFactory$4 = (function (_ref) {
 
 		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row__find--multiline', lines.length > 1), _classnames));
-
 		return React.createElement(
 			'div',
 			{
-				className: finalClassName,
+				className: classnames(className, 'sparkling-row__find', defineProperty({}, 'sparkling-row__find--multiline', lines.length > 1)),
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept(item);
-				}
-			},
+				} },
 			React.createElement(
 				'span',
 				{
-					className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1))))
-				},
+					className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
 				path$$1
 			),
 			lines
@@ -7112,12 +7070,9 @@ var rendererFactory$5 = (function (_ref) {
 	    iconClassForPath = _ref.utils.iconClassForPath;
 
 	var Replace = function Replace(_ref2) {
-		var _classnames;
-
 		var item = _ref2.item,
 		    pattern = _ref2.pattern,
-		    index = _ref2.index,
-		    selectedIndex = _ref2.selectedIndex,
+		    className = _ref2.className,
 		    accept = _ref2.accept,
 		    replace = _ref2.replace;
 		var startColumn = item.startColumn,
@@ -7198,7 +7153,7 @@ var rendererFactory$5 = (function (_ref) {
 
 		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
 
-		var finalClassName = classnames('sparkling-row', 'sparkling-row__find', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row__find--multiline', lines.length > 1), _classnames));
+		var finalClassName = classnames(className, 'sparkling-row__find', defineProperty({}, 'sparkling-row__find--multiline', lines.length > 1));
 
 		return React.createElement(
 			'div',
@@ -7207,8 +7162,7 @@ var rendererFactory$5 = (function (_ref) {
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept(item);
-				}
-			},
+				} },
 			React.createElement(
 				'span',
 				{ className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
@@ -14858,7 +14812,8 @@ var SparklingInputFactory = (function (_ref) {
 
 var SparklingResultsFactory = (function (_ref) {
 	var React = _ref.React,
-	    connect = _ref.connect;
+	    connect = _ref.connect,
+	    classnames = _ref.classnames;
 
 	var SparklingResults = function SparklingResults(_ref2) {
 		var options = _ref2.options,
@@ -14889,13 +14844,15 @@ var SparklingResultsFactory = (function (_ref) {
 				'div',
 				{ className: 'sparkling-results', style: style },
 				data.slice(offset, offset + sliceLength).map(function (item, index) {
+					var _classnames;
+
+					var className = classnames('sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected.includes(item)), _classnames));
+
 					return renderer({
 						item: item,
-						index: index,
-						selectedIndex: selectedIndex,
 						accept: accept,
 						pattern: pattern,
-						multiselected: multiselected.includes(item)
+						className: className
 					});
 				})
 			),
