@@ -14862,17 +14862,21 @@ var SparklingResultsFactory = (function (_ref) {
 				    accept = options.accept;
 				var height = this.state.height;
 
-
-				if (parent && this.container && parent.getBoundingClientRect().top > this.container.getBoundingClientRect().bottom + height) {
-					return React.createElement('div', {
-						ref: function ref(container) {
-							return _this2.container = container;
-						},
-						style: {
-							minHeight: height
-						}
-					});
-				}
+				// if (
+				// 	parent &&
+				// 	this.container &&
+				// 	parent.getBoundingClientRect().bottom <
+				// 		this.container.getBoundingClientRect().bottom
+				// ) {
+				// 	return (
+				// 		<div
+				// 			ref={container => (this.container = container)}
+				// 			style={{
+				// 				minHeight: height
+				// 			}}
+				// 		/>
+				// 	)
+				// }
 
 				return React.createElement(
 					'div',
@@ -14885,7 +14889,8 @@ var SparklingResultsFactory = (function (_ref) {
 							display: 'flex',
 							flex: 1,
 							flexShrink: 0
-						} },
+						}
+					},
 					data.map(function (item, index) {
 						var _classnames;
 
@@ -14916,18 +14921,70 @@ var SparklingResultsFactory = (function (_ref) {
 
 			_this3.state = {
 				chunks: [],
-				height: 0,
-				scrollTop: 0,
 				// marginHeight: 0,
-				marginHeight: props.height
-				// maxHeight: props.height
+				marginHeight: props.height,
+				maxHeight: props.height
 			};
 
 			_this3.onScroll = _this3.onScroll.bind(_this3);
+			_this3.resize = _this3.resize.bind(_this3);
 			return _this3;
 		}
 
 		createClass(SparklingResults, [{
+			key: 'onScroll',
+			value: function onScroll() {
+				var scrolloading = this.state.scrolloading;
+
+
+				if (scrolloading) {
+					return;
+				}
+
+				this.setState({ scrolloading: true });
+			}
+		}, {
+			key: 'resize',
+			value: function resize() {
+				var _props3 = this.props,
+				    data = _props3.data,
+				    options = _props3.options;
+				var columns = options.columns;
+				var _state = this.state,
+				    chunks = _state.chunks,
+				    maxHeight = _state.maxHeight,
+				    marginHeight = _state.marginHeight,
+				    container = _state.container,
+				    lastChunk = _state.lastChunk;
+
+
+				if (!container || !lastChunk) {
+					return;
+				}
+
+				var last = chunks[chunks.length - 1];
+
+				var _container$getBoundin = container.getBoundingClientRect(),
+				    top = _container$getBoundin.top;
+
+				var _lastChunk$getBoundin = lastChunk.getBoundingClientRect(),
+				    bottom = _lastChunk$getBoundin.bottom;
+
+				var delta = bottom - top;
+				var newChunks = chunks;
+
+				if (last * columns < data.length && delta < maxHeight + marginHeight) {
+					newChunks = [].concat(toConsumableArray(chunks), [last + 1]);
+				} else if (delta > maxHeight + 2 * marginHeight) {
+					newChunks = chunks.slice(0, -1);
+				}
+
+				this.setState({
+					chunks: newChunks,
+					scrolloading: false
+				});
+			}
+		}, {
 			key: 'componentDidUpdate',
 			value: function componentDidUpdate() {
 				var data = this.props.data;
@@ -14939,51 +14996,8 @@ var SparklingResultsFactory = (function (_ref) {
 						chunks: [0]
 					});
 				}
-			}
-		}, {
-			key: 'onScroll',
-			value: function onScroll() {
-				var _props3 = this.props,
-				    data = _props3.data,
-				    options = _props3.options;
-				var _state = this.state,
-				    chunks = _state.chunks,
-				    height = _state.height,
-				    lastChunk = _state.lastChunk,
-				    scrolloading = _state.scrolloading,
-				    marginHeight = _state.marginHeight,
-				    maxHeight = _state.maxHeight;
-				var columns = options.columns;
 
-
-				if (scrolloading) {
-					return;
-				}
-
-				var scrollTop = this.container.scrollTop;
-
-
-				var last = chunks[chunks.length - 1];
-				var clientHeight = lastChunk.clientHeight;
-
-
-				if (height + clientHeight > maxHeight + marginHeight + scrollTop) {
-					this.setState({
-						height: height + clientHeight,
-						scrolloading: true
-					});
-				} else if (last * columns < data.length) {
-					this.setState({
-						height: height + clientHeight,
-						chunks: [].concat(toConsumableArray(chunks), [last + 1]),
-						scrolloading: true
-					});
-				} else {
-					this.setState({
-						height: height + clientHeight,
-						scrolloading: true
-					});
-				}
+				this.resize();
 			}
 		}, {
 			key: 'render',
@@ -14999,10 +15013,7 @@ var SparklingResultsFactory = (function (_ref) {
 				var columns = options.columns;
 				var _state2 = this.state,
 				    chunks = _state2.chunks,
-				    height = _state2.height,
-				    scrollTop = _state2.scrollTop,
-				    maxHeight = _state2.maxHeight,
-				    marginHeight = _state2.marginHeight;
+				    maxHeight = _state2.maxHeight;
 
 
 				return React.createElement(
@@ -15010,7 +15021,11 @@ var SparklingResultsFactory = (function (_ref) {
 					{
 						className: 'sparkling-results-container',
 						ref: function ref(container) {
-							return _this4.container = container;
+							if (container) {
+								_this4.setState({
+									container: container
+								});
+							}
 						},
 						onScroll: this.onScroll,
 						style: {
@@ -15018,43 +15033,27 @@ var SparklingResultsFactory = (function (_ref) {
 							flexDirection: 'column',
 							maxHeight: maxHeight,
 							overflow: 'scroll'
-						} },
-					chunks.map(function (row) {
+						}
+					},
+					this.state.container && chunks.map(function (row) {
 						var _React$createElement;
 
 						return React.createElement(Chunk, (_React$createElement = {
-							parent: _this4.container,
+							parent: _this4.state.container,
 							options: options,
 							data: data,
 							selectedIndex: selectedIndex,
 							startIndex: row * columns,
 							pattern: pattern,
 							multiselected: multiselected
-						}, defineProperty(_React$createElement, 'data', data.slice(row * columns, row * columns + columns)), defineProperty(_React$createElement, 'onMount', function onMount(ref) {
-							var last = chunks[chunks.length - 1];
-							var clientHeight = ref.clientHeight;
+						}, defineProperty(_React$createElement, 'data', data.slice(row * columns, row * columns + columns)), defineProperty(_React$createElement, 'onMount', function onMount(lastChunk) {
+							if (row !== chunks.length - 1) {
+								return;
+							}
 
-
-							debugger;
-
-							if (height + clientHeight > maxHeight + marginHeight + scrollTop) {
+							if (lastChunk) {
 								_this4.setState({
-									height: height + clientHeight,
-									lastChunk: ref,
-									scrolloading: false
-								});
-							} else if (last * columns < data.length && row === chunks.length - 1) {
-								_this4.setState({
-									height: height + clientHeight,
-									chunks: [].concat(toConsumableArray(chunks), [last + 1]),
-									lastChunk: ref,
-									scrolloading: false
-								});
-							} else {
-								_this4.setState({
-									height: height + clientHeight,
-									lastChunk: ref,
-									scrolloading: false
+									lastChunk: lastChunk
 								});
 							}
 						}), _React$createElement));
