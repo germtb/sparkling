@@ -19,14 +19,11 @@ var getData = function getData(state) {
 var getIndex = function getIndex(state) {
 	return state.index;
 };
-var getOffset = function getOffset(state) {
-	return state.offset;
-};
 var getPattern = function getPattern(state) {
 	return state.pattern.value;
 };
 var getSelectedValue = function getSelectedValue(state) {
-	return getSparklingData(state)[getOffset(state) + getIndex(state)];
+	return getSparklingData(state)[getIndex(state)];
 };
 var getRawDataLength = function getRawDataLength(state) {
 	return state.data.length;
@@ -14647,7 +14644,8 @@ var commandFactoryFactory = (function (dependencies) {
 			sliceLength: DEFAULT_SLICE_LENGTH,
 			columns: 1,
 			renderer: defaultRenderer,
-			multiselect: false
+			multiselect: false,
+			height: 200
 		};
 
 		var partialOptions = optionsFactory(dependencies);
@@ -14809,7 +14807,13 @@ var SparklingResultsFactory = (function (_ref) {
 
 		function Chunk() {
 			classCallCheck(this, Chunk);
-			return possibleConstructorReturn(this, (Chunk.__proto__ || Object.getPrototypeOf(Chunk)).apply(this, arguments));
+
+			var _this = possibleConstructorReturn(this, (Chunk.__proto__ || Object.getPrototypeOf(Chunk)).call(this));
+
+			_this.state = {
+				height: 0
+			};
+			return _this;
 		}
 
 		createClass(Chunk, [{
@@ -14818,22 +14822,57 @@ var SparklingResultsFactory = (function (_ref) {
 				var onMount = this.props.onMount;
 
 				onMount(this.container);
+				this.setState({
+					height: this.container.clientHeight
+				});
+			}
+		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate(prevProps) {
+				if (prevProps.selectedIndex === this.props.selectedIndex) {
+					return;
+				}
+
+				var _props = this.props,
+				    startIndex = _props.startIndex,
+				    data = _props.data,
+				    selectedIndex = _props.selectedIndex;
+
+
+				if (data.some(function (_, index) {
+					return index + startIndex === selectedIndex;
+				})) {
+					this.container.scrollIntoView(false);
+				}
 			}
 		}, {
 			key: 'render',
 			value: function render() {
 				var _this2 = this;
 
-				var _props = this.props,
-				    startIndex = _props.startIndex,
-				    options = _props.options,
-				    data = _props.data,
-				    selectedIndex = _props.selectedIndex,
-				    pattern = _props.pattern,
-				    multiselected = _props.multiselected;
+				var _props2 = this.props,
+				    startIndex = _props2.startIndex,
+				    options = _props2.options,
+				    data = _props2.data,
+				    selectedIndex = _props2.selectedIndex,
+				    pattern = _props2.pattern,
+				    multiselected = _props2.multiselected,
+				    parent = _props2.parent;
 				var renderer = options.renderer,
 				    accept = options.accept;
+				var height = this.state.height;
 
+
+				if (parent && this.container && parent.getBoundingClientRect().top > this.container.getBoundingClientRect().bottom + height) {
+					return React.createElement('div', {
+						ref: function ref(container) {
+							return _this2.container = container;
+						},
+						style: {
+							minHeight: height
+						}
+					});
+				}
 
 				return React.createElement(
 					'div',
@@ -14878,7 +14917,10 @@ var SparklingResultsFactory = (function (_ref) {
 			_this3.state = {
 				chunks: [],
 				height: 0,
-				scrollTop: 0
+				scrollTop: 0,
+				// marginHeight: 0,
+				marginHeight: props.height
+				// maxHeight: props.height
 			};
 
 			_this3.onScroll = _this3.onScroll.bind(_this3);
@@ -14901,24 +14943,22 @@ var SparklingResultsFactory = (function (_ref) {
 		}, {
 			key: 'onScroll',
 			value: function onScroll() {
-				var _props2 = this.props,
-				    data = _props2.data,
-				    options = _props2.options;
+				var _props3 = this.props,
+				    data = _props3.data,
+				    options = _props3.options;
 				var _state = this.state,
 				    chunks = _state.chunks,
 				    height = _state.height,
 				    lastChunk = _state.lastChunk,
-				    scrolloading = _state.scrolloading;
+				    scrolloading = _state.scrolloading,
+				    marginHeight = _state.marginHeight,
+				    maxHeight = _state.maxHeight;
 				var columns = options.columns;
 
 
 				if (scrolloading) {
-					console.log('this was cool');
 					return;
 				}
-
-				var containerHeight = 200;
-				var marginHeight = 200 + scrollTop;
 
 				var scrollTop = this.container.scrollTop;
 
@@ -14927,7 +14967,7 @@ var SparklingResultsFactory = (function (_ref) {
 				var clientHeight = lastChunk.clientHeight;
 
 
-				if (height + clientHeight > containerHeight + marginHeight) {
+				if (height + clientHeight > maxHeight + marginHeight + scrollTop) {
 					this.setState({
 						height: height + clientHeight,
 						scrolloading: true
@@ -14935,8 +14975,7 @@ var SparklingResultsFactory = (function (_ref) {
 				} else if (last * columns < data.length) {
 					this.setState({
 						height: height + clientHeight,
-						// chunks: [...chunks, last + 1],
-						chunks: [].concat(toConsumableArray(chunks), [last + 1, last + 2, last + 3, last + 4]),
+						chunks: [].concat(toConsumableArray(chunks), [last + 1]),
 						scrolloading: true
 					});
 				} else {
@@ -14951,20 +14990,20 @@ var SparklingResultsFactory = (function (_ref) {
 			value: function render() {
 				var _this4 = this;
 
-				var _props3 = this.props,
-				    data = _props3.data,
-				    options = _props3.options,
-				    selectedIndex = _props3.selectedIndex,
-				    pattern = _props3.pattern,
-				    multiselected = _props3.multiselected;
+				var _props4 = this.props,
+				    data = _props4.data,
+				    options = _props4.options,
+				    selectedIndex = _props4.selectedIndex,
+				    pattern = _props4.pattern,
+				    multiselected = _props4.multiselected;
 				var columns = options.columns;
 				var _state2 = this.state,
 				    chunks = _state2.chunks,
 				    height = _state2.height,
-				    scrollTop = _state2.scrollTop;
+				    scrollTop = _state2.scrollTop,
+				    maxHeight = _state2.maxHeight,
+				    marginHeight = _state2.marginHeight;
 
-				var containerHeight = 200;
-				var marginHeight = 200 + scrollTop;
 
 				return React.createElement(
 					'div',
@@ -14977,13 +15016,14 @@ var SparklingResultsFactory = (function (_ref) {
 						style: {
 							display: 'flex',
 							flexDirection: 'column',
-							maxHeight: containerHeight,
+							maxHeight: maxHeight,
 							overflow: 'scroll'
 						} },
 					chunks.map(function (row) {
 						var _React$createElement;
 
 						return React.createElement(Chunk, (_React$createElement = {
+							parent: _this4.container,
 							options: options,
 							data: data,
 							selectedIndex: selectedIndex,
@@ -14995,17 +15035,18 @@ var SparklingResultsFactory = (function (_ref) {
 							var clientHeight = ref.clientHeight;
 
 
-							if (height + clientHeight > containerHeight + marginHeight) {
+							debugger;
+
+							if (height + clientHeight > maxHeight + marginHeight + scrollTop) {
 								_this4.setState({
 									height: height + clientHeight,
 									lastChunk: ref,
 									scrolloading: false
 								});
-							} else if (last * columns < data.length) {
+							} else if (last * columns < data.length && row === chunks.length - 1) {
 								_this4.setState({
 									height: height + clientHeight,
-									// chunks: [...chunks, last + 1],
-									chunks: [].concat(toConsumableArray(chunks), [last + 1, last + 2, last + 3, last + 4]),
+									chunks: [].concat(toConsumableArray(chunks), [last + 1]),
 									lastChunk: ref,
 									scrolloading: false
 								});
@@ -15030,7 +15071,6 @@ var SparklingResultsFactory = (function (_ref) {
 			data: getSparklingData(state),
 			selectedIndex: getIndex(state),
 			selectedValue: getSelectedValue(state),
-			offset: getOffset(state),
 			pattern: getPattern(state),
 			multiselected: getMultiselected(state)
 		};
@@ -15046,13 +15086,14 @@ var SparklingFactory = (function (dependencies) {
 
 	return function (_ref) {
 		var options = _ref.options;
-		var id = options.id;
+		var id = options.id,
+		    height = options.height;
 
 
 		return React.createElement(
 			'div',
 			{ className: 'sparkling', id: id },
-			React.createElement(SparklingResults, null),
+			React.createElement(SparklingResults, { height: height }),
 			React.createElement(SparklingInput, { key: id })
 		);
 	};
@@ -15400,13 +15441,6 @@ var index = reducerCreator({
 	REMOVE_ITEM: 0
 })(0);
 
-var offset = reducerCreator({
-	SET_OFFSET: returnPayload('value'),
-	SET_DATA: 0,
-	SET_PATTERN: 0,
-	SHOW: 0
-})(0);
-
 var extraInput = reducerCreator({
 	SHOW_EXTRA_INPUT: function SHOW_EXTRA_INPUT(state, _ref7) {
 		var payload = _ref7.payload;
@@ -15458,7 +15492,6 @@ var reducers = {
 	data: data,
 	sparklingData: sparklingData,
 	index: index,
-	offset: offset,
 	pattern: pattern,
 	findVisible: findVisible,
 	find: find$1,
@@ -15722,17 +15755,11 @@ var next = function next() {
 		var index = getIndex(state);
 		var sparklingData = getSparklingData(state);
 		var options = getOptions(state);
-		var sliceLength = options.sliceLength;
+		var columns = options.columns;
 
 
-		if (index === sliceLength - 1) {
-			var offset = getOffset(state);
-			var _value = Math.min(offset + 1, sparklingData.length - sliceLength);
-			dispatch({ type: 'SET_OFFSET', payload: { value: _value } });
-		} else {
-			var _value2 = Math.min(index + 1, sparklingData.length - 1, sliceLength - 1);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value2 } });
-		}
+		var value = Math.min(index + columns, sparklingData.length - 1);
+		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
 
@@ -15740,15 +15767,12 @@ var previous = function previous() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
+		var options = getOptions(state);
+		var columns = options.columns;
 
-		if (index === 0) {
-			var offset = getOffset(state);
-			var _value3 = Math.max(offset - 1, 0);
-			dispatch({ type: 'SET_OFFSET', payload: { value: _value3 } });
-		} else {
-			var _value4 = Math.max(index - 1, 0);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value4 } });
-		}
+
+		var value = Math.max(index - columns, 0);
+		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
 
@@ -15756,20 +15780,9 @@ var left = function left() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
-		var options = getOptions(state);
-		var columns = options.columns,
-		    sliceLength = options.sliceLength;
 
-		var rows = sliceLength / columns;
-
-		if (index === 0) {
-			var offset = getOffset(state);
-			var _value5 = Math.max(offset - rows, 0);
-			dispatch({ type: 'SET_OFFSET', payload: { value: _value5 } });
-		} else {
-			var _value6 = Math.max(index - rows, 0);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value6 } });
-		}
+		var value = Math.max(index - 1, 0);
+		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
 
@@ -15778,20 +15791,9 @@ var right = function right() {
 		var state = getState();
 		var index = getIndex(state);
 		var sparklingData = getSparklingData(state);
-		var options = getOptions(state);
-		var sliceLength = options.sliceLength,
-		    columns = options.columns;
 
-		var rows = sliceLength / columns;
-
-		if (index === sliceLength - 1) {
-			var offset = getOffset(state);
-			var _value7 = Math.min(offset + rows, sparklingData.length - sliceLength);
-			dispatch({ type: 'SET_OFFSET', payload: { value: _value7 } });
-		} else {
-			var _value8 = Math.min(index + rows, sparklingData.length - 1, sliceLength - 1);
-			dispatch({ type: 'SET_INDEX', payload: { value: _value8 } });
-		}
+		var value = Math.min(index + 1, sparklingData.length - 1);
+		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
 
