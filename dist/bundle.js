@@ -5529,7 +5529,7 @@ var ackmateDFA = {
 			var match = joinedLines.slice(startColumn, startColumn + matchLength);
 
 			state.processedData.push({
-				value: joinedLines,
+				value: fileName + '\n' + joinedLines,
 				match: match,
 				path: fileName,
 				startLine: startLine,
@@ -5598,7 +5598,7 @@ var ackmateDFA = {
 
 				if (_fileName) {
 					state.processedData.push({
-						value: fileLine,
+						value: _fileName + '\n' + fileLine,
 						match: fileLine.slice(startColumn, endColumn),
 						path: _fileName,
 						startLine: startLine,
@@ -5670,6 +5670,20 @@ var ackmateParserFactory = function ackmateParserFactory() {
 		node.state.processedData = [];
 		return result;
 	};
+};
+
+var gitStatusLabel = function gitStatusLabel(status) {
+	if (['M ', ' M', 'MM'].includes(status)) {
+		return 'modified';
+	} else if (status === '??') {
+		return 'untracked';
+	} else if (['D ', ' D', 'DD'].includes(status)) {
+		return 'deleted';
+	} else if (['A ', ' A', 'AM'].includes(status)) {
+		return 'new file';
+	}
+
+	return status;
 };
 
 var fileReplace = async function fileReplace(_ref) {
@@ -5822,7 +5836,6 @@ var files = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'Find files in project',
 		id: 'sparkling-files',
@@ -6133,7 +6146,6 @@ var ls = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'Project navigation',
 		id: 'sparkling-ls'
@@ -6254,7 +6266,6 @@ var copyFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'Copy files',
 		id: 'sparkling-copy-files'
@@ -6282,7 +6293,6 @@ var moveFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'Move files in project',
 		id: 'sparkling-move-files'
@@ -6308,7 +6318,6 @@ var removeFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'rm',
 		id: 'sparkling-files'
@@ -6376,7 +6385,11 @@ var loadDataFactory$2 = (function () {
 					return acc;
 				}
 
-				acc.push({ value: path$$1, status: status });
+				acc.push({
+					value: gitStatusLabel(status) + '\n' + path$$1,
+					status: status,
+					path: path$$1
+				});
 				return acc;
 			}, []));
 		});
@@ -6396,91 +6409,114 @@ var rendererFactory$3 = (function (_ref) {
 		    className = _ref2.className,
 		    accept = _ref2.accept,
 		    wrappedValue = _ref2.wrappedValue;
-		var value = item.value,
+		var path$$1 = item.path,
 		    status = item.status;
 
 
-		var finalClassName = classnames.apply(undefined, [className, 'icon'].concat(toConsumableArray(iconClassForPath(value))));
+		var finalClassName = classnames.apply(undefined, [className, 'icon'].concat(toConsumableArray(iconClassForPath(path$$1))));
 
-		var statusLabel = void 0;
+		var lines = wrappedValue.reduce(split('\n'), [[]]).map(function (line, index) {
+			if (index === 0) {
+				if (status === 'M ') {
+					return React.createElement(
+						'span',
+						{
+							className: classnames('git-status', 'git-status-modified-staged') },
+						line
+					);
+				} else if (status === ' M') {
+					return React.createElement(
+						'span',
+						{ className: classnames('git-status', 'git-status-modified') },
+						line
+					);
+				} else if (status === 'MM') {
+					return React.createElement(
+						'span',
+						{ className: 'git-status' },
+						React.createElement(
+							'span',
+							{ className: 'git-status-modified-staged' },
+							line.slice(0, line.length / 2)
+						),
+						React.createElement(
+							'span',
+							{ className: 'git-status-modified' },
+							line.slice(line.length / 2)
+						)
+					);
+				} else if (status === '??') {
+					return React.createElement(
+						'span',
+						{ className: classnames('git-status', 'git-status-untracked') },
+						line
+					);
+				} else if (status === 'D ') {
+					return React.createElement(
+						'span',
+						{
+							className: classnames('git-status', 'git-status-deleted-staged') },
+						line
+					);
+				} else if (status === ' D') {
+					return React.createElement(
+						'span',
+						{ className: classnames('git-status', 'git-status-deleted') },
+						line
+					);
+				} else if (status === 'AD') {
+					return React.createElement(
+						'span',
+						{ className: classnames('git-status', 'git-status-deleted') },
+						line
+					);
+				} else if (status === 'DD') {
+					return React.createElement(
+						'span',
+						{ className: 'git-status' },
+						React.createElement(
+							'span',
+							{ className: 'git-status-deleted-staged' },
+							line.slice(0, line.length / 2)
+						),
+						React.createElement(
+							'span',
+							{ className: 'git-status-deleted' },
+							line.slice(line.length / 2)
+						)
+					);
+				} else if (status === 'A ') {
+					return React.createElement(
+						'span',
+						{
+							className: classnames('git-status', 'git-status-new-file-staged') },
+						line
+					);
+				} else if (status === ' A') {
+					return React.createElement(
+						'span',
+						{
+							className: classnames('git-status', 'git-status-new-file-staged') },
+						line
+					);
+				} else if (status === 'AM') {
+					return React.createElement(
+						'span',
+						{
+							className: classnames('git-status', 'git-status-new-file-staged') },
+						line
+					);
+				}
 
-		if (status === 'M ') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-modified-staged' },
-				'modified'
-			);
-		} else if (status === ' M') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-modified' },
-				'modified'
-			);
-		} else if (status === 'MM') {
-			statusLabel = [React.createElement(
-				'span',
-				{ className: 'git-status-modified-staged' },
-				'modi'
-			), React.createElement(
-				'span',
-				{ className: 'git-status-modified' },
-				'fied'
-			)];
-		} else if (status === '??') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-untracked' },
-				'untracked'
-			);
-		} else if (status === 'D ') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-deleted-staged' },
-				'deleted'
-			);
-		} else if (status === ' D') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-deleted' },
-				'deleted'
-			);
-		} else if (status === 'AD') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-deleted' },
-				'deleted'
-			);
-		} else if (status === 'DD') {
-			statusLabel = [React.createElement(
-				'span',
-				{ className: 'git-status-deleted-staged' },
-				'del'
-			), React.createElement(
-				'span',
-				{ className: 'git-status-deleted' },
-				'eted'
-			)];
-		} else if (status === 'A ') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-new-file-staged' },
-				'new file'
-			);
-		} else if (status === ' A') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-new-file-staged' },
-				'new file'
-			);
-		} else if (status === 'AM') {
-			statusLabel = React.createElement(
-				'span',
-				{ className: 'git-status-new-file-staged' },
-				'new file'
-			);
-		} else {
-			statusLabel = status;
-		}
+				return React.createElement(
+					'span',
+					{ className: 'git-status' },
+					line
+				);
+			}
+
+			return line;
+		});
 
 		return React.createElement(
 			'div',
@@ -6490,16 +6526,7 @@ var rendererFactory$3 = (function (_ref) {
 				onClick: function onClick() {
 					return accept(item);
 				} },
-			React.createElement(
-				'span',
-				{ className: 'git-status' },
-				statusLabel
-			),
-			React.createElement(
-				'span',
-				null,
-				wrappedValue
-			)
+			lines
 		);
 	};
 });
@@ -6521,7 +6548,7 @@ var gitFiles = (function (dependencies) {
 			for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				var item = _step.value;
 
-				atom.workspace.open(item.value);
+				atom.workspace.open(item.path);
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -6593,7 +6620,6 @@ var gitBranches = (function (_ref) {
 		loadData: loadData$1,
 		accept: accept,
 		columns: 3,
-		sliceLength: 9,
 		description: 'git checkout',
 		id: 'sparkling-git-branches'
 	};
@@ -6628,8 +6654,6 @@ var gitLog = (function (_ref) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		columns: 1,
-		sliceLength: 10,
 		description: 'git log - Copy git commit hash to clipboard',
 		id: 'sparkling-git-log'
 	};
@@ -6652,8 +6676,6 @@ var gitLogCheckout = (function (_ref) {
 	return {
 		loadData: loadData$2,
 		accept: accept,
-		sliceLength: 10,
-		columns: 1,
 		description: 'git log - Checkout git commit',
 		id: 'sparkling-git-commit'
 	};
@@ -6665,19 +6687,19 @@ var gitStage = (function (dependencies) {
 
 	var renderer = rendererFactory$3(dependencies);
 
-	var loadData = loadDataFactory$2({ hideDeletedFiles: false });
+	var loadData = loadDataFactory$2({ dependencies: dependencies, hideDeletedFiles: false });
 
 	var accept = function accept(_ref) {
-		var value = _ref.value,
+		var path$$1 = _ref.path,
 		    status = _ref.status;
 
 		var cmdProcess = void 0;
 		var unstaged = [' M', 'MM', '??', ' D', 'AD', 'DD', ' A'];
 
 		if (unstaged.includes(status)) {
-			cmdProcess = spawnInProject('git', ['add', value]);
+			cmdProcess = spawnInProject('git', ['add', path$$1]);
 		} else {
-			cmdProcess = spawnInProject('git', ['reset', value]);
+			cmdProcess = spawnInProject('git', ['reset', path$$1]);
 		}
 
 		cmdProcess.on('exit', function () {
@@ -6703,7 +6725,7 @@ var gitStatus = (function (dependencies) {
 
 	var renderer = rendererFactory$3(dependencies);
 
-	var loadData = loadDataFactory$2({ hideDeletedFiles: false });
+	var loadData = loadDataFactory$2({ dependencies: dependencies, hideDeletedFiles: true });
 
 	var accept = function accept(files) {
 		var _iteratorNormalCompletion = true;
@@ -6713,15 +6735,8 @@ var gitStatus = (function (dependencies) {
 		try {
 			for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 				var file = _step.value;
-				var value = file.value,
-				    status = file.status;
 
-
-				var deletedStatuses = [' D', 'AD', 'DD'];
-
-				if (!deletedStatuses.includes(status)) {
-					atom.workspace.open(value);
-				}
+				atom.workspace.open(file.path);
 			}
 		} catch (err) {
 			_didIteratorError = true;
@@ -6763,7 +6778,7 @@ var gitCheckout = (function (dependencies) {
 	var loadData = loadDataFactory$2();
 
 	var accept = function accept(item) {
-		var cmdProcess = spawnInProject('git', ['checkout', '--', item.value]);
+		var cmdProcess = spawnInProject('git', ['checkout', '--', item.path]);
 
 		cmdProcess.on('exit', function () {
 			store.dispatch({
@@ -6777,7 +6792,6 @@ var gitCheckout = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 9,
 		columns: 3,
 		description: 'git checkout -- files',
 		id: 'sparkling-git-checkout'
@@ -6836,8 +6850,6 @@ var gitReflogCheckout = (function (_ref) {
 	return {
 		loadData: loadData$3,
 		accept: accept,
-		columns: 1,
-		sliceLength: 10,
 		description: 'git reflog - Checkout git commit',
 		id: 'sparkling-git-reflog'
 	};
@@ -6901,8 +6913,7 @@ var lines = (function (dependencies) {
 			return React.createElement(LineSideEffect, null);
 		},
 		description: 'Find lines in current buffer',
-		id: 'sparkling-buffer-lines',
-		sliceLength: 10
+		id: 'sparkling-buffer-lines'
 	};
 });
 
@@ -6953,7 +6964,18 @@ var rendererFactory$4 = (function (_ref) {
 
 
 		var wrapLine = function wrapLine(line, index, lines) {
-			if (index === 0 && lines.length === 1) {
+			if (index === 0) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						{
+							className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+						line
+					)
+				);
+			} else if (index === 1 && lines.length === 2) {
 				return React.createElement(
 					'div',
 					null,
@@ -6973,7 +6995,7 @@ var rendererFactory$4 = (function (_ref) {
 						line.slice(endColumn)
 					)
 				);
-			} else if (index === 0) {
+			} else if (index === 1) {
 				return React.createElement(
 					'div',
 					null,
@@ -7017,17 +7039,11 @@ var rendererFactory$4 = (function (_ref) {
 		return React.createElement(
 			'div',
 			{
-				className: classnames(className, 'sparkling-row__find', defineProperty({}, 'sparkling-row__find--multiline', lines.length > 1)),
+				className: classnames(className, 'sparkling-row__find', defineProperty({}, 'sparkling-row__find--multiline', lines.length > 2)),
 				'aria-role': 'button',
 				onClick: function onClick() {
 					return accept(item);
 				} },
-			React.createElement(
-				'span',
-				{
-					className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
-				path$$1
-			),
 			lines
 		);
 	};
@@ -7095,8 +7111,6 @@ var find = (function (dependencies) {
 		renderer: renderer,
 		description: 'Find pattern in project',
 		id: 'sparkling-project-find',
-		sliceLength: 10,
-		columns: 1,
 		childrenRenderer: function childrenRenderer() {
 			return React.createElement(FindSideEffect, null);
 		}
@@ -7121,7 +7135,18 @@ var rendererFactory$5 = (function (_ref) {
 
 
 		var wrapLine = function wrapLine(line, index, lines) {
-			if (index === 0 && lines.length === 1) {
+			if (index === 0) {
+				return React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						{
+							className: classnames.apply(undefined, ['icon', 'sparkling-path'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
+						line
+					)
+				);
+			} else if (index === 1 && lines.length === 2) {
 				return React.createElement(
 					'div',
 					null,
@@ -7146,7 +7171,7 @@ var rendererFactory$5 = (function (_ref) {
 						line.slice(endColumn)
 					)
 				);
-			} else if (index === 0) {
+			} else if (index === 1) {
 				return React.createElement(
 					'div',
 					null,
@@ -7202,11 +7227,6 @@ var rendererFactory$5 = (function (_ref) {
 				onClick: function onClick() {
 					return accept(item);
 				} },
-			React.createElement(
-				'span',
-				{ className: classnames.apply(undefined, ['icon'].concat(toConsumableArray(iconClassForPath(path$$1)))) },
-				path$$1
-			),
 			lines
 		);
 	};
@@ -7319,7 +7339,6 @@ var replace = (function (dependencies) {
 		renderer: renderer,
 		description: 'Replace pattern in project',
 		id: 'sparkling-project-replace',
-		sliceLength: 10,
 		childrenRenderer: function childrenRenderer() {
 			return React.createElement(ReplaceInputContainer, null);
 		}
@@ -7370,8 +7389,6 @@ var allLines = (function (_ref) {
 	return {
 		loadData: loadData$4,
 		accept: accept,
-		columns: 1,
-		sliceLength: 10,
 		description: 'Find lines in project',
 		id: 'sparkling-project-lines'
 	};
@@ -7391,8 +7408,6 @@ var autocompleteLines = (function (_ref) {
 	return {
 		loadData: loadData$4,
 		accept: accept,
-		columns: 1,
-		sliceLength: 10,
 		description: 'Autocomplete lines from project',
 		id: 'sparkling-autocomplete-lines'
 	};
