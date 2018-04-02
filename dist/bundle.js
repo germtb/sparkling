@@ -5751,16 +5751,12 @@ var loadData = (function (onData) {
 });
 
 var defaultRendererFactory = (function (_ref) {
-	var React = _ref.React,
-	    wrap = _ref.wrap;
+	var React = _ref.React;
 	return function (_ref2) {
 		var item = _ref2.item,
-		    pattern = _ref2.pattern,
+		    wrappedValue = _ref2.wrappedValue,
 		    className = _ref2.className,
 		    accept = _ref2.accept;
-		var value = item.value;
-
-		var wrappedValue = wrap(value, pattern);
 
 		return React.createElement(
 			'div',
@@ -5895,7 +5891,6 @@ var iconMap = {
 
 var commands = (function (dependencies) {
 	var React = dependencies.React,
-	    wrap = dependencies.wrap,
 	    store = dependencies.store;
 
 
@@ -5931,11 +5926,10 @@ var commands = (function (dependencies) {
 
 	var renderer = function renderer(_ref) {
 		var item = _ref.item,
-		    pattern = _ref.pattern,
+		    wrappedValue = _ref.wrappedValue,
 		    className = _ref.className;
 
 		var keybinding = item.keybinding;
-		var wrappedValue = wrap(item.value, pattern);
 
 		return React.createElement(
 			'div',
@@ -6098,7 +6092,8 @@ var loadDataFactory$1 = (function (store) {
 });
 
 var rendererFactory$1 = (function (dependencies) {
-	var iconClassForPath = dependencies.utils.iconClassForPath;
+	var iconClassForPath = dependencies.utils.iconClassForPath,
+	    classnames = dependencies.classnames;
 
 	var defaultRenderer = defaultRendererFactory(dependencies);
 	return function (props) {
@@ -6107,7 +6102,7 @@ var rendererFactory$1 = (function (dependencies) {
 
 
 		return defaultRenderer(_extends({}, props, {
-			className: [className, 'icon'].concat(toConsumableArray(iconClassForPath(absolutePath)))
+			className: classnames.apply(undefined, [className, 'icon'].concat(toConsumableArray(iconClassForPath(absolutePath))))
 		}));
 	};
 });
@@ -6395,20 +6390,17 @@ var loadDataFactory$2 = (function () {
 var rendererFactory$3 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
 		var item = _ref2.item,
-		    pattern = _ref2.pattern,
 		    className = _ref2.className,
-		    accept = _ref2.accept;
+		    accept = _ref2.accept,
+		    wrappedValue = _ref2.wrappedValue;
 		var value = item.value,
 		    status = item.status;
 
 
 		var finalClassName = classnames.apply(undefined, [className, 'icon'].concat(toConsumableArray(iconClassForPath(value))));
-
-		var wrappedValue = wrap(value, pattern);
 
 		var statusLabel = void 0;
 
@@ -6892,16 +6884,14 @@ var loadDataFactory$3 = (function (store) {
 var rendererFactory$4 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    wrap = _ref.wrap,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 	return function (_ref2) {
 		var item = _ref2.item,
-		    pattern = _ref2.pattern,
+		    wrappedValue = _ref2.wrappedValue,
 		    className = _ref2.className,
 		    accept = _ref2.accept;
 		var startColumn = item.startColumn,
 		    endColumn = item.endColumn,
-		    value = item.value,
 		    path$$1 = item.path;
 
 
@@ -6965,7 +6955,7 @@ var rendererFactory$4 = (function (_ref) {
 			);
 		};
 
-		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
+		var lines = wrappedValue.reduce(split('\n'), [[]]).map(wrapLine);
 
 		return React.createElement(
 			'div',
@@ -7065,19 +7055,17 @@ var find = (function (dependencies) {
 var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
-	    wrap = _ref.wrap,
 	    connect = _ref.connect,
 	    iconClassForPath = _ref.utils.iconClassForPath;
 
 	var Replace = function Replace(_ref2) {
 		var item = _ref2.item,
-		    pattern = _ref2.pattern,
+		    wrappedValue = _ref2.wrappedValue,
 		    className = _ref2.className,
 		    accept = _ref2.accept,
 		    replace = _ref2.replace;
 		var startColumn = item.startColumn,
 		    endColumn = item.endColumn,
-		    value = item.value,
 		    path$$1 = item.path;
 
 
@@ -7151,7 +7139,7 @@ var rendererFactory$5 = (function (_ref) {
 			);
 		};
 
-		var lines = wrap(value, pattern).reduce(split('\n'), [[]]).map(wrapLine);
+		var lines = wrappedValue.reduce(split('\n'), [[]]).map(wrapLine);
 
 		var finalClassName = classnames(className, 'sparkling-row__find', defineProperty({}, 'sparkling-row__find--multiline', lines.length > 1));
 
@@ -14813,7 +14801,8 @@ var SparklingInputFactory = (function (_ref) {
 var SparklingResultsFactory = (function (_ref) {
 	var React = _ref.React,
 	    connect = _ref.connect,
-	    classnames = _ref.classnames;
+	    classnames = _ref.classnames,
+	    wrap = _ref.wrap;
 
 	var SparklingResults = function SparklingResults(_ref2) {
 		var options = _ref2.options,
@@ -14848,10 +14837,12 @@ var SparklingResultsFactory = (function (_ref) {
 
 					var className = classnames('sparkling-row', (_classnames = {}, defineProperty(_classnames, 'sparkling-row--selected', index === selectedIndex), defineProperty(_classnames, 'sparkling-row--multi-selected', multiselected.includes(item)), _classnames));
 
+					var wrappedValue = wrap(item.value, pattern);
+
 					return renderer({
 						item: item,
 						accept: accept,
-						pattern: pattern,
+						wrappedValue: wrappedValue,
 						className: className
 					});
 				})
