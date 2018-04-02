@@ -5822,8 +5822,8 @@ var files = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'Find files in project',
 		id: 'sparkling-files',
 		multiselect: true
@@ -6133,8 +6133,8 @@ var ls = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'Project navigation',
 		id: 'sparkling-ls'
 	};
@@ -6254,8 +6254,8 @@ var copyFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'Copy files',
 		id: 'sparkling-copy-files'
 	};
@@ -6282,8 +6282,8 @@ var moveFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'Move files in project',
 		id: 'sparkling-move-files'
 	};
@@ -6308,8 +6308,8 @@ var removeFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'rm',
 		id: 'sparkling-files'
 	};
@@ -6351,8 +6351,8 @@ var relativePathInsert = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 20,
-		columns: 4,
+		sliceLength: 18,
+		columns: 3,
 		description: 'Insert path relative to',
 		id: 'sparkling-copy-relative-path'
 	};
@@ -6547,8 +6547,8 @@ var gitFiles = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		columns: 4,
-		sliceLength: 20,
+		columns: 3,
+		sliceLength: 18,
 		description: 'Find git status files',
 		id: 'sparkling-git-files',
 		multiselect: true
@@ -6694,6 +6694,63 @@ var gitStage = (function (dependencies) {
 		columns: 3,
 		description: 'Stage and unstage git files',
 		id: 'sparkling-git-stage'
+	};
+});
+
+var gitStatus = (function (dependencies) {
+	var store = dependencies.store;
+
+
+	var renderer = rendererFactory$3(dependencies);
+
+	var loadData = loadDataFactory$2({ hideDeletedFiles: false });
+
+	var accept = function accept(files) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var file = _step.value;
+				var value = file.value,
+				    status = file.status;
+
+
+				var deletedStatuses = [' D', 'AD', 'DD'];
+
+				if (!deletedStatuses.includes(status)) {
+					atom.workspace.open(value);
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		columns: 3,
+		description: 'Open git status files',
+		id: 'sparkling-git-stage',
+		multiselect: true
 	};
 });
 
@@ -6976,7 +7033,6 @@ var rendererFactory$4 = (function (_ref) {
 	};
 });
 
-// import fs from 'fs'
 var find = (function (dependencies) {
 	var React = dependencies.React,
 	    store = dependencies.store,
@@ -6994,14 +7050,9 @@ var find = (function (dependencies) {
 		    endLine = result.endLine,
 		    endColumn = result.endColumn,
 		    path$$1 = result.path;
-		// const scope = getScope(store.getState())
-		// const cwd = atom.project.getPaths()[0]
-		// const absolutePath = nodePath.resolve(cwd, `.${scope}`)
 
-		// if (result && scope !== '' && fs.lstatSync(absolutePath).isFile()) {
 
 		store.dispatch({ type: 'HIDE' });
-		// }
 
 		atom.workspace.open(path$$1).then(function (editor) {
 			editor.setSelectedBufferRange([[startLine, startColumn], [endLine, endColumn]]);
@@ -14633,7 +14684,7 @@ function createConnect() {
 
 var connect = createConnect();
 
-var DEFAULT_SLICE_LENGTH = 12;
+var DEFAULT_SLICE_LENGTH = 18;
 
 var commandFactoryFactory = (function (dependencies) {
 	return function (optionsFactory) {
@@ -15173,8 +15224,8 @@ var options = reducerCreator({
 	},
 	accept: function accept() {},
 	renderer: function renderer() {},
-	sliceLength: 20,
-	columns: 4,
+	sliceLength: 18,
+	columns: 3,
 	description: '',
 	id: '',
 	multiselect: true
@@ -15766,6 +15817,7 @@ var entry = (function (_ref) {
 	add('relativePathInsert', relativePathInsert);
 	add('gitFiles', gitFiles);
 	add('gitStage', gitStage);
+	add('gitStatus', gitStatus);
 	add('gitBranches', gitBranches);
 	add('gitLog', gitLog);
 	add('gitLogCheckout', gitLogCheckout);
