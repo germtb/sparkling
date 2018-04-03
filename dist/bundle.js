@@ -6936,7 +6936,9 @@ var loadDataFactory$3 = (function (store) {
 			var lines = chunk.toString('utf-8').split('\n');
 			lines[0] = acc + lines[0];
 			acc = lines[lines.length - 1];
-			onData(ackmateParser(lines.slice(0, -1)));
+			onData(ackmateParser(lines.slice(0, -1)).filter(function (item) {
+				return item.value.length < 500;
+			}));
 		});
 
 		cmdProcess.on('close', function () {
@@ -15264,13 +15266,23 @@ var data = reducerCreator({
 })([]);
 
 var sparklingData = reducerCreator({
-	SET_FILTERED_DATA: returnPayload('data'),
+	APPEND_FILTERED_DATA: function APPEND_FILTERED_DATA(state, _ref5) {
+		var _ref5$payload = _ref5.payload,
+		    data = _ref5$payload.data,
+		    set$$1 = _ref5$payload.set;
+
+		if (set$$1) {
+			return data;
+		}
+
+		return [].concat(toConsumableArray(state), toConsumableArray(data));
+	},
 	SHOW: [],
 	HIDE: [],
 	SHOW_SEARCH: [],
 	RELOAD: [],
-	REMOVE_ITEM: function REMOVE_ITEM(state, _ref5) {
-		var item = _ref5.payload.item;
+	REMOVE_ITEM: function REMOVE_ITEM(state, _ref6) {
+		var item = _ref6.payload.item;
 		return state.filter(function (x) {
 			return x !== item;
 		});
@@ -15278,8 +15290,8 @@ var sparklingData = reducerCreator({
 })([]);
 
 var pattern = reducerCreator({
-	SET_PATTERN: function SET_PATTERN(state, _ref6) {
-		var pattern = _ref6.payload.pattern;
+	SET_PATTERN: function SET_PATTERN(state, _ref7) {
+		var pattern = _ref7.payload.pattern;
 		return _extends({}, state, {
 			value: pattern
 		});
@@ -15305,12 +15317,12 @@ var offset = reducerCreator({
 })(0);
 
 var extraInput = reducerCreator({
-	SHOW_EXTRA_INPUT: function SHOW_EXTRA_INPUT(state, _ref7) {
-		var payload = _ref7.payload;
+	SHOW_EXTRA_INPUT: function SHOW_EXTRA_INPUT(state, _ref8) {
+		var payload = _ref8.payload;
 		return _extends({}, state, payload);
 	},
-	SET_EXTRA_INPUT: function SET_EXTRA_INPUT(state, _ref8) {
-		var payload = _ref8.payload;
+	SET_EXTRA_INPUT: function SET_EXTRA_INPUT(state, _ref9) {
+		var payload = _ref9.payload;
 		return _extends({}, state, payload);
 	},
 	HIDE: {}
@@ -15341,8 +15353,8 @@ var scope = reducerCreator({
 
 var multiselected = reducerCreator({
 	SHOW: [],
-	SELECT: function SELECT(state, _ref9) {
-		var item = _ref9.payload.item;
+	SELECT: function SELECT(state, _ref10) {
+		var item = _ref10.payload.item;
 		return state.includes(item) ? state.filter(function (x) {
 			return x !== item;
 		}) : [].concat(toConsumableArray(state), [item]);
@@ -15399,7 +15411,7 @@ var fromActionFactory = function fromActionFactory(_ref2) {
 	};
 
 	var newDispatch = function newDispatch(action) {
-		// console.log('action: ', action)
+		console.log('action: ', action);
 		if (typeof action === 'function') {
 			action(newDispatch, store.getState);
 		} else {
@@ -15455,9 +15467,9 @@ function storeFactory(_ref3) {
 	var store = createStore(reducers$$1);
 	var fromAction = fromActionFactory({ store: store, Observable: Observable });
 	var fromSelector = fromSelectorFactory({ store: store, Observable: Observable });
-	// store.subscribe(() => {
-	// 	console.log(store.getState())
-	// })
+	store.subscribe(function () {
+		console.log(store.getState());
+	});
 
 	return { store: store, fromAction: fromAction, fromSelector: fromSelector };
 }
@@ -15470,6 +15482,7 @@ var observablesFactory = (function (_ref) {
 	    filter = _ref.filter;
 
 	var cancelLoadData = null;
+	var cancelFilterData = null;
 
 	Observable.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref2) {
 		var _ref3 = slicedToArray(_ref2, 2),
@@ -15480,17 +15493,25 @@ var observablesFactory = (function (_ref) {
 			return;
 		}
 
+		if (cancelFilterData && typeof cancelFilterData === 'function') {
+			cancelFilterData();
+		}
+
 		if (!pattern.length) {
 			store.dispatch({
-				type: 'SET_FILTERED_DATA',
-				payload: { data: data }
+				type: 'APPEND_FILTERED_DATA',
+				payload: { data: data, set: true }
 			});
 		} else {
-			filter(pattern, data).then(function (filteredData) {
+			var first = true;
+
+			cancelFilterData = filter(pattern, data, function (filteredData) {
 				store.dispatch({
-					type: 'SET_FILTERED_DATA',
-					payload: { data: filteredData }
+					type: 'APPEND_FILTERED_DATA',
+					payload: { data: filteredData, set: first }
 				});
+
+				first = false;
 			});
 		}
 	});
@@ -15520,6 +15541,11 @@ var observablesFactory = (function (_ref) {
 			cancelLoadData();
 			cancelLoadData = null;
 		}
+
+		if (cancelFilterData && typeof cancelFilterData === 'function') {
+			cancelFilterData();
+			cancelFilterData = null;
+		}
 	});
 });
 
@@ -15536,8 +15562,7 @@ var wrapFactory = function wrapFactory(_ref) {
 			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
 				'span',
 				{
-					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
-				},
+					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames)) },
 				c
 			) : c;
 		};
@@ -15551,18 +15576,30 @@ var fuzzyFilterFactory = (function (_ref2) {
 	    React = _ref2.React,
 	    classnames = _ref2.classnames;
 
-	var promise = null;
-
 	var wrap = wrapFactory({ fuzzysort: fuzzysort, React: React, classnames: classnames });
 
-	var filter = function filter(pattern, data) {
-		promise && promise.cancel();
-		promise = fuzzysort.goAsync(pattern, data, { key: 'value' });
-		return promise.then(function (filteredData) {
-			return filteredData.map(function (x) {
-				return x.obj;
-			});
+	var filter = function filter(pattern, data, onData) {
+		var cancel = false;
+
+		var SLICE = 50000;
+
+		new Promise(function () {
+			for (var i = 0; i * SLICE < data.length; i++) {
+				if (cancel) {
+					break;
+				}
+
+				var results = fuzzysort.go(pattern, data.slice(i * SLICE, (i + 1) * SLICE), { key: 'value' });
+
+				onData(results.map(function (x) {
+					return x.obj;
+				}));
+			}
 		});
+
+		return function () {
+			cancel = true;
+		};
 	};
 
 	return { wrap: wrap, filter: filter };

@@ -44,7 +44,6 @@
 	background-color: inherit;
 	color: #73c990;
 	padding: 0;
-	text-decoration: underline;
 }
 
 .find-highlight {
@@ -117,32 +116,17 @@
 	width: 84px;
 }
 
-.git-status-modified {
-	color: #ac4142;
-}
-
-.git-status-modified-staged {
-	color: #73c990;
-}
-
-.git-status-new-file {
-	color: #73c990;
-}
-
+.git-status-modified-staged,
+.git-status-new-file,
 .git-status-new-file-staged {
 	color: #73c990;
 }
 
-.git-status-deleted {
-	color: #ac4142;
-}
-
-.git-status-deleted-staged {
-	color: #ac4142;
-}
-
+.git-status-modified,
+.git-status-deleted,
+.git-status-deleted-staged,
 .git-status-untracked {
-	color: #eddc96;
+	color: #ac4142;
 }
 
 .sparkling-command-description {
