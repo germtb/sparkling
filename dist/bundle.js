@@ -5847,6 +5847,11 @@ var loadDataFactory = (function (_ref) {
 	var store = _ref.store;
 	return function (onData) {
 		var options = getOptions(store.getState());
+
+		if (options.id !== 'sparkling-commands') {
+			return function () {};
+		}
+
 		var activeElement = options.activeElement;
 
 
@@ -6057,13 +6062,17 @@ var tokens = (function (dependencies) {
 var loadDataFactory$1 = (function (store) {
 	return function (onData) {
 		var options = getOptions(store.getState());
+
+		if (options.id !== 'sparkling-ls') {
+			return function () {};
+		}
+
 		var path$$1 = options.path;
 
 
 		var cmdProcess = spawnInProject('ls', ['-a', path$$1]);
 
 		cmdProcess.stdout.on('data', function (data) {
-			var options = getOptions(store.getState());
 			var path$$1 = options.path;
 
 
@@ -6131,8 +6140,14 @@ var ls = (function (dependencies) {
 	var accept = function accept(_ref) {
 		var absolutePath = _ref.absolutePath;
 
-		var _getOptions = getOptions(store.getState()),
-		    lsCommand = _getOptions.lsCommand;
+		var options = getOptions(store.getState());
+
+		if (options.id !== 'sparkling-ls') {
+			return;
+		}
+
+		var lsCommand = options.lsCommand;
+
 
 		if (fs.lstatSync(absolutePath).isDirectory()) {
 			lsCommand({ path: absolutePath, description: absolutePath, lsCommand: lsCommand });
@@ -15484,7 +15499,9 @@ var observablesFactory = (function (_ref) {
 	var cancelLoadData = null;
 	var cancelFilterData = null;
 
-	Observable.combineLatest(fromSelector(getData), fromSelector(getPattern)).auditTime(100).subscribe(function (_ref2) {
+	Observable.combineLatest(fromSelector(getData), fromSelector(getPattern))
+	// .auditTime(100)
+	.subscribe(function (_ref2) {
 		var _ref3 = slicedToArray(_ref2, 2),
 		    data = _ref3[0],
 		    pattern = _ref3[1];
@@ -15581,21 +15598,27 @@ var fuzzyFilterFactory = (function (_ref2) {
 	var filter = function filter(pattern, data, onData) {
 		var cancel = false;
 
-		var SLICE = 50000;
+		var SLICE = 100000;
 
-		new Promise(function () {
-			for (var i = 0; i * SLICE < data.length; i++) {
-				if (cancel) {
-					break;
-				}
+		function filterSlice(i) {
+			if (cancel) {
+				return;
+			}
 
+			setTimeout(function () {
 				var results = fuzzysort.go(pattern, data.slice(i * SLICE, (i + 1) * SLICE), { key: 'value' });
 
 				onData(results.map(function (x) {
 					return x.obj;
 				}));
-			}
-		});
+
+				if (i * SLICE < data.length) {
+					filterSlice(i + 1);
+				}
+			}, 0);
+		}
+
+		filterSlice(0);
 
 		return function () {
 			cancel = true;
@@ -15739,22 +15762,19 @@ var accept = function accept() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var item = getSelectedValue(state);
+		var options = getOptions(state);
 
-		var _getOptions = getOptions(state),
-		    accept = _getOptions.accept,
-		    multiselect = _getOptions.multiselect;
-
-		if (multiselect) {
+		if (options.multiselect) {
 			var multiselected = getMultiselected(state);
 
 			if (item) {
 				var set$$1 = multiselected.includes(item) ? multiselected : [].concat(toConsumableArray(multiselected), [item]);
-				accept(set$$1);
+				options.accept(set$$1);
 			} else {
-				accept(multiselected);
+				options.accept(multiselected);
 			}
 		} else if (item) {
-			accept(item);
+			options.accept(item);
 		}
 	};
 };
