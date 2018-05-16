@@ -1,4 +1,8 @@
 {
 	"presets": ["es2015", "jest", "flow"],
-	"plugins": ["transform-object-rest-spread", "transform-react-jsx"]
+	"plugins": [
+		"transform-object-rest-spread",
+		"transform-react-jsx",
+		"transform-regenerator"
+	]
 }
