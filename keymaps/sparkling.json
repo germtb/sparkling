@@ -17,6 +17,7 @@
 		"cmd-p cmd-c": "sparkling:copyFiles",
 		"cmd-p cmd-m": "sparkling:moveFiles",
 		"cmd-p cmd-f": "sparkling:find",
+		"cmd-p cmd-F": "sparkling:replace",
 		"cmd-b cmd-t": "sparkling:tokens"
 	},
 	".platform-darwin atom-text-editor": {
@@ -57,7 +58,8 @@
 		"ctrl-p ctrl-D": "sparkling:removeFiles",
 		"ctrl-p ctrl-c": "sparkling:copyFiles",
 		"ctrl-p ctrl-m": "sparkling:moveFiles",
-		"ctrl-p ctrl-f": "sparkling:find"
+		"ctrl-p ctrl-f": "sparkling:find",
+		"ctrl-p ctrl-F": "sparkling:replace"
 	},
 	".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
 		"ctrl-p ctrl-r": "sparkling:relativePathInsert",

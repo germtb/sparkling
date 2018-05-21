@@ -147,6 +147,10 @@
 	padding-top: 0.75em;
 }
 
+.sparkling-replace {
+	margin-top: 0.75em;
+}
+
 .sparkling-toggle {
 	font-family: Inconsolata, Monaco, Consolas, 'Courier New', Courier;
 	color: #9ea1b3;
