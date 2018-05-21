@@ -139,8 +139,12 @@
 	width: 50px;
 }
 
+.sparkling-find {
+	padding-top: 0.75em;
+}
+
 .sparkling-find-options {
-	padding-bottom: 0.75em;
+	padding-top: 0.75em;
 }
 
 .sparkling-toggle {
