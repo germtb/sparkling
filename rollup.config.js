@@ -29,7 +29,11 @@ module.exports = {
 					'createElement',
 					'PropTypes',
 					'Children',
-					'Component'
+					'Component',
+					'PureComponent'
+				],
+				'./node_modules/react-dom/index.js': [
+					'findDOMNode'
 				]
 			}
 		}),
