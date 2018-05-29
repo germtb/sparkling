@@ -1,8 +1,7 @@
 {
   "parser": "babel-eslint",
   "plugins": [
-    "react",
-    "flowtype"
+    "react"
   ],
   "ecmaFeatures": {
     "jsx": true,
@@ -39,7 +38,6 @@
       "object-shorthand": 2,
       "react/jsx-uses-react": 2,
       "react/jsx-uses-vars": 2,
-      "flowtype/use-flow-type": 1,
   },
   "globals": {
     "module": true,
