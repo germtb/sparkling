@@ -16,8 +16,7 @@
 		"cmd-p cmd-D": "sparkling:removeFiles",
 		"cmd-p cmd-c": "sparkling:copyFiles",
 		"cmd-p cmd-m": "sparkling:moveFiles",
-		"cmd-p cmd-f": "sparkling:findToggle",
-		"cmd-b cmd-f": "sparkling:findInBufferToggle",
+		"cmd-p cmd-f": "sparkling:find",
 		"cmd-b cmd-t": "sparkling:tokens"
 	},
 	".platform-darwin atom-text-editor": {
@@ -58,8 +57,7 @@
 		"ctrl-p ctrl-D": "sparkling:removeFiles",
 		"ctrl-p ctrl-c": "sparkling:copyFiles",
 		"ctrl-p ctrl-m": "sparkling:moveFiles",
-		"ctrl-p ctrl-f": "sparkling:findToggle",
-		"ctrl-b ctrl-f": "sparkling:findInBufferToggle"
+		"ctrl-p ctrl-f": "sparkling:find"
 	},
 	".platform-win32 atom-text-editor, .platform-linux atom-text-editor": {
 		"ctrl-p ctrl-r": "sparkling:relativePathInsert",
@@ -89,7 +87,6 @@
 	},
 
 	".sparkling-find.sparkling-input": {
-		"enter": "sparkling:find",
 		"shift-enter": "sparkling:replace"
 	},
 	"#sparkling-copy-file-confirm .sparkling-input": {
