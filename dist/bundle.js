@@ -5558,16 +5558,25 @@ var ackmateDFA = {
 		var regexMatch = regex.exec(line);
 
 		if (!regexMatch) {
+			var _startLine = parseInt(line.split(';')[0]) - 1;
+			if (Number.isNaN(_startLine)) {
+				_startLine = 0;
+			}
+
 			return {
 				type: 'inMultilineMatch',
 				state: _extends({}, state, {
 					lines: [line.split(';').slice(1).join('')],
-					startLine: parseInt(line.split(';')[0]) - 1
+					startLine: _startLine
 				})
 			};
 		}
 
 		var startLine = parseInt(regexMatch[1]) - 1;
+		if (Number.isNaN(startLine)) {
+			startLine = 0;
+		}
+
 		var endLine = startLine;
 		var matches = regexMatch[2].split(',');
 		var fileLine = regexMatch[regexMatch.length - 1];
