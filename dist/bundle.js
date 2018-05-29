@@ -15603,13 +15603,12 @@ var runIterator = function runIterator(iterator, onResult, onFinish) {
 				current = iterator.next();
 
 				if (performance.now() - start > ms) {
-					console.log('Chunk: ', current.value);
 					resolve();
 					return;
 				}
 			}
 		}).then(function () {
-			if (current !== null && current.done) {
+			if (current && current.done) {
 				onFinish && onFinish();
 				return;
 			}
