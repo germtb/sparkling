@@ -31,7 +31,6 @@ This package comes with a lot of Keybindings. I have tried my best to accomodate
 | sparkling:commands                 | cmd-shift-p             | Commands on active element | Run command          |
 | sparkling:relativePathInsert       | cmd-p cmd-r             | ripgrep project files      | Insert relative path |
 | sparkling:emoji                    | cmd-e cmd-a             | emoji                      | Insert               |
-| sparkling:gitFiles                 | cmd-g cmd-f             | git status                 | Go to                |
 | sparkling:gitStage                 | cmd-g cmd-s             | git status                 | Stage / unstage      |
 | sparkling:gitCheckout              | cmd-g cmd--             | git status                 | Checkout --          |
 | sparkling:gitBranches              | cmd-g cmd-b             | git branches               | Checkout             |

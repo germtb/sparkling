@@ -2,7 +2,6 @@
 	".platform-darwin atom-workspace": {
 		"cmd-p cmd-p": "sparkling:files",
 		"cmd-shift-p": "sparkling:commands",
-		"cmd-g cmd-f": "sparkling:gitFiles",
 		"cmd-g cmd-s": "sparkling:gitStatus",
 		"cmd-g cmd-S": "sparkling:gitStage",
 		"cmd-g cmd-b": "sparkling:gitBranches",
@@ -46,7 +45,6 @@
 
 	".platform-win32 atom-workspace, .platform-linux atom-workspace": {
 		"ctrl-p ctrl-p": "sparkling:files",
-		"ctrl-g ctrl-f": "sparkling:gitFiles",
 		"ctrl-g ctrl-s": "sparkling:gitStage",
 		"ctrl-g ctrl-b": "sparkling:gitBranches",
 		"ctrl-g ctrl-l": "sparkling:gitLog",
