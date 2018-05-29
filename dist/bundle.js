@@ -5990,7 +5990,6 @@ var commands = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 12,
 		columns: 2,
 		description: 'Run commands',
 		id: 'sparkling-commands',
@@ -6057,8 +6056,7 @@ var tokens = (function (dependencies) {
 		},
 		description: 'Find tokens in current buffer',
 		id: 'sparkling-buffer-tokens',
-		columns: 15,
-		sliceLength: 60
+		columns: 15
 	};
 });
 
@@ -6250,7 +6248,6 @@ var emoji = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 100,
 		columns: 20,
 		description: 'Insert emoji',
 		id: 'sparkling-emoji',
@@ -6378,10 +6375,108 @@ var relativePathInsert = (function (dependencies) {
 		loadData: loadData,
 		accept: accept,
 		renderer: renderer,
-		sliceLength: 18,
 		columns: 3,
 		description: 'Insert path relative to',
 		id: 'sparkling-copy-relative-path'
+	};
+});
+
+var loadData$1 = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['branch']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+
+	return function () {
+		// cmdProcess.stdin.pause()
+		cmdProcess.kill();
+	};
+});
+
+var gitBranches = (function (_ref) {
+	var store = _ref.store;
+
+	var accept = function accept(branch) {
+		var value = branch.value.trim();
+
+		if (/^\*/.test(value)) {
+			return;
+		}
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.stdout.on('data', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData$1,
+		accept: accept,
+		columns: 3,
+		description: 'git checkout',
+		id: 'sparkling-git-branches'
+	};
+});
+
+var loadData$2 = (function (onData) {
+	var cmdProcess = spawnInProject('git', ['log', '--pretty=oneline', '--abbrev-commit']);
+	cmdProcess.stdout.on('data', function (data) {
+		onData(data.toString('utf-8').split('\n').filter(function (s) {
+			return s.length > 1;
+		}).map(function (value) {
+			return { value: value };
+		}));
+	});
+
+	return function () {
+		cmdProcess.kill();
+	};
+});
+
+var gitLog = (function (_ref) {
+	var store = _ref.store;
+
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
+		atom.clipboard.write(value);
+		store.dispatch({
+			type: 'HIDE'
+		});
+	};
+
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		description: 'git log - Copy git commit hash to clipboard',
+		id: 'sparkling-git-log'
+	};
+});
+
+var gitLogCheckout = (function (_ref) {
+	var store = _ref.store;
+
+	var accept = function accept(commit) {
+		var value = commit.value.split(' ', 1)[0];
+
+		var cmdProcess = spawnInProject('git', ['checkout', value]);
+		cmdProcess.on('exit', function () {
+			store.dispatch({
+				type: 'HIDE'
+			});
+		});
+	};
+
+	return {
+		loadData: loadData$2,
+		accept: accept,
+		description: 'git log - Checkout git commit',
+		id: 'sparkling-git-commit'
 	};
 });
 
@@ -6546,156 +6641,6 @@ var rendererFactory$3 = (function (_ref) {
 				} },
 			lines
 		);
-	};
-});
-
-var gitFiles = (function (dependencies) {
-	var store = dependencies.store;
-
-
-	var renderer = rendererFactory$3(dependencies);
-
-	var loadData = loadDataFactory$2({ hideDeletedFiles: true });
-
-	var accept = function accept(items) {
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var item = _step.value;
-
-				atom.workspace.open(item.path);
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-
-		store.dispatch({
-			type: 'HIDE'
-		});
-	};
-
-	return {
-		loadData: loadData,
-		accept: accept,
-		renderer: renderer,
-		columns: 3,
-		sliceLength: 18,
-		description: 'Find git status files',
-		id: 'sparkling-git-files',
-		multiselect: true
-	};
-});
-
-var loadData$1 = (function (onData) {
-	var cmdProcess = spawnInProject('git', ['branch']);
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-
-	return function () {
-		// cmdProcess.stdin.pause()
-		cmdProcess.kill();
-	};
-});
-
-var gitBranches = (function (_ref) {
-	var store = _ref.store;
-
-	var accept = function accept(branch) {
-		var value = branch.value.trim();
-
-		if (/^\*/.test(value)) {
-			return;
-		}
-
-		var cmdProcess = spawnInProject('git', ['checkout', value]);
-		cmdProcess.stdout.on('data', function () {
-			store.dispatch({
-				type: 'HIDE'
-			});
-		});
-	};
-
-	return {
-		loadData: loadData$1,
-		accept: accept,
-		columns: 3,
-		description: 'git checkout',
-		id: 'sparkling-git-branches'
-	};
-});
-
-var loadData$2 = (function (onData) {
-	var cmdProcess = spawnInProject('git', ['log', '--pretty=oneline', '--abbrev-commit']);
-	cmdProcess.stdout.on('data', function (data) {
-		onData(data.toString('utf-8').split('\n').filter(function (s) {
-			return s.length > 1;
-		}).map(function (value) {
-			return { value: value };
-		}));
-	});
-
-	return function () {
-		cmdProcess.kill();
-	};
-});
-
-var gitLog = (function (_ref) {
-	var store = _ref.store;
-
-	var accept = function accept(commit) {
-		var value = commit.value.split(' ', 1)[0];
-		atom.clipboard.write(value);
-		store.dispatch({
-			type: 'HIDE'
-		});
-	};
-
-	return {
-		loadData: loadData$2,
-		accept: accept,
-		description: 'git log - Copy git commit hash to clipboard',
-		id: 'sparkling-git-log'
-	};
-});
-
-var gitLogCheckout = (function (_ref) {
-	var store = _ref.store;
-
-	var accept = function accept(commit) {
-		var value = commit.value.split(' ', 1)[0];
-
-		var cmdProcess = spawnInProject('git', ['checkout', value]);
-		cmdProcess.on('exit', function () {
-			store.dispatch({
-				type: 'HIDE'
-			});
-		});
-	};
-
-	return {
-		loadData: loadData$2,
-		accept: accept,
-		description: 'git log - Checkout git commit',
-		id: 'sparkling-git-commit'
 	};
 });
 
@@ -7221,6 +7166,13 @@ var find = (function (dependencies) {
 		id: 'sparkling-project-find',
 		childrenRenderer: function childrenRenderer() {
 			return React.createElement(FindContainer, null);
+		},
+		rowHeight: function rowHeight(item) {
+			if (item.startLine !== undefined && item.endLine !== undefined && item.startLine !== item.endLine) {
+				return 14 + (2 + item.endLine - item.startLine) * 21;
+			}
+
+			return 35;
 		}
 	};
 });
@@ -15093,8 +15045,6 @@ function createConnect() {
 
 var connect = createConnect();
 
-var DEFAULT_SLICE_LENGTH = 18;
-
 var commandFactoryFactory = (function (dependencies) {
 	return function (optionsFactory) {
 		var store = dependencies.store;
@@ -15104,10 +15054,10 @@ var commandFactoryFactory = (function (dependencies) {
 
 		var defaults$$1 = {
 			preview: null,
-			sliceLength: DEFAULT_SLICE_LENGTH,
 			columns: 1,
 			renderer: defaultRenderer,
-			multiselect: false
+			multiselect: false,
+			rowHeight: 35
 		};
 
 		var partialOptions = optionsFactory(dependencies);
@@ -41643,7 +41593,7 @@ var SparklingResultsFactory = (function (_ref) {
 		    renderer = options.renderer,
 		    accept = options.accept,
 		    columns = options.columns,
-		    sliceLength = options.sliceLength;
+		    _rowHeight = options.rowHeight;
 
 
 		return React.createElement(
@@ -41660,22 +41610,10 @@ var SparklingResultsFactory = (function (_ref) {
 						height: height,
 						rowCount: Math.ceil(data.length / columns),
 						overscanRowCount: 10,
-						noRowsRenderer: function noRowsRenderer() {
-							return React.createElement(
-								'div',
-								null,
-								'No row!'
-							);
-						},
+						scrollToIndex: Math.floor(selectedIndex / columns),
 						rowHeight: function rowHeight(_ref4) {
 							var index = _ref4.index;
-
-							var item = data[index * columns];
-							if (item.startLine !== undefined && item.endLine !== undefined && item.startLine !== item.endLine) {
-								return 35 + (item.endLine - item.startLine) * 22;
-							}
-
-							return 35;
+							return typeof _rowHeight === 'function' ? _rowHeight(data[index * columns]) : _rowHeight;
 						},
 						rowRenderer: function rowRenderer(_ref5) {
 							var index = _ref5.index,
@@ -41934,7 +41872,6 @@ var options = reducerCreator({
 	},
 	accept: function accept() {},
 	renderer: function renderer() {},
-	sliceLength: 18,
 	columns: 3,
 	description: '',
 	id: '',
@@ -42419,7 +42356,7 @@ var dependenciesFactory = (function (_ref) {
 	return dependencies;
 });
 
-var next = function next() {
+var right = function right() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
@@ -42429,7 +42366,7 @@ var next = function next() {
 	};
 };
 
-var previous = function previous() {
+var left = function left() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
@@ -42438,33 +42375,29 @@ var previous = function previous() {
 	};
 };
 
-var left = function left() {
+var previous = function previous() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
 		var options = getOptions(state);
-		var columns = options.columns,
-		    sliceLength = options.sliceLength;
+		var columns = options.columns;
 
-		var rows = sliceLength / columns;
 
-		var value = Math.max(index - rows, 0);
+		var value = Math.max(index - columns, 0);
 		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
 
-var right = function right() {
+var next = function next() {
 	return function (dispatch, getState) {
 		var state = getState();
 		var index = getIndex(state);
 		var sparklingData = getSparklingData(state);
 		var options = getOptions(state);
-		var sliceLength = options.sliceLength,
-		    columns = options.columns;
+		var columns = options.columns;
 
-		var rows = sliceLength / columns;
 
-		var value = Math.min(index + rows, sparklingData.length - 1);
+		var value = Math.min(index + columns, sparklingData.length - 1);
 		dispatch({ type: 'SET_INDEX', payload: { value: value } });
 	};
 };
@@ -42585,7 +42518,6 @@ var entry = (function (_ref) {
 	add('tokens', tokens);
 	add('emoji', emoji);
 	add('relativePathInsert', relativePathInsert);
-	add('gitFiles', gitFiles);
 	add('gitStage', gitStage);
 	add('gitStatus', gitStatus);
 	add('gitBranches', gitBranches);

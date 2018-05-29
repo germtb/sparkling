@@ -4,7 +4,6 @@
   "version": "0.3.26",
   "activationEvents": [
     "sparkling:files",
-    "sparkling:gitFiles",
     "sparkling:gitStage",
     "sparkling:gitBranches",
     "sparkling:gitLog",

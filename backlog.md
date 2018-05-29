@@ -1,4 +1,7 @@
 * [ ] Fix file preview
 * [ ] Find good previews for other commands
 * [ ] Convert observables to middleware
-* [ ] Make fuzzysort work in chunks to make it asynchronous and cancelable
+* [ ] Add tab option
+* [ ] Big grep
+* [ ] Investigate crashes on NaN startLine
+* [ ] Why third element in focus in search?
