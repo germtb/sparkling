@@ -7228,6 +7228,211 @@ var find = (function (dependencies) {
 	};
 });
 
+var loadDataFactory$4 = (function (store) {
+	return function (onData) {
+		var state = store.getState();
+		var find = getFind(state);
+
+		var cmdProcess = spawnInProject('tbgs', [find]);
+
+		cmdProcess.stdout.on('data', function (chunk) {
+			console.log('chunk: ', chunk.toString('utf-8').split('\n'));
+			var lines = chunk.toString('utf-8').split('\n');
+			onData(lines.filter(function (lineStr) {
+				return lineStr.length > 0 && lineStr.length < 500;
+			}).map(function (lineStr) {
+				var _lineStr$split = lineStr.split(':'),
+				    _lineStr$split2 = toArray(_lineStr$split),
+				    path$$1 = _lineStr$split2[0],
+				    startLineStr = _lineStr$split2[1],
+				    startColumnStr = _lineStr$split2[2],
+				    lineRest = _lineStr$split2.slice(3);
+
+				var startLine = parseInt(startLineStr);
+				var startColumn = parseInt(startColumnStr) - 1;
+				var line = lineRest.join(':');
+				return {
+					value: path$$1 + '\n' + line,
+					match: find,
+					path: path$$1,
+					startLine: startLine,
+					endLine: startLine,
+					startColumn: startColumn,
+					endColumn: startColumn + find.length
+				};
+			}));
+		});
+
+		cmdProcess.on('close', function (chunk) {
+			try {
+				console.log('Closde chunk: ', chunk.toString('utf-8'));
+			} catch (e) {
+				console.log('Closde chunk with error: ', e);
+			}
+		});
+
+		return function () {
+			cmdProcess.kill();
+		};
+	};
+});
+
+var bigGrep = (function (dependencies) {
+	var React = dependencies.React,
+	    store = dependencies.store,
+	    connect = dependencies.connect,
+	    fromSelector = dependencies.fromSelector,
+	    classnames = dependencies.classnames,
+	    _dependencies$compone = dependencies.components,
+	    withSideEffect = _dependencies$compone.withSideEffect,
+	    Input = _dependencies$compone.Input;
+
+
+	var renderer = rendererFactory$4(dependencies);
+
+	var loadData = loadDataFactory$4(store);
+
+	var accept = function accept(result) {
+		var startLine = result.startLine,
+		    startColumn = result.startColumn,
+		    endLine = result.endLine,
+		    endColumn = result.endColumn,
+		    path$$1 = result.path;
+
+
+		store.dispatch({ type: 'HIDE' });
+
+		atom.workspace.open(path$$1).then(function (editor) {
+			editor.setSelectedBufferRange([[startLine, startColumn], [endLine, endColumn]]);
+		});
+	};
+
+	var cancelLoadData = null;
+
+	var FindContainer = compose(withSideEffect(fromSelector(getSelectedValue))(function (result) {
+		if (!result) {
+			return;
+		}
+
+		var startLine = result.startLine,
+		    startColumn = result.startColumn,
+		    endLine = result.endLine,
+		    endColumn = result.endColumn,
+		    path$$1 = result.path;
+
+
+		var editor = atom.workspace.getActiveTextEditor();
+
+		if (!editor) {
+			return;
+		}
+
+		var cwd = atom.project.getPaths()[0];
+		var absolutePath = path.resolve(cwd, './' + path$$1);
+
+		if (absolutePath !== editor.getPath()) {
+			return;
+		}
+
+		editor.setSelectedBufferRange([[startLine, startColumn], [endLine, endColumn]]);
+	}), withSideEffect(fromSelector(getFind).debounceTime(100))(function (find) {
+		if (cancelLoadData && typeof cancelLoadData === 'function') {
+			cancelLoadData();
+			cancelLoadData = null;
+		}
+
+		if (!find || find.length < 1) {
+			store.dispatch({ type: 'RELOAD' });
+			return;
+		}
+
+		var first = true;
+
+		cancelLoadData = loadData(function (data) {
+			store.dispatch({
+				type: 'APPEND_DATA',
+				payload: {
+					data: data,
+					set: first
+				}
+			});
+
+			first = false;
+		});
+	}), connect(function (state) {
+		return {
+			value: getFind(state),
+			smartCase: isSmartCase(state),
+			literalSearch: isLiteralSearch(state)
+			// scope: getScope(state),
+		};
+	}, function (dispatch) {
+		return {
+			setValue: function setValue(find) {
+				return dispatch({ type: 'SET_SEARCH', payload: { find: find } });
+			},
+			toggleSmartCase: function toggleSmartCase() {
+				return dispatch({ type: 'TOGGLE_SMART_CASE' });
+			},
+			toggleLiteralSearch: function toggleLiteralSearch() {
+				return dispatch({ type: 'TOGGLE_LITERAL_SEARCH' });
+			}
+			// setScope: scope => dispatch({ type: 'SET_SCOPE', payload: { scope } }),
+		};
+	}))(function (_ref) {
+		var value = _ref.value,
+		    setValue = _ref.setValue,
+		    smartCase = _ref.smartCase,
+		    literalSearch = _ref.literalSearch,
+		    toggleSmartCase = _ref.toggleSmartCase,
+		    toggleLiteralSearch = _ref.toggleLiteralSearch;
+		return React.createElement(
+			'div',
+			{ className: 'sparkling-find' },
+			React.createElement(Input, {
+				autoFocus: true,
+				tabIndex: 0,
+				className: 'sparkling-find-input',
+				id: 'sparkling-find',
+				placeholder: 'Find',
+				setValue: setValue,
+				value: value
+			}),
+			React.createElement(
+				'div',
+				{ className: 'sparkling-find-options' },
+				React.createElement(
+					'button',
+					{
+						onClick: toggleSmartCase,
+						className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', smartCase))
+					},
+					'Smart case'
+				),
+				React.createElement(
+					'button',
+					{
+						onClick: toggleLiteralSearch,
+						className: classnames('sparkling-toggle', defineProperty({}, 'sparkling-toggle-active', literalSearch))
+					},
+					'Literal search'
+				)
+			)
+		);
+	});
+
+	return {
+		loadData: loadData,
+		accept: accept,
+		renderer: renderer,
+		description: 'Find pattern in project',
+		id: 'sparkling-project-find',
+		childrenRenderer: function childrenRenderer() {
+			return React.createElement(FindContainer, null);
+		}
+	};
+});
+
 var rendererFactory$5 = (function (_ref) {
 	var React = _ref.React,
 	    classnames = _ref.classnames,
@@ -15647,7 +15852,8 @@ var wrapFactory = function wrapFactory(_ref) {
 			return indexes.includes(index) || c === '\t' || c === ' ' ? React.createElement(
 				'span',
 				{
-					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames)) },
+					className: classnames((_classnames = {}, defineProperty(_classnames, 'highlight', indexes.includes(index)), defineProperty(_classnames, 'sparkling-tab', c === '\t'), defineProperty(_classnames, 'sparkling-space', c === ' '), _classnames))
+				},
 				c
 			) : c;
 		};
@@ -15701,6 +15907,25 @@ var runIterator = function runIterator(iterator, onResult, onFinish) {
 	}, 0);
 	return cancel;
 };
+
+// const runWorker = async (iterator, onResult) => {
+// 	let current = iterator.next()
+// 	const sw = await filterServiceWorker
+//
+// 	while (!current.done) {
+// 		const channel = new MessageChannel()
+// 		channel.port1.onmessage = e => {
+// 			console.log(e)
+// 		}
+//
+// 		onResult && onResult(current.value)
+// 		sw.postMessage({ method: () => iterator.next() }, [channel.port2])
+//
+// 		current = iterator.next()
+// 	}
+//
+// 	return () => null
+// }
 
 var fuzzyFilterFactory = (function (_ref2) {
 	var _marked = /*#__PURE__*/regeneratorRuntime.mark(filterGenerator);
@@ -15946,7 +16171,7 @@ var select = function select() {
 	};
 };
 
-require("babel-polyfill");
+require('babel-polyfill');
 
 var entry = (function (_ref) {
 	var subscriptions = _ref.subscriptions,
@@ -16004,6 +16229,7 @@ var entry = (function (_ref) {
 	add('allLines', allLines);
 	add('autocompleteLines', autocompleteLines);
 	add('find', find);
+	add('bigGrep', bigGrep);
 	add('replace', replace);
 	add('removeFiles', removeFiles);
 	add('moveFiles', moveFiles);
@@ -16071,6 +16297,38 @@ var entry = (function (_ref) {
 			return store.dispatch(copyFilesConfirm(onDone));
 		}
 	}));
+
+	var serviceWorkerResolve = void 0;
+
+	window.filterServiceWorker = new Promise(function (resolve) {
+		serviceWorkerResolve = resolve;
+	});
+
+	navigator.serviceWorker.register('/Users/gerardmtb/dev/sparkling/worker/index.js').then(onRegistration);
+
+	function onRegistration(registration) {
+		registration.update();
+
+		if (registration.waiting) {
+			registration.waiting.addEventListener('statechange', onStateChange('waiting'));
+		}
+
+		if (registration.installing) {
+			registration.installing.addEventListener('statechange', onStateChange('installing'));
+		}
+
+		if (registration.active) {
+			var serviceWorker = registration.active;
+			serviceWorkerResolve(serviceWorker);
+			registration.active.addEventListener('statechange', onStateChange('active'));
+		}
+	}
+
+	function onStateChange(from) {
+		return function (e) {
+			console.log('statechange', from, 'to', e.target.state);
+		};
+	}
 
 	return commandFactory;
 });

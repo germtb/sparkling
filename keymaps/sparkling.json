@@ -18,6 +18,7 @@
 		"cmd-p cmd-m": "sparkling:moveFiles",
 		"cmd-p cmd-f": "sparkling:find",
 		"cmd-p cmd-F": "sparkling:replace",
+		"cmd-b cmd-g": "sparkling:bigGrep",
 		"cmd-b cmd-t": "sparkling:tokens"
 	},
 	".platform-darwin atom-text-editor": {
