@@ -7695,6 +7695,13 @@ var replace = (function (dependencies) {
 		id: 'sparkling-project-replace',
 		childrenRenderer: function childrenRenderer() {
 			return React.createElement(ReplaceInputContainer, null);
+		},
+		rowHeight: function rowHeight(item) {
+			if (item.startLine !== undefined && item.endLine !== undefined && item.startLine !== item.endLine) {
+				return 14 + (2 + item.endLine - item.startLine) * 21;
+			}
+
+			return 14 + 2 * 21;
 		}
 	};
 });
